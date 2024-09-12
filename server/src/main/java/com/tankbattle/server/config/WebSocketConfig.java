@@ -1,0 +1,23 @@
+package com.tankbattle.server.config;
+
+import org.springframework.context.annotation.Configuration;
+import org.springframework.messaging.simp.config.MessageBrokerRegistry;
+import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBroker;
+import org.springframework.web.socket.config.annotation.StompEndpointRegistry;
+import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerConfigurer;
+
+@Configuration
+@EnableWebSocketMessageBroker
+public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
+    @Override
+    public void registerStompEndpoints(StompEndpointRegistry config) {
+        config.addEndpoint("/game"); // client will send messages to this path
+        config.addEndpoint("/game").withSockJS(); // client will fallback to html REST, if websockets fail
+    }
+
+    @Override
+    public void configureMessageBroker(MessageBrokerRegistry registry) {
+        registry.enableSimpleBroker("/from-server"); // server sends messages to clients subscribing messages on this path
+        registry.setApplicationDestinationPrefixes("/app"); // server creates endpoints in this path for clients to send messages to
+    }
+}
