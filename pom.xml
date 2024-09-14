@@ -11,8 +11,8 @@
     <groupId>com.TankBattle</groupId>
     <artifactId>server</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-    <name>server</name>
-    <description>server</description>
+    <name>TankBattle</name>
+    <description>TankBattle</description>
     <url/>
     <licenses>
         <license/>
