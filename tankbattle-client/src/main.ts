@@ -63,12 +63,12 @@ async function disconnectFromServer() {
 }
 
 function successfullyConnected() {
-  // const guest = new Guest("aaa");
-  // console.log("sending message: ", guest);
-  // socket.sendMessage(HelloWorldDestinationEndpoint, undefined, JSON.stringify(guest));
+  const guest = new Guest("aaa");
+  console.log("sending message: ", guest);
   socket.subscribe(HelloSubscriptionEndpoint, receiveGreeting);
   connectedToServer = true;
   refreshConnectionStatus();
+  socket.sendMessage(HelloWorldDestinationEndpoint, undefined, JSON.stringify(guest));
 }
 
 let socket: ConnectionSocket = new ConnectionSocket(
