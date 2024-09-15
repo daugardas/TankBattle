@@ -1,11 +1,13 @@
 import "./style.css";
 import ConnectionSocket from "./ConnectionSocket.ts";
 import {
-  PlayerSyncToEndpoint,
+  PlayerConnectEndpoint,
+  PlayerDisconnectEndpoint,
   ServerWebsocketEndpointURL,
 } from "./constants.ts";
-import {IMessage} from "@stomp/stompjs";
+import { IMessage } from "@stomp/stompjs";
 import Game from "./Game.ts";
+import Player from "./Player.ts";
 
 let connectedToServer = false;
 let connectButton = document.getElementById("connect-button");
@@ -15,6 +17,7 @@ let canvasElement =
 let connectedToServerStatusElement = document.getElementById(
   "connected-to-server"
 );
+
 if (!connectButton || !disconnectButton) {
   throw new Error("connect button elements are missing");
 }
@@ -54,18 +57,6 @@ function connectToServer() {
 }
 
 async function disconnectFromServer() {
-  await socket.disconnectFromServer();
-  connectedToServer = false;
-  refreshConnectionStatus();
-}
-
-function successfullyConnected() {
-  // const guest = new Guest("aaa");
-  // console.log("sending message: ", guest);
-  // socket.subscribe(HelloSubscriptionEndpoint, receiveGreeting);
-  connectedToServer = true;
-  refreshConnectionStatus();
-  // socket.sendMessage(HelloWorldDestinationEndpoint, undefined, JSON.stringify(guest));
   const player: {
     id: number;
     username: string;
@@ -74,10 +65,31 @@ function successfullyConnected() {
       y: number;
     }
   } = {
-    id: 0, username: "hello world", coord: {x: 0, y: 0}
+    id: 0, username: "hello world", coord: { x: 0, y: 0 }
+  }
+  socket.sendMessage(PlayerDisconnectEndpoint, undefined, JSON.stringify(player));
+  await socket.disconnectFromServer();
+  connectedToServer = false;
+  refreshConnectionStatus();
+}
+
+function successfullyConnected() {
+
+  connectedToServer = true;
+  refreshConnectionStatus();
+
+  const player: {
+    id: number;
+    username: string;
+    coord: {
+      x: number;
+      y: number;
+    }
+  } = {
+    id: 0, username: "hello world", coord: { x: 0, y: 0 }
   }
 
-  socket.sendMessage(PlayerSyncToEndpoint, undefined, JSON.stringify(player));
+  socket.sendMessage(PlayerConnectEndpoint, undefined, JSON.stringify(player));
 }
 
 let socket: ConnectionSocket = new ConnectionSocket(

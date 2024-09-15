@@ -15,9 +15,10 @@ export default class Game {
     if (ctx){
       this.ctx = ctx;
     }
-    this.currPlayer = new Player();
     this.windowWidth = canvasEl.width;
     this.windowHeight = canvasEl.height;
+
+    this.currPlayer = new Player();
   }
 
   private draw(){

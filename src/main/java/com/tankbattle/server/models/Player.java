@@ -1,14 +1,18 @@
 package com.tankbattle.server.models;
 
+import jakarta.websocket.Session;
+
 public class Player {
+    private String sessionId;
     private int id;
     private String username;
     private Coordinate coord;
 
-    public Player(int id, String username, int coordX, int coordY) {
+    public Player(String sessionId, int id, String username) {
+        this.sessionId = sessionId;
         this.id = id;
         this.username = username;
-        this.coord = new Coordinate(coordX, coordY);
+        this.coord = new Coordinate(0, 0);
     }
 
     public int getId() {

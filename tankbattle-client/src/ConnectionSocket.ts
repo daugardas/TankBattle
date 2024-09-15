@@ -27,6 +27,7 @@ class ConnectionSocket {
       headers?: StompHeaders;
     }[]
   ) {
+
     this.client = new Client({
       brokerURL: url,
       debug: function (str) {
