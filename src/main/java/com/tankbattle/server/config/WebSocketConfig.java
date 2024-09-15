@@ -11,8 +11,8 @@ import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerCo
 public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     @Override
     public void registerStompEndpoints(StompEndpointRegistry config) {
-        config.addEndpoint("/game"); // client will send messages to this path
-        config.addEndpoint("/game").withSockJS(); // client will fallback to html REST, if websockets fail
+        config.addEndpoint("/game").setAllowedOrigins("http://localhost:8080", "http://localhost:5173"); // client will send messages to this path
+        config.addEndpoint("/game").setAllowedOrigins("http://localhost:8080", "http://localhost:5173").withSockJS(); // client will fallback to html REST, if websockets fail
     }
 
     @Override
