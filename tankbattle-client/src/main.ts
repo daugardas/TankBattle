@@ -1,13 +1,10 @@
 import "./style.css";
 import ConnectionSocket from "./ConnectionSocket.ts";
 import {
-  HelloSubscriptionEndpoint,
-  HelloWorldDestinationEndpoint,
+  PlayerSyncToEndpoint,
   ServerWebsocketEndpointURL,
 } from "./constants.ts";
-import { IMessage } from "@stomp/stompjs";
-import Greeting from "./models/Greeting.ts";
-import Guest from "./models/Guest.ts";
+import {IMessage} from "@stomp/stompjs";
 import Game from "./Game.ts";
 
 let connectedToServer = false;
@@ -47,10 +44,10 @@ function refreshConnectionStatus() {
   connectedToServerStatusElement.innerText = `${connectedToServer}`;
 }
 
-function receiveGreeting(message: IMessage) {
-  const greeting: Greeting = JSON.parse(message.body) as Greeting;
-  console.log("received greeting: ", greeting);
-}
+// function receiveGreeting(message: IMessage) {
+//   const greeting: Greeting = JSON.parse(message.body) as Greeting;
+//   console.log("received greeting: ", greeting);
+// }
 
 function connectToServer() {
   socket.connectToServer();
@@ -63,12 +60,24 @@ async function disconnectFromServer() {
 }
 
 function successfullyConnected() {
-  const guest = new Guest("aaa");
-  console.log("sending message: ", guest);
-  socket.subscribe(HelloSubscriptionEndpoint, receiveGreeting);
+  // const guest = new Guest("aaa");
+  // console.log("sending message: ", guest);
+  // socket.subscribe(HelloSubscriptionEndpoint, receiveGreeting);
   connectedToServer = true;
   refreshConnectionStatus();
-  socket.sendMessage(HelloWorldDestinationEndpoint, undefined, JSON.stringify(guest));
+  // socket.sendMessage(HelloWorldDestinationEndpoint, undefined, JSON.stringify(guest));
+  const player: {
+    id: number;
+    username: string;
+    coord: {
+      x: number;
+      y: number;
+    }
+  } = {
+    id: 0, username: "hello world", coord: {x: 0, y: 0}
+  }
+
+  socket.sendMessage(PlayerSyncToEndpoint, undefined, JSON.stringify(player));
 }
 
 let socket: ConnectionSocket = new ConnectionSocket(
@@ -79,3 +88,5 @@ let socket: ConnectionSocket = new ConnectionSocket(
 );
 
 let game: Game = new Game(canvasElement);
+
+game.start();

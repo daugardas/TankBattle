@@ -17,7 +17,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
     @Override
     public void configureMessageBroker(MessageBrokerRegistry registry) {
-        registry.enableSimpleBroker("/from-server"); // server sends messages to clients subscribing messages on this path
-        registry.setApplicationDestinationPrefixes("/app"); // server creates endpoints in this path for clients to send messages to
+        registry.enableSimpleBroker("/syncfrom"); // server sends messages to clients subscribing messages on this path
+        registry.setApplicationDestinationPrefixes("/syncto"); // server creates endpoints in this path for clients to send messages to
     }
 }
