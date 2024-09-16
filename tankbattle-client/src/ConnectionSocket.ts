@@ -1,90 +1,97 @@
 import {
   Client,
-  Frame,
   frameCallbackType,
+  IFrame,
+  IPublishParams,
   messageCallbackType,
   StompHeaders,
   StompSubscription,
 } from "@stomp/stompjs";
-import {PlayerSessionIdEndpoint, ServerWebsocketEndpointURL} from "./constants.ts";
+import {
+  PlayerSessionIdEndpoint,
+  ServerWebsocketEndpointURL,
+} from "./constants.ts";
 
 class ConnectionSocket {
   private client: Client;
   private stompSubscriptions: StompSubscription[] = [];
-  private subscribeWhenConnected: {
-    endpoint: string;
-    callback: messageCallbackType;
-    headers?: StompHeaders;
-  }[] = [];
   private connected: boolean = false;
-  private sessionId: string;
-  private sessionIdSubscription: StompSubscription | null = null;
+  private sessionId: string | undefined;
+  private sessionIdSubscription: StompSubscription | undefined;
+  private onConnectCallback: frameCallbackType | undefined;
+  private onDisconnectCallback: frameCallbackType | undefined;
 
   constructor(
     url: string = ServerWebsocketEndpointURL,
     onConnectCallback?: frameCallbackType,
-    subscriptions?: {
-      endpoint: string;
-      callback: messageCallbackType;
-      headers?: StompHeaders;
-    }[]
+    onDisconnectCallback?: frameCallbackType
   ) {
-
     this.client = new Client({
       brokerURL: url,
       debug: function (str) {
         console.debug(str);
       },
-      reconnectDelay: 5000,
     });
 
-    this.client.onConnect = (frame) => {
-      // console.log("connected to server:", frame);
-      this.connected = true;
+    this.onConnect = this.onConnect.bind(this);
+    this.onDisconnect = this.onDisconnect.bind(this);
+    this.onStompError = this.onStompError.bind(this);
+    this.onWebSocketError = this.onWebSocketError.bind(this);
 
-      this.sessionIdSubscription = this.client.subscribe(PlayerSessionIdEndpoint, (message) => {
-        // console.log("sessionId", message.body);
-        this.sessionId = message.body;
-
-        if(this.sessionIdSubscription){
-          this.sessionIdSubscription.unsubscribe();
-          this.sessionIdSubscription = null;
-        }
-      })
-
-      for (const sub of this.subscribeWhenConnected) {
-        this.subscribe(sub.endpoint, sub.callback, sub.headers);
-      }
-
-      if (onConnectCallback !== undefined) {
-        onConnectCallback(frame);
-      }
-    };
-
+    this.client.onConnect = this.onConnect;
     this.client.onStompError = this.onStompError;
     this.client.onWebSocketError = this.onWebSocketError;
-
-    if (subscriptions !== undefined)
-      this.subscribeWhenConnected = subscriptions;
+    this.client.onDisconnect = this.onDisconnect;
+    this.onConnectCallback = onConnectCallback;
+    this.onDisconnectCallback = onDisconnectCallback;
   }
 
-  private onStompError(frame: Frame) {
+  private onDisconnect(frame: IFrame) {
+    // this.connected = false;
+
+    if (this.onDisconnectCallback) {
+      this.onDisconnectCallback(frame);
+    }
+  }
+
+  private onConnect(frame: IFrame) {
+    // this.connected = true;
+
+    console.log("server", this);
+
+    this.sessionIdSubscription = this.client.subscribe(
+      PlayerSessionIdEndpoint,
+      (message) => {
+        this.sessionId = message.body as string;
+
+        if (this.sessionIdSubscription) {
+          this.sessionIdSubscription.unsubscribe();
+          this.sessionIdSubscription = undefined;
+        }
+      }
+    );
+
+    if (this.onConnectCallback) {
+      this.onConnectCallback(frame);
+    }
+  }
+
+  private onStompError(frame: IFrame) {
     // errors from the server will be sent here
     console.log("Server reported error:", frame.headers["message"]);
     console.log("Details:", frame.body);
   }
 
-  private onWebSocketError(frame: Frame) {
+  private onWebSocketError(frame: IFrame) {
     console.log("Websocket error:", frame);
   }
 
   public connectToServer() {
-    console.log("Trying to connect to server");
+    console.log(this);
     this.client.activate();
   }
 
   public async disconnectFromServer() {
-    console.log("Disconnecting from server");
     await this.client.deactivate();
     this.connected = false;
   }
@@ -99,21 +106,37 @@ class ConnectionSocket {
     return subscription;
   }
 
-  public sendMessage(
-    destination: string,
-    headers?: StompHeaders,
-    body?: string,
-    binaryBody?: Uint8Array,
-    skipContentLengthHeader?: boolean
-  ) {
-    this.client.publish({
-      destination,
-      headers,
-      body,
-      binaryBody,
-      skipContentLengthHeader,
-    });
+  public sendMessage(params: IPublishParams) {
+    this.client.publish(params);
   }
+
+  public getConnectionStatus() {
+    return this.connected;
+  }
+
+  public getSessionId() {
+    return this.sessionId;
+  }
+
+  public setSessionId(sessionId: string) {
+    this.sessionId = sessionId;
+  }
+
+  // public sendMessage(
+  //   destination: string,
+  //   body?: string,
+  //   headers?: StompHeaders,
+  //   binaryBody?: Uint8Array,
+  //   skipContentLengthHeader?: boolean
+  // ) {
+  //   this.client.publish({
+  //     destination,
+  //     headers,
+  //     body,
+  //     binaryBody,
+  //     skipContentLengthHeader,
+  //   });
+  // }
 }
 
 export default ConnectionSocket;

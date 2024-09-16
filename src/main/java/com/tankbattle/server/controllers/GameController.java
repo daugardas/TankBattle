@@ -57,7 +57,7 @@ public class GameController {
         int x = random.nextInt(0, 200);
         int y = random.nextInt(0, 200);
 
-        Player newPlayer = new Player(UUID.randomUUID().toString(), player.getUsername(), x, y);
+        Player newPlayer = new Player(headerAccessor.getSessionId(), player.getUsername(), x, y);
         players.add(newPlayer);
 
         sessionIdToPlayerUuid.put(headerAccessor.getSessionId(), newPlayer.getUuid());
