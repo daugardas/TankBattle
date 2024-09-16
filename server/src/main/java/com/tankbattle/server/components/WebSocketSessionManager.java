@@ -1,15 +1,14 @@
 package com.tankbattle.server.components;
 
+import java.util.ArrayList;
 import org.springframework.stereotype.Component;
-
-import java.util.concurrent.ConcurrentHashMap;
 
 @Component
 public class WebSocketSessionManager {
-    private final ConcurrentHashMap<String, String> activeSessions = new ConcurrentHashMap<>();
+    private final ArrayList<String> activeSessions = new ArrayList<>();
 
-    public void addSession(String sessionId, String username){
-        activeSessions.put(sessionId, username);
+    public void addSession(String sessionId){
+        activeSessions.add(sessionId);
     }
 
     public void removeSession(String sessionId){
@@ -17,10 +16,6 @@ public class WebSocketSessionManager {
     }
 
     public boolean isSessionActive(String sessionId){
-        return activeSessions.containsKey(sessionId);
-    }
-
-    public String getUsername(String sessionId){
-        return activeSessions.get(sessionId);
+        return activeSessions.contains(sessionId);
     }
 }

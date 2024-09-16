@@ -8,16 +8,11 @@ import {
   StompSubscription,
 } from "@stomp/stompjs";
 import {
-  PlayerSessionIdEndpoint,
   ServerWebsocketEndpointURL,
-} from "./constants.ts";
+} from "../utils/constants.ts";
 
-class ConnectionSocket {
+export default class ServerController {
   private client: Client;
-  private stompSubscriptions: StompSubscription[] = [];
-  private connected: boolean = false;
-  private sessionId: string | undefined;
-  private sessionIdSubscription: StompSubscription | undefined;
   private onConnectCallback: frameCallbackType | undefined;
   private onDisconnectCallback: frameCallbackType | undefined;
 
@@ -28,9 +23,13 @@ class ConnectionSocket {
   ) {
     this.client = new Client({
       brokerURL: url,
-      // debug: function (str) {
-      //   console.debug(str);
-      // },
+      connectHeaders: {
+        // Su STOMP connect frame'u issiunciam username'a
+        login: "",
+      },
+      //debug: function(str) {
+      //  console.debug(str);
+      //},
     });
 
     this.onConnect = this.onConnect.bind(this);
@@ -47,27 +46,12 @@ class ConnectionSocket {
   }
 
   private onDisconnect(frame: IFrame) {
-    // this.connected = false;
-
     if (this.onDisconnectCallback) {
       this.onDisconnectCallback(frame);
     }
   }
 
   private onConnect(frame: IFrame) {
-
-    this.sessionIdSubscription = this.client.subscribe(
-      PlayerSessionIdEndpoint,
-      (message) => {
-        this.sessionId = message.body as string;
-
-        if (this.sessionIdSubscription) {
-          this.sessionIdSubscription.unsubscribe();
-          this.sessionIdSubscription = undefined;
-        }
-      }
-    );
-
     if (this.onConnectCallback) {
       this.onConnectCallback(frame);
     }
@@ -83,14 +67,24 @@ class ConnectionSocket {
     console.log("Websocket error:", frame);
   }
 
-  public connectToServer() {
-    console.log(this);
+  public connect() {
+    const inputFieldValue = (document.getElementById("username") as HTMLInputElement).value;
+    if (!inputFieldValue) {
+      const randomNumber = Math.floor(Math.random() * (100 - 1 + 1) + 1);
+      window.username = "Guest" + randomNumber;
+    } else {
+      window.username = inputFieldValue;
+    }
+
+    this.client.connectHeaders = {
+      login: window.username,
+    }
+
     this.client.activate();
   }
 
-  public async disconnectFromServer() {
+  public async disconnect() {
     await this.client.deactivate();
-    this.connected = false;
   }
 
   public subscribe(
@@ -99,41 +93,10 @@ class ConnectionSocket {
     headers?: StompHeaders
   ): StompSubscription {
     const subscription = this.client.subscribe(endpoint, callback, headers);
-    this.stompSubscriptions.push(subscription);
     return subscription;
   }
 
   public sendMessage(params: IPublishParams) {
     this.client.publish(params);
   }
-
-  public getConnectionStatus() {
-    return this.connected;
-  }
-
-  public getSessionId() {
-    return this.sessionId;
-  }
-
-  public setSessionId(sessionId: string) {
-    this.sessionId = sessionId;
-  }
-
-  // public sendMessage(
-  //   destination: string,
-  //   body?: string,
-  //   headers?: StompHeaders,
-  //   binaryBody?: Uint8Array,
-  //   skipContentLengthHeader?: boolean
-  // ) {
-  //   this.client.publish({
-  //     destination,
-  //     headers,
-  //     body,
-  //     binaryBody,
-  //     skipContentLengthHeader,
-  //   });
-  // }
 }
-
-export default ConnectionSocket;

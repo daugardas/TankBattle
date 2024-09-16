@@ -1,26 +1,23 @@
-export class Coordinate {
-  public x: number;
-  public y: number;
+import Vector2 from "../utils/Vector2";
 
-  constructor(x: number = 0, y: number = 0) {
-    this.x = x;
-    this.y = y;
-  }
+export interface ServerPlayer {
+  username: string,
+  location: Vector2
 }
 
 export abstract class AbstractEntity {
-  public loc: Coordinate;
-  public speed: Coordinate;
-  public size: Coordinate;
+  public location: Vector2;
+  public speed: Vector2;
+  public size: Vector2;
   public color: string;
 
   constructor(
-    loc: Coordinate,
-    speed: Coordinate,
-    size: Coordinate,
+    location: Vector2,
+    speed: Vector2,
+    size: Vector2,
     color: string
   ) {
-    this.loc = loc;
+    this.location = location;
     this.speed = speed;
     this.size = size;
     this.color = color;
@@ -30,24 +27,21 @@ export abstract class AbstractEntity {
 }
 
 export abstract class AbstractPlayer extends AbstractEntity {
-  public uuid: string;
   public username: string;
 
   constructor(
-    uuid: string,
     username: string,
-    loc?: Coordinate,
-    speed?: Coordinate,
-    size?: Coordinate,
+    location?: Vector2,
+    speed?: Vector2,
+    size?: Vector2,
     color?: string
   ) {
     super(
-      loc || new Coordinate(0, 0),
-      speed || new Coordinate(1, 1),
-      size || new Coordinate(20, 20),
+      location || new Vector2(0, 0),
+      speed || new Vector2(1, 1),
+      size || new Vector2(20, 20),
       color || "red"
     );
-    this.uuid = uuid;
     this.username = username;
   }
 
@@ -58,21 +52,20 @@ export abstract class AbstractPlayer extends AbstractEntity {
 
 export class Player extends AbstractPlayer {
   constructor(
-    uuid: string,
     username: string,
-    loc?: Coordinate,
-    speed?: Coordinate,
-    size?: Coordinate,
+    location?: Vector2,
+    speed?: Vector2,
+    size?: Vector2,
     color?: string
   ) {
-    super(uuid, username, loc, speed, size, color);
+    super(username, location, speed, size, color);
   }
 
   public draw(ctx: CanvasRenderingContext2D) {
     ctx.fillStyle = this.color;
     ctx.fillRect(
-      this.loc.x - this.size.x / 2,
-      this.loc.y - this.size.y / 2,
+      this.location.x - this.size.x / 2,
+      this.location.y - this.size.y / 2,
       this.size.x,
       this.size.y
     );
@@ -84,9 +77,8 @@ export class Player extends AbstractPlayer {
 
   public convertToJSON() {
     return JSON.stringify({
-      uuid: this.uuid,
       username: this.username,
-      coord: this.loc,
+      location: this.location,
     });
   }
 }
@@ -97,14 +89,13 @@ export class CurrentPlayer extends Player {
   private keysHeldDownMap: Map<string, boolean> = new Map();
 
   constructor(
-    uuid: string,
     username: string,
-    loc?: Coordinate,
-    speed?: Coordinate,
-    size?: Coordinate,
+    location?: Vector2,
+    speed?: Vector2,
+    size?: Vector2,
     color?: string
   ) {
-    super(uuid, username, loc, speed, size, color || "blue");
+    super(username, location, speed, size, color || "blue");
 
     this.keysHeldDownMap
       .set("a", false)
@@ -156,7 +147,7 @@ export class CurrentPlayer extends Player {
   }
 
   public update() {
-    this.loc.x += this.movementBuffer[0] * this.speed.x;
-    this.loc.y += this.movementBuffer[1] * this.speed.y;
+    this.location.x += this.movementBuffer[0] * this.speed.x;
+    this.location.y += this.movementBuffer[1] * this.speed.y;
   }
 }

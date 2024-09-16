@@ -1,6 +1,6 @@
 import "./style.css";
 
-import Game from "./Game.ts";
+import Game from "./controllers/GameController.ts";
 
 let game: Game = new Game();
 
