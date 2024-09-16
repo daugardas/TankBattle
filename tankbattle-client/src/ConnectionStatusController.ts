@@ -12,6 +12,8 @@ export default class ConnectionStatusController {
   constructor(connectToServer: () => void, disconnectFromServer: () => void) {
     this.connectButtonEl.addEventListener("click", connectToServer);
     this.disconnectButtonEl.addEventListener("click", disconnectFromServer);
+
+    this.refreshConnectionStatus(false);
   }
 
   public refreshConnectionStatus(connectionStatus: boolean) {

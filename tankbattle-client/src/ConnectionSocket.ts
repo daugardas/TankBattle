@@ -28,9 +28,9 @@ class ConnectionSocket {
   ) {
     this.client = new Client({
       brokerURL: url,
-      debug: function (str) {
-        console.debug(str);
-      },
+      // debug: function (str) {
+      //   console.debug(str);
+      // },
     });
 
     this.onConnect = this.onConnect.bind(this);
@@ -55,9 +55,6 @@ class ConnectionSocket {
   }
 
   private onConnect(frame: IFrame) {
-    // this.connected = true;
-
-    console.log("server", this);
 
     this.sessionIdSubscription = this.client.subscribe(
       PlayerSessionIdEndpoint,

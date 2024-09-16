@@ -18,8 +18,8 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
     @Override
     public void registerStompEndpoints(StompEndpointRegistry config) {
-        config.addEndpoint("/game").setAllowedOrigins("http://localhost:8080", "http://localhost:5173").setHandshakeHandler(new UserHandshakeHandler()); // client will send messages to this path
-        config.addEndpoint("/game").setAllowedOrigins("http://localhost:8080", "http://localhost:5173").setHandshakeHandler(new UserHandshakeHandler()).withSockJS(); // client will fallback to html REST, if websockets fail
+        config.addEndpoint("/game").setAllowedOriginPatterns("*").setHandshakeHandler(new UserHandshakeHandler()); // client will send messages to this path
+        config.addEndpoint("/game").setAllowedOriginPatterns("*").setHandshakeHandler(new UserHandshakeHandler()).withSockJS(); // client will fallback to html REST, if websockets fail
 
 
     }

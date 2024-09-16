@@ -24,6 +24,6 @@ class StompPrincipal implements Principal {
 public class UserHandshakeHandler extends DefaultHandshakeHandler {
     @Override
     protected Principal determineUser(ServerHttpRequest request, WebSocketHandler wsHandler, Map<String, Object> attributes){
-        return new StompPrincipal(UUID.randomUUID().toString());
+        return new StompPrincipal(UUID.randomUUID().toString().substring(0, 8));
     }
 }

@@ -1,6 +1,12 @@
 import { Coordinate, CurrentPlayer, Player } from "./Player.ts";
 import ConnectionSocket from "./ConnectionSocket.ts";
-import { NewPlayerEndpoint, ServerWebsocketEndpointURL } from "./constants.ts";
+import {
+  AllPlayersUpdateEndpoint,
+  NewPlayerEndpoint,
+  OtherPlayerDisconnectEndpoint,
+  PlayerDisconnectEndpoint,
+  ServerWebsocketEndpointURL
+} from "./constants.ts";
 import { IFrame, StompSubscription } from "@stomp/stompjs";
 import { CanvasController } from "./CanvasController.ts";
 import ConnectionStatusController from "./ConnectionStatusController.ts";
@@ -16,6 +22,7 @@ export default class Game {
   private allPlayersSubscription: StompSubscription | undefined;
   private currPlayerSubscription: StompSubscription | undefined;
   private newPlayerJoinedSubscription: StompSubscription | undefined;
+  private playerDisconnectedSubscription: StompSubscription | undefined;
 
   constructor() {
     this.server = new ConnectionSocket(
@@ -32,17 +39,18 @@ export default class Game {
   }
 
   private handleConnectedToServer(frame: IFrame) {
-    console.log("sessionId: ", this.server.getSessionId());
     this.connectionStatusController.refreshConnectionStatus(true);
     this.allPlayersSubscription = this.server.subscribe(
-      "/from-client/for-all-clients/players",
+      AllPlayersUpdateEndpoint,
       (message) => {
-        console.log("received players", message.body);
+        // console.log("received players", message.body);
         const receivedPlayers: {
           uuid: string;
           username: string;
-          coordinates: { x: number; y: number };
+          coord: { x: number; y: number };
         }[] = JSON.parse(message.body);
+
+        this.otherPlayers = [];
 
         for (const player of receivedPlayers) {
           if (player.uuid !== this.server.getSessionId()) {
@@ -50,7 +58,7 @@ export default class Game {
               new Player(
                 player.uuid,
                 player.username,
-                new Coordinate(player.coordinates.x, player.coordinates.y)
+                new Coordinate(player.coord.x, player.coord.y)
               )
             );
           }
@@ -61,23 +69,23 @@ export default class Game {
     this.currPlayerSubscription = this.server.subscribe(
       "/user/for-specific-client/player",
       (message) => {
-        console.log("received player: ", message.body);
+        // console.log("received player: ", message.body);
         const receivedPlayer: {
           uuid: string;
           username: string;
-          coordinates: { x: number; y: number };
+          coord: { x: number; y: number };
         } = JSON.parse(message.body);
 
         this.server.setSessionId(receivedPlayer.uuid);
 
         if (receivedPlayer.uuid === this.server.getSessionId()) {
-          console.log("setting current player");
+
           this.currPlayer = new CurrentPlayer(
             receivedPlayer.uuid,
             receivedPlayer.username,
             new Coordinate(
-              receivedPlayer.coordinates.x,
-              receivedPlayer.coordinates.y
+              receivedPlayer.coord.x,
+              receivedPlayer.coord.y
             )
           );
         }
@@ -87,12 +95,12 @@ export default class Game {
     this.newPlayerJoinedSubscription = this.server.subscribe(
       NewPlayerEndpoint,
       (message) => {
-        console.log("new player joining: ", message.body);
+        // console.log("new player joining: ", message.body);
 
         const newPlayer: {
           uuid: string;
           username: string;
-          coordinates: { x: number; y: number };
+          coord: { x: number; y: number };
         } = JSON.parse(message.body);
 
         if (newPlayer.uuid !== this.server.getSessionId()) {
@@ -100,12 +108,19 @@ export default class Game {
             new Player(
               newPlayer.uuid,
               newPlayer.username,
-              new Coordinate(newPlayer.coordinates.x, newPlayer.coordinates.y)
+              new Coordinate(newPlayer.coord.x, newPlayer.coord.y)
             )
           );
         }
       }
     );
+
+    this.playerDisconnectedSubscription = this.server.subscribe(OtherPlayerDisconnectEndpoint, (message)=>{
+      const otherPlayerUuid = message.body as string;
+      this.otherPlayers = this.otherPlayers.filter((p) => p.uuid !== otherPlayerUuid);
+
+
+    })
 
     this.server.sendMessage({
       destination: "/from-client/create-new-player",
@@ -121,9 +136,22 @@ export default class Game {
     this.currPlayerSubscription = undefined;
     this.newPlayerJoinedSubscription?.unsubscribe();
     this.newPlayerJoinedSubscription = undefined;
+    this.playerDisconnectedSubscription?.unsubscribe();
+    this.playerDisconnectedSubscription = undefined;
 
     this.otherPlayers = [];
     this.currPlayer = undefined;
+  }
+
+  private sendCurrentPlayerToServer(){
+    if(this.currPlayer){
+      const sendingPlayerBody = this.currPlayer.convertToJSON();
+      // console.log("sending current player to server:", sendingPlayerBody);
+      this.server.sendMessage({
+        destination: "/from-client/update-player",
+        body: sendingPlayerBody
+      });
+    }
   }
 
   private drawPlayer(player: Player, ctx: CanvasRenderingContext2D) {
@@ -138,7 +166,7 @@ export default class Game {
 
   private draw(ctx: CanvasRenderingContext2D) {
     ctx.reset();
-
+    this.sendCurrentPlayerToServer();
     if (this.currPlayer) {
       this.drawPlayer(this.currPlayer, ctx);
       this.currPlayer.update();
@@ -148,6 +176,8 @@ export default class Game {
       this.drawPlayer(this.otherPlayers[i], ctx);
       this.otherPlayers[i].update();
     }
+
+
   }
 
   public startGame() {

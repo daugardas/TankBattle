@@ -1,8 +1,9 @@
-export const ServerWebsocketEndpointURL = "ws://localhost:8080/game";
+export const ServerWebsocketEndpointURL = `ws://${import.meta.env.VITE_SERVER_IP}:8080/game`;
 export const ForAllClientsEndpoint = "/for-all-clients"
 export const ForCurrentClientEndpoint = "/from-client";
 export const PlayerSyncFromEndpoint = "/from-client";
 export const PlayerSessionIdEndpoint = `${PlayerSyncFromEndpoint}/session-id`;
 export const PlayerConnectEndpoint = `${PlayerSyncFromEndpoint}/connect`;
-export const PlayerDisconnectEndpoint = `${PlayerSyncFromEndpoint}/disconnect`;
+export const OtherPlayerDisconnectEndpoint = `${ForAllClientsEndpoint}/player-disconnected`;
 export const NewPlayerEndpoint = `${ForAllClientsEndpoint}/new-player`;
+export const AllPlayersUpdateEndpoint = `${ForAllClientsEndpoint}/players`;

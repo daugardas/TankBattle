@@ -106,8 +106,6 @@ export class CurrentPlayer extends Player {
   ) {
     super(uuid, username, loc, speed, size, color || "blue");
 
-    console.log("speed", this.speed);
-
     this.keysHeldDownMap
       .set("a", false)
       .set("d", false)

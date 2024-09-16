@@ -41,13 +41,12 @@ public class Player {
         this.uuid = uuid;
     }
 
-    public Coordinate getCoordinates() {
+    public Coordinate getCoord() {
         return this.coord;
     }
 
-    public void setCoordinates(int x, int y) {
-        this.coord.x = x;
-        this.coord.y = y;
+    public void setCoord(Coordinate coord) {
+        this.coord = coord;
     }
 
     public String getUsername() {
@@ -59,7 +58,7 @@ public class Player {
     }
 
     public String toString() {
-        return String.format("{uuid: '%s', username: '%s', coords: { x: %d, y: %d } }", this.uuid, this.username, this.coord.x, this.coord.y);
+        return String.format("{uuid: '%s', username: '%s', coord: { x: %d, y: %d } }", this.uuid, this.username, this.coord.x, this.coord.y);
     }
 
     @Override
