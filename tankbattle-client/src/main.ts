@@ -1,6 +1,7 @@
 import "./style.css";
 import ConnectionSocket from "./ConnectionSocket.ts";
 import {
+  ForCurrentClientEndpoint, NewPlayerEndpoint,
   PlayerConnectEndpoint,
   PlayerDisconnectEndpoint,
   ServerWebsocketEndpointURL,
@@ -89,7 +90,24 @@ function successfullyConnected() {
     id: 0, username: "hello world", coord: { x: 0, y: 0 }
   }
 
-  socket.sendMessage(PlayerConnectEndpoint, undefined, JSON.stringify(player));
+  // socket.sendMessage(PlayerConnectEndpoint, undefined, JSON.stringify(player));
+  // socket.subscribe(`${ForCurrentClientEndpoint}/player`, (message) => {
+  //   console.log("for current client player: ", message.body);
+  // })
+
+  socket.subscribe("/from-client/for-all-clients/players", (message) => {
+    console.log("received players", message.body);
+  })
+
+  socket.subscribe("/user/for-specific-client/player", (message) => {
+    console.log("received player: ", message.body);
+  })
+
+  socket.subscribe(NewPlayerEndpoint, (message) => {
+    console.log("new player joining: ", message.body);
+  })
+
+  socket.sendMessage("/from-client/create-new-player", undefined, JSON.stringify(player));
 }
 
 let socket: ConnectionSocket = new ConnectionSocket(

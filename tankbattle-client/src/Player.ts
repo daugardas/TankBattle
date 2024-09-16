@@ -1,8 +1,6 @@
 import Tank from "./models/Tank.ts";
 
 export default class Player {
-  // private
-
 
   constructor() {
     this.tank = new Tank();

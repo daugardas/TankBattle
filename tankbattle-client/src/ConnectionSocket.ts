@@ -6,7 +6,7 @@ import {
   StompHeaders,
   StompSubscription,
 } from "@stomp/stompjs";
-import { ServerWebsocketEndpointURL } from "./constants.ts";
+import {PlayerSessionIdEndpoint, ServerWebsocketEndpointURL} from "./constants.ts";
 
 class ConnectionSocket {
   private client: Client;
@@ -17,6 +17,8 @@ class ConnectionSocket {
     headers?: StompHeaders;
   }[] = [];
   private connected: boolean = false;
+  private sessionId: string;
+  private sessionIdSubscription: StompSubscription | null = null;
 
   constructor(
     url: string = ServerWebsocketEndpointURL,
@@ -37,8 +39,18 @@ class ConnectionSocket {
     });
 
     this.client.onConnect = (frame) => {
-      console.log("connected to server:", frame);
+      // console.log("connected to server:", frame);
       this.connected = true;
+
+      this.sessionIdSubscription = this.client.subscribe(PlayerSessionIdEndpoint, (message) => {
+        // console.log("sessionId", message.body);
+        this.sessionId = message.body;
+
+        if(this.sessionIdSubscription){
+          this.sessionIdSubscription.unsubscribe();
+          this.sessionIdSubscription = null;
+        }
+      })
 
       for (const sub of this.subscribeWhenConnected) {
         this.subscribe(sub.endpoint, sub.callback, sub.headers);

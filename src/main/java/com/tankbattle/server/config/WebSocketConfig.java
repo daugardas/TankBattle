@@ -11,13 +11,16 @@ import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerCo
 public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     @Override
     public void configureMessageBroker(MessageBrokerRegistry registry) {
-        registry.enableSimpleBroker("/syncfrom"); // server sends messages to clients subscribing messages on this path
-        registry.setApplicationDestinationPrefixes("/syncto"); // server creates endpoints in this path for clients to send messages to
+        registry.enableSimpleBroker("/for-all-clients", "/for-specific-client"); // server sends messages to clients subscribing messages on this path
+        registry.setApplicationDestinationPrefixes("/from-client"); // server creates endpoints in this path for clients to send messages to
+        registry.setUserDestinationPrefix("/user"); // clients can listen to endpoints here meant only for them
     }
 
     @Override
     public void registerStompEndpoints(StompEndpointRegistry config) {
-        config.addEndpoint("/game").setAllowedOrigins("http://localhost:8080", "http://localhost:5173"); // client will send messages to this path
-        config.addEndpoint("/game").setAllowedOrigins("http://localhost:8080", "http://localhost:5173").withSockJS(); // client will fallback to html REST, if websockets fail
+        config.addEndpoint("/game").setAllowedOrigins("http://localhost:8080", "http://localhost:5173").setHandshakeHandler(new UserHandshakeHandler()); // client will send messages to this path
+        config.addEndpoint("/game").setAllowedOrigins("http://localhost:8080", "http://localhost:5173").setHandshakeHandler(new UserHandshakeHandler()).withSockJS(); // client will fallback to html REST, if websockets fail
+
+
     }
 }
