@@ -1,8 +1,8 @@
 import Vector2 from "../utils/Vector2";
 
 export interface ServerPlayer {
-  username: string,
-  location: Vector2
+  username: string;
+  location: Vector2;
 }
 
 export abstract class AbstractEntity {
@@ -11,12 +11,7 @@ export abstract class AbstractEntity {
   public size: Vector2;
   public color: string;
 
-  constructor(
-    location: Vector2,
-    speed: Vector2,
-    size: Vector2,
-    color: string
-  ) {
+  constructor(location: Vector2, speed: Vector2, size: Vector2, color: string) {
     this.location = location;
     this.speed = speed;
     this.size = size;
@@ -69,6 +64,14 @@ export class Player extends AbstractPlayer {
       this.size.x,
       this.size.y
     );
+
+    ctx.textAlign = "center";
+    ctx.fillStyle = "black";
+    ctx.fillText(
+      this.username,
+      this.location.x,
+      this.location.y - this.size.y / 2 - 5
+    );
   }
 
   public update() {
@@ -85,6 +88,7 @@ export class Player extends AbstractPlayer {
 export class CurrentPlayer extends Player {
   // Player movement direction. X -> [0], Y -> [1]
   public movementBuffer: number[] = [0, 0];
+  private diagonalModifier: number = 1;
 
   private keysHeldDownMap: Map<string, boolean> = new Map();
 
@@ -146,8 +150,20 @@ export class CurrentPlayer extends Player {
     });
   }
 
+  private checkIfMovingDiagonally() {
+    return this.movementBuffer[0] !== 0 && this.movementBuffer[1] !== 0;
+  }
+
   public update() {
-    this.location.x += this.movementBuffer[0] * this.speed.x;
-    this.location.y += this.movementBuffer[1] * this.speed.y;
+    if (this.checkIfMovingDiagonally()) {
+      this.diagonalModifier = Math.sqrt(2) / 2;
+    } else {
+      this.diagonalModifier = 1;
+    }
+
+    this.location.x +=
+      this.movementBuffer[0] * this.speed.x * this.diagonalModifier;
+    this.location.y +=
+      this.movementBuffer[1] * this.speed.y * this.diagonalModifier;
   }
 }
