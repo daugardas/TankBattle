@@ -44,7 +44,7 @@ public class GameController {
         this.players.get(playerIndex).setLocation(player.getLocation());
     }
 
-    @Scheduled(fixedRate = 33)
+    @Scheduled(fixedRate = 1000)
     public void sendPlayers(){
         messagingTemplate.convertAndSend("/server/players", this.players);
     }

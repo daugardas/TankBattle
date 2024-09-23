@@ -1,5 +1,5 @@
-package com.tankbattle.server.models;
-import com.tankbattle.server.utils.*;
+package com.tankbattle.models;
+import com.tankbattle.utils.Vector2;
 
 import java.util.Objects;
 
@@ -26,10 +26,6 @@ public class Player {
 
     public String getSessionId() {
         return this.sessionId;
-    }
-
-    public void setSessionId(String sessionId) {
-        this.sessionId = sessionId;
     }
 
     public Vector2 getLocation() {
@@ -65,3 +61,4 @@ public class Player {
         return Objects.hash(username);
     }
 }
+
