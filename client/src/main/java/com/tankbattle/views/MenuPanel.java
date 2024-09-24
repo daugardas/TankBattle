@@ -60,7 +60,7 @@ public class MenuPanel extends JPanel {
                 String url = hostnameTextField.getText();
                 String username = usernameTextField.getText();
                 GameManager.getInstance().connectToServer(url, username);
-                setVisible(false);
+                GameManager.getInstance().startGame();
             }
         });
 

@@ -16,7 +16,6 @@ public class WebSocketManager {
     private GameSessionHandler sessionHandler;
 
     public WebSocketManager() {
-
         webSocketClient = new StandardWebSocketClient();
         stompClient = new WebSocketStompClient(webSocketClient);
         stompClient.setMessageConverter(new MappingJackson2MessageConverter());
@@ -26,13 +25,13 @@ public class WebSocketManager {
 
     public void connect(String hostname, String username) {
         StompHeaders connectHeaders = new StompHeaders();
-        if (username.length() == 0) {
-            username = String.format("Guest%d", GameManager.getInstance().playerCount + 1);
-        }
-
         connectHeaders.add("login", username);
 
         String url = String.format("ws://%s:8080/game", hostname);
         stompClient.connectAsync(url, (WebSocketHttpHeaders) null, connectHeaders, sessionHandler);
+    }
+
+    public void sendMovementBuffer(int[] movementBuffer) {
+        sessionHandler.stompSession.send("/client/update-player-movement", movementBuffer);
     }
 }

@@ -2,31 +2,26 @@ package com.tankbattle.models;
 
 import com.tankbattle.utils.Vector2;
 
+import java.awt.Color;
+import java.awt.Graphics;
 import java.util.Objects;
 
-public class Player {
-    private String sessionId;
-    private String username;
-    private Vector2 location;
+public class Player extends Entity {
+    protected String username;
+    protected int size = 30;
 
     public Player() {
         this.location = new Vector2(0, 0);
     }
 
-    public Player(String sessionId, String username) {
-        this.sessionId = sessionId;
+    public Player(String username) {
         this.username = username;
         this.location = new Vector2(0, 0);
     }
 
-    public Player(String sessionId, String username, int x, int y) {
-        this.sessionId = sessionId;
+    public Player(String username, Vector2 location) {
         this.username = username;
-        this.location = new Vector2(x, y);
-    }
-
-    public String getSessionId() {
-        return this.sessionId;
+        this.location = location;
     }
 
     public Vector2 getLocation() {
@@ -46,13 +41,22 @@ public class Player {
     }
 
     public String toString() {
-        return String.format("{ sessionId: '%s', username: '%s', location: { x: %d, y: %d } }", this.sessionId, this.username, this.location.x, this.location.y);
+        return String.format("{ username: '%s', location: { x: %d, y: %d } }", this.username, this.location.x,
+                this.location.y);
     }
+
+    public void draw(Graphics g) {
+        g.setColor(Color.GREEN);
+        g.fillRect(location.x, location.y, size, size);
+    }
+
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
         Player player = (Player) o;
         return username.equals(player.username);
     }
@@ -62,4 +66,3 @@ public class Player {
         return Objects.hash(username);
     }
 }
-

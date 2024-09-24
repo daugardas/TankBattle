@@ -11,10 +11,12 @@ enum Color {
 }
 
 public class GameWindow extends JFrame {
-    JPanel mainMenuPanel;
+    private JPanel mainMenuPanel;
+    private JPanel gamePanel;
 
     public GameWindow() {
         super("Tank Battle");
+
         setSize(800, 800);
         setResizable(false);
 
@@ -24,4 +26,21 @@ public class GameWindow extends JFrame {
 
         setVisible(true);
     }
+
+    public void initializeGameScreen() {
+        remove(mainMenuPanel);
+
+        gamePanel = new GamePanel();
+
+        add(gamePanel);
+
+        revalidate();
+        repaint();
+    }
+
+    public JPanel getGamePanel() {
+        return gamePanel;
+    }
+
+
 }

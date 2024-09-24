@@ -36,13 +36,18 @@ public class Vector2 {
     // Normalize the vector
     public Vector2 normalize() {
         int mag = magnitude();
-        if (mag == 0) return new Vector2(0, 0);
+        if (mag == 0)
+            return new Vector2(0, 0);
         return new Vector2(this.x / mag, this.y / mag);
     }
 
     // Dot product
     public float dot(Vector2 v) {
         return this.x * v.x + this.y * v.y;
+    }
+
+    public String toString() {
+        return String.format("{ x: %d, y: %d }", this.x, this.y);
     }
 
     // Other useful methods like cross product, rotate, etc., can be added here.

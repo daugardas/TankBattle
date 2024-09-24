@@ -12,21 +12,23 @@ import com.tankbattle.controllers.GameManager;
 import com.tankbattle.models.Player;
 
 public class GameSessionHandler extends StompSessionHandlerAdapter {
+    public StompSession stompSession;
 
     @Override
     public void afterConnected(StompSession session, StompHeaders connectedHeaders) {
+        stompSession = session;
+
         session.subscribe("/server/players", new StompFrameHandler() {
 
             @Override
             public Type getPayloadType(StompHeaders headers) {
-                return Player[].class;
+                return Object[].class;
             }
 
             @Override
             public void handleFrame(StompHeaders stompHeaders, Object o) {
-                Player[] players = (Player[]) o;
 
-                GameManager.getInstance().addPlayers(players);
+                GameManager.getInstance().addPlayers((Object[]) o);
 
             }
 
