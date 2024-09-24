@@ -1,4 +1,5 @@
 package com.tankbattle.models;
+
 import com.tankbattle.utils.Vector2;
 
 import java.util.Objects;
