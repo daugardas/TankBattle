@@ -1,11 +1,13 @@
 package com.tankbattle.controllers;
 
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Vector;
+
+import javax.swing.Timer;
 
 import com.tankbattle.models.CurrentPlayer;
 import com.tankbattle.models.Player;
@@ -15,7 +17,6 @@ import com.tankbattle.views.GameWindow;
 public class GameManager {
 
     private WebSocketManager webSocketManager;
-    private GameWindow gameWindow;
     private HashMap<String, Player> players;
     private CurrentPlayer currentPlayer;
     public int playerCount = 0;
@@ -31,9 +32,32 @@ public class GameManager {
         return INSTANCE;
     }
 
-    public void connectToServer(String hostname, String username) {
-        if (username.length() == 0) {
-            username = String.format("Guest%d", GameManager.getInstance().playerCount + 1);
+    public ArrayList<Player> getAllPlayers() {
+        ArrayList<Player> allPlayers = new ArrayList<>(this.players.values());
+        allPlayers.add(currentPlayer);
+
+        return allPlayers;
+    }
+
+    public void initialize() {
+        GameWindow.getInstance().setVisible(true);
+    }
+
+    public void startGame(String url, String username) {
+        connectToServer(url, username);
+        GameWindow.getInstance().initializeGameScreen();
+
+        Timer timer = new Timer(33, e -> this.update());
+        timer.start();
+    }
+
+    private void connectToServer(String hostname, String username) {
+        try {
+            if (username.length() == 0) {
+                username = InetAddress.getLocalHost().getHostName();
+            }
+        } catch (UnknownHostException e) {
+            System.out.println(e.getMessage());
         }
 
         webSocketManager.connect(hostname, username);
@@ -65,27 +89,17 @@ public class GameManager {
         }
     }
 
-    public ArrayList<Player> getAllPlayers() {
-        ArrayList<Player> allPlayers = new ArrayList<>(this.players.values());
-        allPlayers.add(currentPlayer);
+    public void update() {
+        GameWindow.getInstance().getGamePanel().repaint();
+        int[] movementBuffer = currentPlayer.getMovementBuffer();
 
-        return allPlayers;
-
+        if (movementBuffer[0] != 0 || movementBuffer[1] != 0) {
+            webSocketManager.sendMovementBuffer(movementBuffer);
+        }
     }
 
     public void sendMovementBuffer(int[] movementBuffer) {
         webSocketManager.sendMovementBuffer(movementBuffer);
     }
 
-    public GameWindow getGameWindow() {
-        return gameWindow;
-    }
-
-    public void addGameWindow(GameWindow gameWindow) {
-        this.gameWindow = gameWindow;
-    }
-
-    public void startGame() {
-        gameWindow.initializeGameScreen();
-    }
 }

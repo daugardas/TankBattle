@@ -9,7 +9,6 @@ import org.springframework.messaging.simp.stomp.StompSession;
 import org.springframework.messaging.simp.stomp.StompSessionHandlerAdapter;
 
 import com.tankbattle.controllers.GameManager;
-import com.tankbattle.models.Player;
 
 public class GameSessionHandler extends StompSessionHandlerAdapter {
     public StompSession stompSession;

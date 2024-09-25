@@ -25,10 +25,10 @@ public class MenuPanel extends JPanel {
     public MenuPanel() {
         setLayout(new GridBagLayout());
 
-        JPanel temp = new JPanel();
-        BoxLayout boxLayout = new BoxLayout(temp, BoxLayout.Y_AXIS);
-        temp.setLayout(boxLayout);
-        temp.setBackground(new Color(255, 255, 255, 180));
+        JPanel parentPanel = new JPanel();
+        BoxLayout boxLayout = new BoxLayout(parentPanel, BoxLayout.Y_AXIS);
+        parentPanel.setLayout(boxLayout);
+        parentPanel.setBackground(new Color(255, 255, 255, 180));
 
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.gridx = 0;
@@ -54,23 +54,23 @@ public class MenuPanel extends JPanel {
         JPanel connectPanel = new JPanel();
         connectPanel.setOpaque(false);
         JButton connectButton = new JButton("Connect");
+
         connectButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent arg0) {
                 String url = hostnameTextField.getText();
                 String username = usernameTextField.getText();
-                GameManager.getInstance().connectToServer(url, username);
-                GameManager.getInstance().startGame();
+                GameManager.getInstance().startGame(url, username);
             }
         });
 
         connectPanel.add(connectButton);
 
-        temp.add(hostnamePanel);
-        temp.add(usernamePanel);
-        temp.add(connectPanel);
+        parentPanel.add(hostnamePanel);
+        parentPanel.add(usernamePanel);
+        parentPanel.add(connectPanel);
 
-        add(temp, gbc);
+        add(parentPanel, gbc);
 
         try {
             backgroundImage = ImageIO.read(new File("src/main/java/com/tankbattle/assets/images/background.png"));

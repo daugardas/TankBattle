@@ -6,6 +6,7 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 
 import com.tankbattle.controllers.GameManager;
+import com.tankbattle.views.GameWindow;
 
 public class CurrentPlayer extends Player implements KeyListener {
     private int[] movementBuffer;
@@ -13,13 +14,17 @@ public class CurrentPlayer extends Player implements KeyListener {
     public CurrentPlayer() {
         super();
         movementBuffer = new int[2];
-        GameManager.getInstance().getGameWindow().addKeyListener(this);
+        GameWindow.getInstance().getGamePanel().addKeyListener(this);
     }
 
     public CurrentPlayer(String username) {
         super(username);
         movementBuffer = new int[2];
-        GameManager.getInstance().getGameWindow().addKeyListener(this);
+        GameWindow.getInstance().getGamePanel().addKeyListener(this);
+    }
+
+    public int[] getMovementBuffer() {
+        return movementBuffer;
     }
 
     @Override

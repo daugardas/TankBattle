@@ -12,15 +12,14 @@ import javax.swing.JPanel;
 public class GamePanel extends JPanel {
     public GamePanel() {
         setLayout(null);
-        Timer timer = new Timer(16, e -> this.repaint());
-        timer.start();
+        setFocusable(true);
+        requestFocusInWindow();
     }
 
     @Override
     protected void paintComponent(Graphics g) {
         ArrayList<Player> allPlayers = GameManager.getInstance().getAllPlayers();
-        g.setColor(getBackground());
-        g.fillRect(0, 0, getWidth(), getHeight());
+        g.clearRect(0, 0, getWidth(), getHeight());
 
         allPlayers.forEach(player -> player.draw(g));
     }

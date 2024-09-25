@@ -1,5 +1,8 @@
 package com.tankbattle.controllers;
 
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+
 import org.springframework.messaging.converter.MappingJackson2MessageConverter;
 import org.springframework.messaging.simp.stomp.StompHeaders;
 import org.springframework.web.socket.WebSocketHttpHeaders;
@@ -23,12 +26,14 @@ public class WebSocketManager {
         sessionHandler = new GameSessionHandler();
     }
 
-    public void connect(String hostname, String username) {
+    public String connect(String hostname, String username) {
         StompHeaders connectHeaders = new StompHeaders();
         connectHeaders.add("login", username);
 
         String url = String.format("ws://%s:8080/game", hostname);
         stompClient.connectAsync(url, (WebSocketHttpHeaders) null, connectHeaders, sessionHandler);
+
+        return username;
     }
 
     public void sendMovementBuffer(int[] movementBuffer) {

@@ -3,36 +3,34 @@ package com.tankbattle.views;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 
-enum Color {
-    Red,
-    Blue,
-    Green,
-    Black
-}
-
 public class GameWindow extends JFrame {
     private JPanel mainMenuPanel;
     private JPanel gamePanel;
 
-    public GameWindow() {
+    private GameWindow() {
         super("Tank Battle");
-
         setSize(800, 800);
         setResizable(false);
 
         mainMenuPanel = new MenuPanel();
+        gamePanel = new GamePanel();
 
         add(mainMenuPanel);
 
         setVisible(true);
     }
 
+    private static final GameWindow INSTANCE = new GameWindow();
+
+    public static GameWindow getInstance() {
+        return INSTANCE;
+    }
+
     public void initializeGameScreen() {
         remove(mainMenuPanel);
-
-        gamePanel = new GamePanel();
-
         add(gamePanel);
+
+        gamePanel.requestFocusInWindow();
 
         revalidate();
         repaint();
@@ -41,6 +39,4 @@ public class GameWindow extends JFrame {
     public JPanel getGamePanel() {
         return gamePanel;
     }
-
-
 }
