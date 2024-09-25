@@ -1,16 +1,11 @@
 package com.tankbattle.controllers;
 
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-
 import org.springframework.messaging.converter.MappingJackson2MessageConverter;
 import org.springframework.messaging.simp.stomp.StompHeaders;
 import org.springframework.web.socket.WebSocketHttpHeaders;
 import org.springframework.web.socket.client.WebSocketClient;
 import org.springframework.web.socket.client.standard.StandardWebSocketClient;
 import org.springframework.web.socket.messaging.WebSocketStompClient;
-
-import com.tankbattle.GameSessionHandler;
 
 public class WebSocketManager {
 
@@ -36,7 +31,7 @@ public class WebSocketManager {
         return username;
     }
 
-    public void sendMovementBuffer(int[] movementBuffer) {
+    public void sendMovementDirection(byte movementBuffer) {
         sessionHandler.stompSession.send("/client/update-player-movement", movementBuffer);
     }
 }

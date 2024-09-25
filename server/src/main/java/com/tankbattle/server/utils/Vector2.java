@@ -1,14 +1,14 @@
 package com.tankbattle.server.utils;
 
 public class Vector2 {
-    public int x;
-    public int y;
+    public float x;
+    public float y;
 
     public Vector2() {
         this(0, 0);
     }
 
-    public Vector2(int x, int y) {
+    public Vector2(float x, float y) {
         this.x = x;
         this.y = y;
     }
@@ -24,18 +24,18 @@ public class Vector2 {
     }
 
     // Multiply vector by scalar
-    public Vector2 multiply(int scalar) {
+    public Vector2 multiply(float scalar) {
         return new Vector2(this.x * scalar, this.y * scalar);
     }
 
     // Calculate the magnitude of the vector
-    public int magnitude() {
-        return (int) Math.sqrt(this.x * this.x + this.y * this.y);
+    public float magnitude() {
+        return (float) Math.sqrt(this.x * this.x + this.y * this.y);
     }
 
     // Normalize the vector
     public Vector2 normalize() {
-        int mag = magnitude();
+        float mag = magnitude();
         if (mag == 0)
             return new Vector2(0, 0);
         return new Vector2(this.x / mag, this.y / mag);
@@ -47,7 +47,7 @@ public class Vector2 {
     }
 
     public String toString() {
-        return String.format("{ x: %d, y: %d }", this.x, this.y);
+        return String.format("{ x: %f, y: %f }", this.x, this.y);
     }
 
     // Other useful methods like cross product, rotate, etc., can be added here.

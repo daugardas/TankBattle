@@ -41,15 +41,14 @@ public class Player extends Entity {
     }
 
     public String toString() {
-        return String.format("{ username: '%s', location: { x: %d, y: %d } }", this.username, this.location.x,
-                this.location.y);
+        return String.format("{ username: '%s', location: { x: %d, y: %d } }", this.username, this.location.getX(),
+                this.location.getY());
     }
 
     public void draw(Graphics g) {
         g.setColor(Color.GREEN);
-        g.fillRect(location.x, location.y, size, size);
+        g.fillRect(location.getX(), location.getY(), size, size);
     }
-
 
     @Override
     public boolean equals(Object o) {

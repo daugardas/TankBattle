@@ -4,27 +4,55 @@ import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.util.HashMap;
 
-import com.tankbattle.controllers.GameManager;
 import com.tankbattle.views.GameWindow;
 
 public class CurrentPlayer extends Player implements KeyListener {
-    private int[] movementBuffer;
+    /*
+     * We are going to use a bitmask for the movementBuffer.
+     *
+     * represented as 00000000, we are going to use the lower 4 bits
+     *
+     * fourth bit - up direction (w)
+     * third bit - left direction (a)
+     * second bit - down direction (s)
+     * first bit - right direction (d)
+     */
+    private byte movementDirection;
+    private byte previousDirection;
+    private HashMap<Integer, Boolean> keysPressed;
 
     public CurrentPlayer() {
         super();
-        movementBuffer = new int[2];
+        movementDirection = 0;
+        keysPressed = new HashMap<Integer, Boolean>() {
+            {
+                put(8, false);
+                put(4, false);
+                put(2, false);
+                put(1, false);
+            }
+        };
         GameWindow.getInstance().getGamePanel().addKeyListener(this);
     }
 
     public CurrentPlayer(String username) {
         super(username);
-        movementBuffer = new int[2];
+        movementDirection = 0;
         GameWindow.getInstance().getGamePanel().addKeyListener(this);
     }
 
-    public int[] getMovementBuffer() {
-        return movementBuffer;
+    public byte getMovementDirection() {
+        return movementDirection;
+    }
+
+    public byte getPreviousDirection() {
+        return previousDirection;
+    }
+
+    public void setPreviousDirection(byte previousDirection) {
+        this.previousDirection = previousDirection;
     }
 
     @Override
@@ -32,24 +60,24 @@ public class CurrentPlayer extends Player implements KeyListener {
         switch (key.getKeyCode()) {
             case KeyEvent.VK_W:
             case KeyEvent.VK_UP:
-                movementBuffer[1] = -1;
-                break;
-            case KeyEvent.VK_S:
-            case KeyEvent.VK_DOWN:
-                movementBuffer[1] = 1;
-                break;
-            case KeyEvent.VK_D:
-            case KeyEvent.VK_RIGHT:
-                movementBuffer[0] = 1;
+                previousDirection = movementDirection;
+                movementDirection |= 0b1000;
                 break;
             case KeyEvent.VK_A:
             case KeyEvent.VK_LEFT:
-                movementBuffer[0] = -1;
+                previousDirection = movementDirection;
+                movementDirection |= 0b0100;
                 break;
-        }
-
-        if (movementBuffer[0] != 0 || movementBuffer[1] != 0) {
-            GameManager.getInstance().sendMovementBuffer(movementBuffer);
+            case KeyEvent.VK_S:
+            case KeyEvent.VK_DOWN:
+                previousDirection = movementDirection;
+                movementDirection |= 0b0010;
+                break;
+            case KeyEvent.VK_D:
+            case KeyEvent.VK_RIGHT:
+                previousDirection = movementDirection;
+                movementDirection |= 0b0001;
+                break;
         }
     }
 
@@ -58,19 +86,25 @@ public class CurrentPlayer extends Player implements KeyListener {
         switch (key.getKeyCode()) {
             case KeyEvent.VK_W:
             case KeyEvent.VK_UP:
+                previousDirection = movementDirection;
+                movementDirection &= 0b0111;
+                break;
+            case KeyEvent.VK_A:
+            case KeyEvent.VK_LEFT:
+                previousDirection = movementDirection;
+                movementDirection &= 0b1011;
+                break;
             case KeyEvent.VK_S:
             case KeyEvent.VK_DOWN:
-                movementBuffer[1] = 0;
+                previousDirection = movementDirection;
+                movementDirection &= 0b1101;
                 break;
             case KeyEvent.VK_D:
             case KeyEvent.VK_RIGHT:
-            case KeyEvent.VK_A:
-            case KeyEvent.VK_LEFT:
-                movementBuffer[0] = 0;
+                previousDirection = movementDirection;
+                movementDirection &= 0b1110;
                 break;
         }
-
-        GameManager.getInstance().sendMovementBuffer(movementBuffer);
     }
 
     @Override
@@ -79,6 +113,6 @@ public class CurrentPlayer extends Player implements KeyListener {
 
     public void draw(Graphics g) {
         g.setColor(Color.RED);
-        g.fillRect(location.x, location.y, size, size);
+        g.fillRect(location.getX(), location.getY(), size, size);
     }
 }

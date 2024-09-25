@@ -1,4 +1,4 @@
-package com.tankbattle;
+package com.tankbattle.controllers;
 
 import java.lang.reflect.Type;
 
@@ -7,8 +7,6 @@ import org.springframework.messaging.simp.stomp.StompFrameHandler;
 import org.springframework.messaging.simp.stomp.StompHeaders;
 import org.springframework.messaging.simp.stomp.StompSession;
 import org.springframework.messaging.simp.stomp.StompSessionHandlerAdapter;
-
-import com.tankbattle.controllers.GameManager;
 
 public class GameSessionHandler extends StompSessionHandlerAdapter {
     public StompSession stompSession;

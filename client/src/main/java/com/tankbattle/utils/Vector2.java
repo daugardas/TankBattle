@@ -1,16 +1,32 @@
 package com.tankbattle.utils;
 
 public class Vector2 {
-    public int x;
-    public int y;
+    private float x;
+    private float y;
 
     public Vector2() {
         this(0, 0);
     }
 
-    public Vector2(int x, int y) {
+    public Vector2(float x, float y) {
         this.x = x;
         this.y = y;
+    }
+
+    public int getX() {
+        if (x % 1 >= 0.5) {
+            return (int) x + 1;
+        } else {
+            return (int) x;
+        }
+    }
+
+    public int getY() {
+        if (y % 1 >= 0.5) {
+            return (int) y + 1;
+        } else {
+            return (int) y;
+        }
     }
 
     public Vector2 add(Vector2 v) {
@@ -21,17 +37,18 @@ public class Vector2 {
         return new Vector2(this.x - v.x, this.y - v.y);
     }
 
-    public Vector2 multiply(int scalar) {
+    public Vector2 multiply(float scalar) {
         return new Vector2(this.x * scalar, this.y * scalar);
     }
 
-    public int magnitude() {
-        return (int) Math.sqrt(this.x * this.x + this.y * this.y);
+    public float magnitude() {
+        return (float) Math.sqrt(this.x * this.x + this.y * this.y);
     }
 
     public Vector2 normalize() {
-        int mag = magnitude();
-        if (mag == 0) return new Vector2(0, 0);
+        float mag = magnitude();
+        if (mag == 0)
+            return new Vector2(0, 0);
         return new Vector2(this.x / mag, this.y / mag);
     }
 

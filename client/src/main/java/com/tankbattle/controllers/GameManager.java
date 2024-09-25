@@ -71,8 +71,8 @@ public class GameManager {
 
                     String username = (String) playerData.get("username");
                     Vector2 location = new Vector2(
-                            (Integer) ((Map<String, Integer>) playerData.get("location")).get("x"),
-                            (Integer) ((Map<String, Integer>) playerData.get("location")).get("y"));
+                            (float) ((Map<String, Double>) playerData.get("location")).get("x").floatValue(),
+                            (float) ((Map<String, Double>) playerData.get("location")).get("y").floatValue());
 
                     if (currentPlayer.getUsername().equals(username)) {
                         currentPlayer.setLocation(location);
@@ -91,15 +91,14 @@ public class GameManager {
 
     public void update() {
         GameWindow.getInstance().getGamePanel().repaint();
-        int[] movementBuffer = currentPlayer.getMovementBuffer();
+        byte movementDirection = currentPlayer.getMovementDirection();
+        byte previousDirection = currentPlayer.getPreviousDirection();
 
-        if (movementBuffer[0] != 0 || movementBuffer[1] != 0) {
-            webSocketManager.sendMovementBuffer(movementBuffer);
+        if (movementDirection != 0) {
+            webSocketManager.sendMovementDirection(movementDirection);
+        } else if (previousDirection != 0 && movementDirection == 0) {
+            webSocketManager.sendMovementDirection(movementDirection);
+            currentPlayer.setPreviousDirection((byte) 0);
         }
     }
-
-    public void sendMovementBuffer(int[] movementBuffer) {
-        webSocketManager.sendMovementBuffer(movementBuffer);
-    }
-
 }

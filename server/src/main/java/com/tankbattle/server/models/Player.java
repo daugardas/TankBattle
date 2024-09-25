@@ -1,4 +1,5 @@
 package com.tankbattle.server.models;
+
 import com.tankbattle.server.utils.*;
 
 import java.util.Objects;
@@ -7,21 +8,34 @@ public class Player {
     private String sessionId;
     private String username;
     private Vector2 location;
+    private byte movementDirection;
+    private float speed = 2;
 
     public Player() {
-        this.location = new Vector2(0, 0);
+        location = new Vector2(0, 0);
+        movementDirection = 0;
     }
 
     public Player(String sessionId, String username) {
         this.sessionId = sessionId;
         this.username = username;
-        this.location = new Vector2(0, 0);
+        location = new Vector2(0, 0);
+        movementDirection = 0;
     }
 
     public Player(String sessionId, String username, int x, int y) {
         this.sessionId = sessionId;
         this.username = username;
-        this.location = new Vector2(x, y);
+        location = new Vector2(x, y);
+        movementDirection = 0;
+    }
+
+    public byte getMovementDirection() {
+        return movementDirection;
+    }
+
+    public void setMovementDirection(byte movementDirection) {
+        this.movementDirection = movementDirection;
     }
 
     public String getSessionId() {
@@ -48,14 +62,42 @@ public class Player {
         this.username = username;
     }
 
+    public void updateLocation() {
+        float diagonalSpeed = speed / (float) Math.sqrt(2);
+        float deltaY = 0;
+        float deltaX = 0;
+
+        if ((movementDirection & 0b1000) != 0) {
+            deltaY -= (movementDirection & 0b0101) != 0 ? diagonalSpeed : speed;
+        }
+
+        if ((movementDirection & 0b0010) != 0) {
+            deltaY += (movementDirection & 0b0101) != 0 ? diagonalSpeed : speed;
+        }
+
+        if ((movementDirection & 0b0100) != 0) {
+            deltaX -= (movementDirection & 0b1010) != 0 ? diagonalSpeed : speed;
+        }
+
+        if ((movementDirection & 0b0001) != 0) {
+            deltaX += (movementDirection & 0b1010) != 0 ? diagonalSpeed : speed;
+        }
+
+        location.x += deltaX;
+        location.y += deltaY;
+    }
+
     public String toString() {
-        return String.format("{ sessionId: '%s', username: '%s', location: { x: %d, y: %d } }", this.sessionId, this.username, this.location.x, this.location.y);
+        return String.format("{ sessionId: '%s', username: '%s', location: { x: %d, y: %d } }", this.sessionId,
+                this.username, this.location.x, this.location.y);
     }
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
         Player player = (Player) o;
         return username.equals(player.username);
     }
