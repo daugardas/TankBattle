@@ -83,13 +83,13 @@ public class Player {
             deltaX += (movementDirection & 0b1010) != 0 ? diagonalSpeed : speed;
         }
 
-        location.x += deltaX;
-        location.y += deltaY;
+        location.addToX(deltaX);
+        location.addToY(deltaY);
     }
 
     public String toString() {
         return String.format("{ sessionId: '%s', username: '%s', location: { x: %d, y: %d } }", this.sessionId,
-                this.username, this.location.x, this.location.y);
+                this.username, this.location.getX(), this.location.getY());
     }
 
     @Override

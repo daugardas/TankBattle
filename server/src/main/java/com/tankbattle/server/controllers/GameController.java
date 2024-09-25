@@ -37,12 +37,6 @@ public class GameController {
         sessionIdToPlayerIndex.remove(sessionId);
     }
 
-    @MessageMapping("/update-player")
-    public void updatePlayer(@Payload Player player, SimpMessageHeaderAccessor headerAccessor) {
-        int playerIndex = this.players.indexOf(player);
-        this.players.get(playerIndex).setLocation(player.getLocation());
-    }
-
     @Scheduled(fixedRate = 33)
     public void sendPlayers() {
         messagingTemplate.convertAndSend("/server/players", this.players);
@@ -62,6 +56,5 @@ public class GameController {
         int playerIndex = sessionIdToPlayerIndex.get(sessionId);
 
         this.players.get(playerIndex).setMovementDirection(movementDirection);
-        System.out.println(movementDirection);
     }
 }

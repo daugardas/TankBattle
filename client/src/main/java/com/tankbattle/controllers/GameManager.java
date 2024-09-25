@@ -71,8 +71,8 @@ public class GameManager {
 
                     String username = (String) playerData.get("username");
                     Vector2 location = new Vector2(
-                            (float) ((Map<String, Double>) playerData.get("location")).get("x").floatValue(),
-                            (float) ((Map<String, Double>) playerData.get("location")).get("y").floatValue());
+                            (float) ((Map<String, Integer>) playerData.get("location")).get("x"),
+                            (float) ((Map<String, Integer>) playerData.get("location")).get("y"));
 
                     if (currentPlayer.getUsername().equals(username)) {
                         currentPlayer.setLocation(location);

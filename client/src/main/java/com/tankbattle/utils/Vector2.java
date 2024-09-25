@@ -29,30 +29,20 @@ public class Vector2 {
         }
     }
 
-    public Vector2 add(Vector2 v) {
-        return new Vector2(this.x + v.x, this.y + v.y);
+    public void setX(float x){
+        this.x = x;
     }
 
-    public Vector2 subtract(Vector2 v) {
-        return new Vector2(this.x - v.x, this.y - v.y);
+    public void setY(float y){
+        this.y = y;
     }
 
-    public Vector2 multiply(float scalar) {
-        return new Vector2(this.x * scalar, this.y * scalar);
+    public void addToX(float x){
+        this.x += x;
     }
 
-    public float magnitude() {
-        return (float) Math.sqrt(this.x * this.x + this.y * this.y);
-    }
-
-    public Vector2 normalize() {
-        float mag = magnitude();
-        if (mag == 0)
-            return new Vector2(0, 0);
-        return new Vector2(this.x / mag, this.y / mag);
-    }
-
-    public float dot(Vector2 v) {
-        return this.x * v.x + this.y * v.y;
+    public void addToY(float y){
+        this.y += y;
     }
 }
+
