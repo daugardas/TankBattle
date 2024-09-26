@@ -1,31 +1,33 @@
 # Tank battle game
 
-Žaidimas paremtas 'Battle City' žaidimu, kuris buvo išleistas 1985 metais. Žaidimo tikslas yra surinkti daugiausiai taškų naikinant priešų tankus.
+The game is based on the 'Battle City' game, which was released in 1985. The goal of the game is to score the most points by destroying enemy tanks.
 
-## Reikalavimai
+## Requirements
 
-- Žaidimas vyksta keliais turais, kurie turi savo žemėlapį.
-- Turas trunka 2 minutes.
-- Žemėlapyje yra sunaikinamų ir nesunaikinamų elementų.
-- Sunaikinus priešo tanką, žaidėjas gauna taškų.
-- Sunaikinami elementai turi gyvybės taškus.
-- Žaidėjas gali rinkti laikinus patobulinimus, kurie suteikia tankui papildomų galių.
-  - Greičio padidinimas
-  - Šaudymo greičio padidinimas
-  - Dvigubas šūvis
-  - Papildomos gyvybės
-- Žaidėjai sužino laimėtoją, kai baigiasi turas.
-- Elementų tipai:
-  - Vanduo (nesunaikinamas; tankas negali važiuoti; šūviai praeina)
-  - Siena (sunaikinama; tankas negali važiuoti; šūviai daro žalą)
-  - Patobulinimas
-- Tanko galių tipai:
-  - Greitis
-  - Šaudymo greitis
-  - Gyvybės taškai
-  - Šūvio tipas
-- Žaidėjas turi 20 gyvybės taškų.
-- Jei prisijungimo metu jau vyksta žaidimas, tuomet naujas žaidėjas turi laukti, kol baigsis žaidimas.
-- Žaidimas palaiko iki 4 žaidėjų.
-- Jei penktas žaidėjas bando prisijungti, tuomet jam parodomas pranešimas, kad žaidimas jau pradėtas.
-- Tanko spalva yra nustatoma automatiškai.
+- The game takes place over multiple rounds, each with its own map.
+- A round lasts 2 minutes.
+- The map contains destructible and indestructible elements.
+- Destroying an enemy tank gives the player 100 points.
+- Destructible entities have hit points.
+- Players can collect temporary power-ups that grant their tank additional abilities:
+  - Increased speed;
+  - Faster firing rate;
+  - Double shot;
+  - Extra health.
+- Players learn who the winner is at the end of the round.
+- Entity types:
+  - Water (indestructible; tanks cannot move through it; shots pass through it);
+  - Wall (destructible; tanks cannot move through it; shots deal damage);
+  - Power-up (temporary; tanks can move through it; tanks can collect it);
+- Power-up abilities:
+  - Speed increase;
+  - Firing rate;
+  - Increased damage;
+  - Shot types:
+    - Single;
+    - Double;
+- Each player starts with 20 hit points.
+- If a game is already in progress when a player joins, they must wait until the game is over.
+- The game supports up to 4 players.
+- If a fifth player attempts to join, they will receive a message that the game is full and they cannot join.
+- The color of the tank is set automatically.
