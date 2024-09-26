@@ -3,7 +3,6 @@ package com.tankbattle.models;
 import java.awt.Color;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
-import java.util.HashMap;
 
 import com.tankbattle.views.GameWindow;
 
@@ -20,20 +19,11 @@ public class CurrentPlayer extends Player implements KeyListener {
      */
     private byte movementDirection;
     private byte previousDirection;
-    private HashMap<Integer, Boolean> keysPressed;
 
     public CurrentPlayer() {
         super();
         this.color = Color.RED;
         movementDirection = 0;
-        keysPressed = new HashMap<Integer, Boolean>() {
-            {
-                put(8, false);
-                put(4, false);
-                put(2, false);
-                put(1, false);
-            }
-        };
         GameWindow.getInstance().getGamePanel().addKeyListener(this);
     }
 
