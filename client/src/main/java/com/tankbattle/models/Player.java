@@ -1,49 +1,31 @@
 package com.tankbattle.models;
-
-import com.tankbattle.utils.Vector2;
-
 import java.awt.Color;
 import java.awt.FontMetrics;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.util.Objects;
+
+import com.tankbattle.utils.Renderer;
+import com.tankbattle.utils.Vector2;
 
 public class Player extends Entity {
     protected String username;
-    protected Color color;
+    protected Vector2 location;
     protected Vector2 size;
+    protected Renderer renderer;
+    protected Tank tank;
+    protected double rotationAngle = 0;
 
-    public Player() {
-        location = new Vector2(0, 0);
-        color = Color.GREEN;
-        size = new Vector2(10, 10);
-    }
-
-    public Player(String username) {
+    public Player(String username, Renderer renderer, Vector2 location, Vector2 size, Color outlineColor, Color fillColor) {
         this.username = username;
-        location = new Vector2(0, 0);
-        color = Color.GREEN;
-        size = new Vector2(10, 10);
-    }
-
-    public Player(String username, Vector2 location) {
-        this.username = username;
-        this.location = location;
-        color = Color.GREEN;
-        size = new Vector2(10, 10);
-    }
-
-    public Player(String username, Vector2 location, Vector2 size) {
-        this.username = username;
-        this.location = location;
-        color = Color.GREEN;
-        this.size = size;
-    }
-
-    public Player(String username, Vector2 location, Vector2 size, Color color) {
-        this.username = username;
+        this.renderer = renderer;
         this.location = location;
         this.size = size;
-        this.color = color;
+        this.tank = new Tank(outlineColor, fillColor, size.getX(), size.getY());
+    }
+
+    public Tank getTank() {
+        return tank;
     }
 
     public Vector2 getLocation() {
@@ -60,6 +42,7 @@ public class Player extends Entity {
 
     public void setSize(Vector2 size) {
         this.size = size;
+        this.tank = new Tank(this.tank.getOutlineColor(), this.tank.getFillColor(), size.getX(), size.getY());
     }
 
     public String getUsername() {
@@ -83,28 +66,35 @@ public class Player extends Entity {
         return location.getY() - size.getY() / 2;
     }
 
-    public void draw(Graphics g) {
-        g.setColor(color);
-        g.fillRect(getCenterX(), getCenterY(), size.getX(), size.getY());
+    public double getRotationAngle() {
+        return rotationAngle;
+    }
 
-        // a pixel to see the center of the player
-        g.setColor(Color.ORANGE);
-        g.fillRect(location.getX(), location.getY(), 2, 2);
+    public void setRotationAngle(double rotationAngle) {
+        this.rotationAngle = rotationAngle;
+    }
+
+    public void draw(Graphics g) {
+        Graphics2D g2d = (Graphics2D) g;
+        renderer.draw(g2d, this);
 
         // draw username on top of player, centered
         FontMetrics metrics = g.getFontMetrics(g.getFont());
         int usernameWidth = metrics.stringWidth(username);
-
         int usernameX = location.getX() - usernameWidth / 2;
-        int usernameY = getCenterY() - 2;
+        int usernameY = location.getY() - size.getY() / 2 - 5;
 
-        g.setColor(Color.BLACK);
-        g.drawString(username, usernameX, usernameY);
+        g2d.setColor(Color.BLACK);
+        g2d.drawString(username, usernameX, usernameY);
     }
 
     @Override
     public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
         Player player = (Player) o;
+
         return username.equals(player.username);
     }
 

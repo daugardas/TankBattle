@@ -1,18 +1,20 @@
 package com.tankbattle.controllers;
 
+import java.awt.Color;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
-import java.util.UUID;
 import java.util.Set;
+import java.util.UUID;
 
 import javax.swing.Timer;
 
 import com.tankbattle.models.CurrentPlayer;
 import com.tankbattle.models.Player;
 import com.tankbattle.utils.Vector2;
+import com.tankbattle.utils.VectorTankRenderer;
 import com.tankbattle.views.GameWindow;
 
 public class GameManager {
@@ -59,7 +61,7 @@ public class GameManager {
         }
 
         webSocketManager.connect(hostname, username);
-        currentPlayer = new CurrentPlayer(username);
+        currentPlayer = new CurrentPlayer(username, new VectorTankRenderer(), new Vector2(0, 0), new Vector2(10, 10), Color.BLACK, Color.RED);
     }
 
     public void addPlayers(Object[] o) {
@@ -86,7 +88,7 @@ public class GameManager {
                         this.players.get(username).setLocation(location);
                         this.players.get(username).setSize(size);
                     } else {
-                        this.players.put(username, new Player(username, location, size));
+                         this.players.put(username, new Player(username, new VectorTankRenderer(), location, size, Color.BLACK, Color.GREEN));
                     }
 
                 });

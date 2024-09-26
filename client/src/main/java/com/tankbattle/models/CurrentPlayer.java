@@ -4,6 +4,8 @@ import java.awt.Color;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 
+import com.tankbattle.utils.Renderer;
+import com.tankbattle.utils.Vector2;
 import com.tankbattle.views.GameWindow;
 
 public class CurrentPlayer extends Player implements KeyListener {
@@ -20,17 +22,9 @@ public class CurrentPlayer extends Player implements KeyListener {
     private byte movementDirection;
     private byte previousDirection;
 
-    public CurrentPlayer() {
-        super();
-        this.color = Color.RED;
-        movementDirection = 0;
-        GameWindow.getInstance().getGamePanel().addKeyListener(this);
-    }
-
-    public CurrentPlayer(String username) {
-        super(username);
-        this.color = Color.RED;
-        movementDirection = 0;
+     public CurrentPlayer(String username, Renderer renderer, Vector2 location, Vector2 size, Color outlineColor, Color fillColor) {
+        super(username, renderer, location, size, outlineColor, fillColor);
+        this.movementDirection = 0;
         GameWindow.getInstance().getGamePanel().addKeyListener(this);
     }
 
@@ -70,6 +64,7 @@ public class CurrentPlayer extends Player implements KeyListener {
                 movementDirection |= 0b0001;
                 break;
         }
+        updateRotationAngle();
     }
 
     @Override
@@ -96,9 +91,39 @@ public class CurrentPlayer extends Player implements KeyListener {
                 movementDirection &= 0b1110;
                 break;
         }
+        updateRotationAngle();
     }
 
     @Override
     public void keyTyped(KeyEvent key) {
+    }
+
+    private void updateRotationAngle() {
+        switch (movementDirection) {
+            case 0b1000: // Up
+                setRotationAngle(270);
+                break;
+            case 0b0100: // Left
+                setRotationAngle(180);
+                break;
+            case 0b0010: // Down
+                setRotationAngle(90);
+                break;
+            case 0b0001: // Right
+                setRotationAngle(0);
+                break;
+            case 0b1001: // Up-Right
+                setRotationAngle(315);
+                break;
+            case 0b1100: // Up-Left
+                setRotationAngle(225);
+                break;
+            case 0b0110: // Down-Left
+                setRotationAngle(135);
+                break;
+            case 0b0011: // Down-Right
+                setRotationAngle(45);
+                break;
+        }
     }
 }
