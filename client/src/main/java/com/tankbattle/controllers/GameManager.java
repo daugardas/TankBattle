@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 
 import javax.swing.Timer;
 
@@ -52,12 +53,9 @@ public class GameManager {
     }
 
     private void connectToServer(String hostname, String username) {
-        try {
-            if (username.length() == 0) {
-                username = InetAddress.getLocalHost().getHostName();
-            }
-        } catch (UnknownHostException e) {
-            System.out.println(e.getMessage());
+        if (username.length() == 0) {
+
+            username = "Guest#" + UUID.randomUUID().toString().substring(0, 4);
         }
 
         webSocketManager.connect(hostname, username);
@@ -73,13 +71,18 @@ public class GameManager {
                     Vector2 location = new Vector2(
                             (float) ((Map<String, Integer>) playerData.get("location")).get("x"),
                             (float) ((Map<String, Integer>) playerData.get("location")).get("y"));
+                    Vector2 size = new Vector2(
+                            (float) ((Map<String, Integer>) playerData.get("size")).get("x"),
+                            (float) ((Map<String, Integer>) playerData.get("size")).get("y"));
 
                     if (currentPlayer.getUsername().equals(username)) {
                         currentPlayer.setLocation(location);
+                        currentPlayer.setSize(size);
                     } else if (this.players.containsKey(username)) {
                         this.players.get(username).setLocation(location);
+                        this.players.get(username).setSize(size);
                     } else {
-                        this.players.put(username, new Player(username, location));
+                        this.players.put(username, new Player(username, location, size));
                     }
 
                 });

@@ -25,6 +25,7 @@ public class CurrentPlayer extends Player implements KeyListener {
 
     public CurrentPlayer() {
         super();
+        this.color = Color.RED;
         movementDirection = 0;
         keysPressed = new HashMap<Integer, Boolean>() {
             {
@@ -39,6 +40,7 @@ public class CurrentPlayer extends Player implements KeyListener {
 
     public CurrentPlayer(String username) {
         super(username);
+        this.color = Color.RED;
         movementDirection = 0;
         GameWindow.getInstance().getGamePanel().addKeyListener(this);
     }
@@ -109,10 +111,5 @@ public class CurrentPlayer extends Player implements KeyListener {
 
     @Override
     public void keyTyped(KeyEvent key) {
-    }
-
-    public void draw(Graphics g) {
-        g.setColor(Color.RED);
-        g.fillRect(location.getX(), location.getY(), size, size);
     }
 }
