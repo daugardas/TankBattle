@@ -32,19 +32,21 @@ public class GameController {
     }
 
     public void removePlayerBySessionId(String sessionId) {
-        System.err.println(this.players);
-        this.players.removeIf(p -> p.getSessionId().equals(sessionId));
+        players.removeIf(p -> p.getSessionId().equals(sessionId));
         sessionIdToPlayerIndex.remove(sessionId);
+
+        for (int i = 0; i < players.size(); i++) {
+            sessionIdToPlayerIndex.put(players.get(i).getSessionId(), i);
+        }
     }
 
     @Scheduled(fixedRate = 33)
     public void sendPlayers() {
-        messagingTemplate.convertAndSend("/server/players", this.players);
+        messagingTemplate.convertAndSend("/server/players", players);
     }
 
     @Scheduled(fixedRate = 33)
-    public void update()
-    {
+    public void update() {
         for (Player player : players) {
             player.updateLocation();
         }
@@ -55,6 +57,6 @@ public class GameController {
         String sessionId = headerAccessor.getSessionId();
         int playerIndex = sessionIdToPlayerIndex.get(sessionId);
 
-        this.players.get(playerIndex).setMovementDirection(movementDirection);
+        players.get(playerIndex).setMovementDirection(movementDirection);
     }
 }
