@@ -1,4 +1,5 @@
 package com.tankbattle.models;
+
 import java.awt.Color;
 import java.awt.FontMetrics;
 import java.awt.Graphics;
@@ -13,19 +14,18 @@ public class Player extends Entity {
     protected Vector2 location;
     protected Vector2 size;
     protected Renderer renderer;
-    protected Tank tank;
+    protected Color outlineColor;
+    protected Color fillColor;
     protected double rotationAngle = 0;
 
-    public Player(String username, Renderer renderer, Vector2 location, Vector2 size, Color outlineColor, Color fillColor) {
+    public Player(String username, Renderer renderer, Vector2 location, Vector2 size, Color outlineColor,
+                  Color fillColor) {
         this.username = username;
         this.renderer = renderer;
         this.location = location;
         this.size = size;
-        this.tank = new Tank(outlineColor, fillColor, size.getX(), size.getY());
-    }
-
-    public Tank getTank() {
-        return tank;
+        this.outlineColor = outlineColor;
+        this.fillColor = fillColor;
     }
 
     public Vector2 getLocation() {
@@ -42,7 +42,6 @@ public class Player extends Entity {
 
     public void setSize(Vector2 size) {
         this.size = size;
-        this.tank = new Tank(this.tank.getOutlineColor(), this.tank.getFillColor(), size.getX(), size.getY());
     }
 
     public String getUsername() {
@@ -64,6 +63,22 @@ public class Player extends Entity {
 
     public int getCenterY(){
         return location.getY() - size.getY() / 2;
+    }
+
+    public Color getOutlineColor() {
+        return outlineColor;
+    }
+
+    public void setOutlineColor(Color outlineColor) {
+        this.outlineColor = outlineColor;
+    }
+
+    public Color getFillColor() {
+        return fillColor;
+    }
+
+    public void setFillColor(Color fillColor) {
+        this.fillColor = fillColor;
     }
 
     public double getRotationAngle() {

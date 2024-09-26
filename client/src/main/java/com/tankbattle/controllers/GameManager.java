@@ -50,7 +50,7 @@ public class GameManager {
         connectToServer(url, username);
         GameWindow.getInstance().initializeGameScreen();
 
-        Timer timer = new Timer(33, e -> this.update());
+        Timer timer = new Timer(33, event -> this.update());
         timer.start();
     }
 
@@ -61,7 +61,8 @@ public class GameManager {
         }
 
         webSocketManager.connect(hostname, username);
-        currentPlayer = new CurrentPlayer(username, new VectorTankRenderer(), new Vector2(0, 0), new Vector2(10, 10), Color.BLACK, Color.RED);
+        currentPlayer = new CurrentPlayer(username, new VectorTankRenderer(), new Vector2(0, 0),
+                new Vector2(10, 10), Color.BLACK, Color.RED);
     }
 
     public void addPlayers(Object[] o) {

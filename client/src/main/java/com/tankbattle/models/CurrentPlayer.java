@@ -19,10 +19,16 @@ public class CurrentPlayer extends Player implements KeyListener {
      * second bit - down direction (s)
      * first bit - right direction (d)
      */
+    private static final byte DIRECTION_UP = 0b1000;
+    private static final byte DIRECTION_LEFT = 0b0100;
+    private static final byte DIRECTION_DOWN = 0b0010;
+    private static final byte DIRECTION_RIGHT = 0b0001;
+
     private byte movementDirection;
     private byte previousDirection;
 
-     public CurrentPlayer(String username, Renderer renderer, Vector2 location, Vector2 size, Color outlineColor, Color fillColor) {
+    public CurrentPlayer(String username, Renderer renderer, Vector2 location, Vector2 size, Color outlineColor,
+                         Color fillColor) {
         super(username, renderer, location, size, outlineColor, fillColor);
         this.movementDirection = 0;
         GameWindow.getInstance().getGamePanel().addKeyListener(this);
@@ -42,26 +48,25 @@ public class CurrentPlayer extends Player implements KeyListener {
 
     @Override
     public void keyPressed(KeyEvent key) {
+        previousDirection = movementDirection;
         switch (key.getKeyCode()) {
             case KeyEvent.VK_W:
             case KeyEvent.VK_UP:
-                previousDirection = movementDirection;
-                movementDirection |= 0b1000;
+                movementDirection |= DIRECTION_UP;
                 break;
             case KeyEvent.VK_A:
             case KeyEvent.VK_LEFT:
-                previousDirection = movementDirection;
-                movementDirection |= 0b0100;
+                movementDirection |= DIRECTION_LEFT;
                 break;
             case KeyEvent.VK_S:
             case KeyEvent.VK_DOWN:
-                previousDirection = movementDirection;
-                movementDirection |= 0b0010;
+                movementDirection |= DIRECTION_DOWN;
                 break;
             case KeyEvent.VK_D:
             case KeyEvent.VK_RIGHT:
-                previousDirection = movementDirection;
-                movementDirection |= 0b0001;
+                movementDirection |= DIRECTION_RIGHT;
+                break;
+            default:
                 break;
         }
         updateRotationAngle();
@@ -69,26 +74,25 @@ public class CurrentPlayer extends Player implements KeyListener {
 
     @Override
     public void keyReleased(KeyEvent key) {
+        previousDirection = movementDirection;
         switch (key.getKeyCode()) {
             case KeyEvent.VK_W:
             case KeyEvent.VK_UP:
-                previousDirection = movementDirection;
-                movementDirection &= 0b0111;
+                movementDirection &= ~DIRECTION_UP;
                 break;
             case KeyEvent.VK_A:
             case KeyEvent.VK_LEFT:
-                previousDirection = movementDirection;
-                movementDirection &= 0b1011;
+                movementDirection &= ~DIRECTION_LEFT;
                 break;
             case KeyEvent.VK_S:
             case KeyEvent.VK_DOWN:
-                previousDirection = movementDirection;
-                movementDirection &= 0b1101;
+                movementDirection &= ~DIRECTION_DOWN;
                 break;
             case KeyEvent.VK_D:
             case KeyEvent.VK_RIGHT:
-                previousDirection = movementDirection;
-                movementDirection &= 0b1110;
+                movementDirection &= ~DIRECTION_RIGHT;
+                break;
+            default:
                 break;
         }
         updateRotationAngle();
@@ -96,33 +100,36 @@ public class CurrentPlayer extends Player implements KeyListener {
 
     @Override
     public void keyTyped(KeyEvent key) {
+        // Not used
     }
 
     private void updateRotationAngle() {
         switch (movementDirection) {
-            case 0b1000: // Up
+            case DIRECTION_UP:
                 setRotationAngle(270);
                 break;
-            case 0b0100: // Left
+            case DIRECTION_LEFT:
                 setRotationAngle(180);
                 break;
-            case 0b0010: // Down
+            case DIRECTION_DOWN:
                 setRotationAngle(90);
                 break;
-            case 0b0001: // Right
+            case DIRECTION_RIGHT:
                 setRotationAngle(0);
                 break;
-            case 0b1001: // Up-Right
+            case DIRECTION_UP | DIRECTION_RIGHT:
                 setRotationAngle(315);
                 break;
-            case 0b1100: // Up-Left
+            case DIRECTION_UP | DIRECTION_LEFT:
                 setRotationAngle(225);
                 break;
-            case 0b0110: // Down-Left
+            case DIRECTION_DOWN | DIRECTION_LEFT:
                 setRotationAngle(135);
                 break;
-            case 0b0011: // Down-Right
+            case DIRECTION_DOWN | DIRECTION_RIGHT:
                 setRotationAngle(45);
+                break;
+            default:
                 break;
         }
     }
