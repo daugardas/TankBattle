@@ -1,9 +1,9 @@
 package com.tankbattle.server.models;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.tankbattle.server.utils.*;
-
 import java.util.Objects;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.tankbattle.server.utils.Vector2;
 
 public class Player {
     private String sessionId;
@@ -12,7 +12,8 @@ public class Player {
     private Vector2 size;
     private byte movementDirection;
     private float speed = 2;
-
+    private double rotationAngle = 0;
+    
     public Player() {
         location = new Vector2(0, 0);
         movementDirection = 0;
@@ -89,6 +90,41 @@ public class Player {
         this.username = username;
     }
 
+    public double getRotationAngle() {
+        return rotationAngle;
+    }
+
+    private void updateRotationAngle() {
+        switch (movementDirection) {
+            case 0b1000: // Up
+                rotationAngle = 270;
+                break;
+            case 0b0100: // Left
+                rotationAngle = 180;
+                break;
+            case 0b0010: // Down
+                rotationAngle = 90;
+                break;
+            case 0b0001: // Right
+                rotationAngle = 0;
+                break;
+            case 0b1001: // Up + Right
+                rotationAngle = 315;
+                break;
+            case 0b1100: // Up + Left
+                rotationAngle = 225;
+                break;
+            case 0b0110: // Down + Left
+                rotationAngle = 135;
+                break;
+            case 0b0011: // Down + Right
+                rotationAngle = 45;
+                break;
+            default:
+                break;
+        }
+    }
+
     public void updateLocation() {
         float diagonalSpeed = speed / (float) Math.sqrt(2);
         float deltaY = 0;
@@ -120,6 +156,7 @@ public class Player {
         if(newY - size.getY() / 2 >= 0 && newY + size.getY() / 2 <= 800) {
             location.setY(newY);
         }
+        updateRotationAngle();
     }
 
     public String toString() {

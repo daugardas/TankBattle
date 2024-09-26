@@ -69,7 +69,6 @@ public class CurrentPlayer extends Player implements KeyListener {
             default:
                 break;
         }
-        updateRotationAngle();
     }
 
     @Override
@@ -95,42 +94,10 @@ public class CurrentPlayer extends Player implements KeyListener {
             default:
                 break;
         }
-        updateRotationAngle();
     }
 
     @Override
     public void keyTyped(KeyEvent key) {
         // Not used
-    }
-
-    private void updateRotationAngle() {
-        switch (movementDirection) {
-            case DIRECTION_UP:
-                setRotationAngle(270);
-                break;
-            case DIRECTION_LEFT:
-                setRotationAngle(180);
-                break;
-            case DIRECTION_DOWN:
-                setRotationAngle(90);
-                break;
-            case DIRECTION_RIGHT:
-                setRotationAngle(0);
-                break;
-            case DIRECTION_UP | DIRECTION_RIGHT:
-                setRotationAngle(315);
-                break;
-            case DIRECTION_UP | DIRECTION_LEFT:
-                setRotationAngle(225);
-                break;
-            case DIRECTION_DOWN | DIRECTION_LEFT:
-                setRotationAngle(135);
-                break;
-            case DIRECTION_DOWN | DIRECTION_RIGHT:
-                setRotationAngle(45);
-                break;
-            default:
-                break;
-        }
     }
 }
