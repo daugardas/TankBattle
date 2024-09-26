@@ -5,8 +5,10 @@ import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.UUID;
+import java.util.Set;
 
 import javax.swing.Timer;
 
@@ -63,6 +65,8 @@ public class GameManager {
     }
 
     public void addPlayers(Object[] o) {
+        Set<String> incomingUsernames = new HashSet<>();
+
         Arrays.stream(o)
                 .forEach(player -> {
                     Map<String, Object> playerData = (Map<String, Object>) player;
@@ -74,6 +78,8 @@ public class GameManager {
                     Vector2 size = new Vector2(
                             (float) ((Map<String, Integer>) playerData.get("size")).get("x"),
                             (float) ((Map<String, Integer>) playerData.get("size")).get("y"));
+
+                    incomingUsernames.add(username);
 
                     if (currentPlayer.getUsername().equals(username)) {
                         currentPlayer.setLocation(location);
@@ -87,9 +93,9 @@ public class GameManager {
 
                 });
 
-        for (Player player : this.players.values()) {
-            System.out.println(player.toString());
-        }
+        if (players.size() + 1 != o.length)
+            players.keySet().removeIf(username -> !incomingUsernames.contains(username));
+
     }
 
     public void update() {
