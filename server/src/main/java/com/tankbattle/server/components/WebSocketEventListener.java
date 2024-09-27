@@ -1,15 +1,16 @@
 package com.tankbattle.server.components;
 
-import com.tankbattle.server.controllers.GameController;
+import java.util.Random;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.event.EventListener;
 import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.messaging.SessionConnectEvent;
 import org.springframework.web.socket.messaging.SessionDisconnectEvent;
-import com.tankbattle.server.models.Player;
 
-import java.util.Random;
+import com.tankbattle.server.controllers.GameController;
+import com.tankbattle.server.models.Player;
 
 @Component
 public class WebSocketEventListener {
@@ -29,8 +30,8 @@ public class WebSocketEventListener {
         sessionManager.addSession(sessionId);
 
         Random random = new Random();
-        int x = random.nextInt(0, 500);
-        int y = random.nextInt(0, 500);
+        int x = random.nextInt(16, 376);
+        int y = random.nextInt(23, 363);
 
         Player newPlayer = new Player(sessionId, username, x, y);
         gameController.addPlayer(newPlayer);

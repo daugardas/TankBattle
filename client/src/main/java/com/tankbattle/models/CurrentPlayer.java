@@ -4,6 +4,8 @@ import java.awt.Color;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 
+import com.tankbattle.utils.Renderer;
+import com.tankbattle.utils.Vector2;
 import com.tankbattle.views.GameWindow;
 
 public class CurrentPlayer extends Player implements KeyListener {
@@ -17,20 +19,18 @@ public class CurrentPlayer extends Player implements KeyListener {
      * second bit - down direction (s)
      * first bit - right direction (d)
      */
+    private static final byte DIRECTION_UP = 0b1000;
+    private static final byte DIRECTION_LEFT = 0b0100;
+    private static final byte DIRECTION_DOWN = 0b0010;
+    private static final byte DIRECTION_RIGHT = 0b0001;
+
     private byte movementDirection;
     private byte previousDirection;
 
-    public CurrentPlayer() {
-        super();
-        this.color = Color.RED;
-        movementDirection = 0;
-        GameWindow.getInstance().getGamePanel().addKeyListener(this);
-    }
-
-    public CurrentPlayer(String username) {
-        super(username);
-        this.color = Color.RED;
-        movementDirection = 0;
+    public CurrentPlayer(String username, Renderer renderer, Vector2 location, Vector2 size, Color outlineColor,
+                         Color fillColor) {
+        super(username, renderer, location, size, outlineColor, fillColor);
+        this.movementDirection = 0;
         GameWindow.getInstance().getGamePanel().addKeyListener(this);
     }
 
@@ -48,57 +48,56 @@ public class CurrentPlayer extends Player implements KeyListener {
 
     @Override
     public void keyPressed(KeyEvent key) {
+        previousDirection = movementDirection;
         switch (key.getKeyCode()) {
             case KeyEvent.VK_W:
             case KeyEvent.VK_UP:
-                previousDirection = movementDirection;
-                movementDirection |= 0b1000;
+                movementDirection |= DIRECTION_UP;
                 break;
             case KeyEvent.VK_A:
             case KeyEvent.VK_LEFT:
-                previousDirection = movementDirection;
-                movementDirection |= 0b0100;
+                movementDirection |= DIRECTION_LEFT;
                 break;
             case KeyEvent.VK_S:
             case KeyEvent.VK_DOWN:
-                previousDirection = movementDirection;
-                movementDirection |= 0b0010;
+                movementDirection |= DIRECTION_DOWN;
                 break;
             case KeyEvent.VK_D:
             case KeyEvent.VK_RIGHT:
-                previousDirection = movementDirection;
-                movementDirection |= 0b0001;
+                movementDirection |= DIRECTION_RIGHT;
+                break;
+            default:
                 break;
         }
     }
 
     @Override
     public void keyReleased(KeyEvent key) {
+        previousDirection = movementDirection;
         switch (key.getKeyCode()) {
             case KeyEvent.VK_W:
             case KeyEvent.VK_UP:
-                previousDirection = movementDirection;
-                movementDirection &= 0b0111;
+                movementDirection &= ~DIRECTION_UP;
                 break;
             case KeyEvent.VK_A:
             case KeyEvent.VK_LEFT:
-                previousDirection = movementDirection;
-                movementDirection &= 0b1011;
+                movementDirection &= ~DIRECTION_LEFT;
                 break;
             case KeyEvent.VK_S:
             case KeyEvent.VK_DOWN:
-                previousDirection = movementDirection;
-                movementDirection &= 0b1101;
+                movementDirection &= ~DIRECTION_DOWN;
                 break;
             case KeyEvent.VK_D:
             case KeyEvent.VK_RIGHT:
-                previousDirection = movementDirection;
-                movementDirection &= 0b1110;
+                movementDirection &= ~DIRECTION_RIGHT;
+                break;
+            default:
                 break;
         }
     }
 
     @Override
     public void keyTyped(KeyEvent key) {
+        // Not used
     }
 }

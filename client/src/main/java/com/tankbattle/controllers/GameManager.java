@@ -1,18 +1,20 @@
 package com.tankbattle.controllers;
 
+import java.awt.Color;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
-import java.util.UUID;
 import java.util.Set;
+import java.util.UUID;
 
 import javax.swing.Timer;
 
 import com.tankbattle.models.CurrentPlayer;
 import com.tankbattle.models.Player;
 import com.tankbattle.utils.Vector2;
+import com.tankbattle.utils.VectorTankRenderer;
 import com.tankbattle.views.GameWindow;
 
 public class GameManager {
@@ -48,7 +50,7 @@ public class GameManager {
         connectToServer(url, username);
         GameWindow.getInstance().initializeGameScreen();
 
-        Timer timer = new Timer(33, e -> this.update());
+        Timer timer = new Timer(33, event -> this.update());
         timer.start();
     }
 
@@ -59,41 +61,51 @@ public class GameManager {
         }
 
         webSocketManager.connect(hostname, username);
-        currentPlayer = new CurrentPlayer(username);
+        currentPlayer = new CurrentPlayer(username, new VectorTankRenderer(), new Vector2(0, 0),
+                new Vector2(10, 10), Color.BLACK, Color.RED);
     }
 
     public void addPlayers(Object[] o) {
         Set<String> incomingUsernames = new HashSet<>();
-
+    
         Arrays.stream(o)
                 .forEach(player -> {
                     Map<String, Object> playerData = (Map<String, Object>) player;
-
+    
                     String username = (String) playerData.get("username");
+    
+                    Map<String, Number> locationMap = (Map<String, Number>) playerData.get("location");
+                    Map<String, Number> sizeMap = (Map<String, Number>) playerData.get("size");
+    
                     Vector2 location = new Vector2(
-                            (float) ((Map<String, Integer>) playerData.get("location")).get("x"),
-                            (float) ((Map<String, Integer>) playerData.get("location")).get("y"));
+                            locationMap.get("x").intValue(),
+                            locationMap.get("y").intValue());
                     Vector2 size = new Vector2(
-                            (float) ((Map<String, Integer>) playerData.get("size")).get("x"),
-                            (float) ((Map<String, Integer>) playerData.get("size")).get("y"));
-
+                            sizeMap.get("x").intValue(),
+                            sizeMap.get("y").intValue());
+    
+                    double rotationAngle = ((Number) playerData.get("rotationAngle")).doubleValue();
+    
                     incomingUsernames.add(username);
-
+    
                     if (currentPlayer.getUsername().equals(username)) {
                         currentPlayer.setLocation(location);
                         currentPlayer.setSize(size);
+                        currentPlayer.setRotationAngle(rotationAngle);
                     } else if (this.players.containsKey(username)) {
-                        this.players.get(username).setLocation(location);
-                        this.players.get(username).setSize(size);
+                        Player otherPlayer = this.players.get(username);
+                        otherPlayer.setLocation(location);
+                        otherPlayer.setSize(size);
+                        otherPlayer.setRotationAngle(rotationAngle);
                     } else {
-                        this.players.put(username, new Player(username, location, size));
+                        Player newPlayer = new Player(username, new VectorTankRenderer(), location, size, Color.BLACK, Color.GREEN);
+                        newPlayer.setRotationAngle(rotationAngle);
+                        this.players.put(username, newPlayer);
                     }
-
                 });
-
-        if (players.size() + 1 != o.length)
-            players.keySet().removeIf(username -> !incomingUsernames.contains(username));
-
+    
+    if (players.size() + 1 != o.length)
+        players.keySet().removeIf(username -> !incomingUsernames.contains(username));
     }
 
     public void update() {
