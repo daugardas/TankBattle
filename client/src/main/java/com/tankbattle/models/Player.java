@@ -97,7 +97,7 @@ public class Player extends Entity {
         FontMetrics metrics = g.getFontMetrics(g.getFont());
         int usernameWidth = metrics.stringWidth(username);
         int usernameX = location.getX() - usernameWidth / 2;
-        int usernameY = location.getY() - size.getY() / 2 - 5;
+        int usernameY = location.getY() - size.getY() / 2 -16;
 
         g2d.setColor(Color.BLACK);
         g2d.drawString(username, usernameX, usernameY);

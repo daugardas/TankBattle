@@ -13,7 +13,7 @@ public class Player {
     private byte movementDirection;
     private float speed = 2;
     private double rotationAngle = 0;
-    
+
     public Player() {
         location = new Vector2(0, 0);
         movementDirection = 0;
@@ -149,13 +149,19 @@ public class Player {
         float newX = location.getX() + deltaX;
         float newY = location.getY() + deltaY;
 
-        if(newX - size.getX() / 2 >= 0 && newX + size.getX() / 2 <= 800) {
+        //Needs to be looked at later
+        if ((movementDirection & 0b0100) != 0 && newX - size.getX() / 2 >= 16) {
+            location.setX(newX);
+        } else if ((movementDirection & 0b0001) != 0 && newX + size.getX() / 2 <= 376) {
             location.setX(newX);
         }
 
-        if(newY - size.getY() / 2 >= 0 && newY + size.getY() / 2 <= 800) {
+        if ((movementDirection & 0b1000) != 0 && newY - size.getY() / 2 >= 23) {
+            location.setY(newY);
+        } else if ((movementDirection & 0b0010) != 0 && newY + size.getY() / 2 <= 363) {
             location.setY(newY);
         }
+
         updateRotationAngle();
     }
 

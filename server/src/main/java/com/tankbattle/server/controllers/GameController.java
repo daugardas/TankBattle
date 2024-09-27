@@ -1,7 +1,7 @@
 package com.tankbattle.server.controllers;
 
-import com.tankbattle.server.components.WebSocketSessionManager;
-import com.tankbattle.server.models.Player;
+import java.util.ArrayList;
+import java.util.HashMap;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.handler.annotation.MessageMapping;
@@ -11,8 +11,8 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Controller;
 
-import java.util.ArrayList;
-import java.util.HashMap;
+import com.tankbattle.server.components.WebSocketSessionManager;
+import com.tankbattle.server.models.Player;
 
 @Controller
 public class GameController {
@@ -49,6 +49,7 @@ public class GameController {
     public void update() {
         for (Player player : players) {
             player.updateLocation();
+            System.out.println(player.toString());
         }
     }
 
