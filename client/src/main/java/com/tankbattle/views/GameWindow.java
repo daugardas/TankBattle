@@ -51,6 +51,6 @@ public class GameWindow extends JFrame {
     }
 
     private void onResize(){
-        System.out.println("Window resized to: " + getSize());
+        // do something in the future?
     }
 }

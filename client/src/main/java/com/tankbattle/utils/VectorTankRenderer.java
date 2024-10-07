@@ -11,11 +11,11 @@ import com.tankbattle.models.Player;
 public class VectorTankRenderer implements Renderer {
 
     @Override
-    public void draw(Graphics2D g2d, Player player) {
-        int x = player.getLocation().getX();
-        int y = player.getLocation().getY();
-        int width = player.getSize().getX();
-        int height = player.getSize().getY();
+    public void draw(Graphics2D g2d, Player player, int panelX, int panelY) {
+        int x = panelX;
+        int y = panelY;
+        int width = player.getSize().getScaledX();
+        int height = player.getSize().getScaledY();
         double rotationAngle = player.getRotationAngle();
 
         // Save the current transform
@@ -27,8 +27,9 @@ public class VectorTankRenderer implements Renderer {
         // Set the fill color once for all filled shapes
         g2d.setColor(player.getFillColor());
 
-        // 1. Draw the tank treads (two large rectangles extending equally in front and back)
-        double treadWidth = width * 1.2;  // Treads extend beyond the body width
+        // 1. Draw the tank treads (two large rectangles extending equally in front and
+        // back)
+        double treadWidth = width * 1.2; // Treads extend beyond the body width
         double treadHeight = height * 0.2; // Reduced tread height to match the narrower body height
 
         // Calculate body dimensions
