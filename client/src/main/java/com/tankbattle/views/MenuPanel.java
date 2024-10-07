@@ -2,8 +2,10 @@ package com.tankbattle.views;
 
 import java.awt.Color;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+import java.awt.RenderingHints;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
@@ -24,6 +26,12 @@ public class MenuPanel extends JPanel {
 
     public MenuPanel() {
         setLayout(new GridBagLayout());
+
+        try {
+            backgroundImage = ImageIO.read(new File("src/main/java/com/tankbattle/assets/images/background.png"));
+        } catch (IOException e) {
+            System.out.println(e);
+        }
 
         JPanel parentPanel = new JPanel();
         BoxLayout boxLayout = new BoxLayout(parentPanel, BoxLayout.Y_AXIS);
@@ -71,16 +79,43 @@ public class MenuPanel extends JPanel {
         parentPanel.add(connectPanel);
 
         add(parentPanel, gbc);
-
-        try {
-            backgroundImage = ImageIO.read(new File("src/main/java/com/tankbattle/assets/images/background.png"));
-        } catch (IOException e) {
-            System.out.println(e);
-        }
     }
 
     @Override
     protected void paintComponent(Graphics g) {
-        g.drawImage(backgroundImage, 0, 0, this);
+        super.paintComponent(g);
+
+        // default background color
+        g.setColor(Color.CYAN);
+        g.fillRect(0, 0, getWidth(), getHeight());
+
+        if (backgroundImage != null) {
+            // this block scales and keeps the image aspect ratio according to the game
+            // window size
+            Graphics2D g2g = (Graphics2D) g;
+            g2g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+
+            int panelWidth = getWidth();
+            int panelHeight = getHeight();
+            int imageWidth = backgroundImage.getWidth();
+            int imageHeight = backgroundImage.getHeight();
+
+            double panelAspectRatio = (double) panelWidth / panelHeight;
+            double imageAspectRatio = (double) imageWidth / imageHeight;
+
+            int drawWidth, drawHeight;
+            if (panelAspectRatio > imageAspectRatio) {
+                drawHeight = panelHeight;
+                drawWidth = (int) (panelHeight * imageAspectRatio);
+            } else {
+                drawWidth = panelWidth;
+                drawHeight = (int) (panelWidth / imageAspectRatio);
+            }
+
+            int x = (panelWidth - drawWidth) / 2;
+            int y = (panelHeight - drawHeight) / 2;
+
+            g2g.drawImage(backgroundImage, x, y, drawWidth, drawHeight, this);
+        }
     }
 }
