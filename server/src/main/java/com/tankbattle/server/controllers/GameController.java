@@ -17,6 +17,9 @@ import com.tankbattle.server.models.Player;
 @Controller
 public class GameController {
 
+    public static final int WORLD_HEIGHT = 800;
+    public static final int WORLD_WIDTH = 800;
+
     @Autowired
     private WebSocketSessionManager sessionManager;
 
@@ -49,7 +52,6 @@ public class GameController {
     public void update() {
         for (Player player : players) {
             player.updateLocation();
-            System.out.println(player.toString());
         }
     }
 
