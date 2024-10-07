@@ -18,6 +18,10 @@ import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
+import javax.swing.text.AbstractDocument;
+import javax.swing.text.AttributeSet;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.DocumentFilter;
 
 import com.tankbattle.controllers.GameManager;
 
@@ -55,6 +59,33 @@ public class MenuPanel extends JPanel {
         usernamePanel.setOpaque(false);
         JLabel usernameLabel = new JLabel("Username: ");
         JTextField usernameTextField = new JTextField(10);
+
+        // limit the username characters to 15
+        ((AbstractDocument) usernameTextField.getDocument()).setDocumentFilter(new DocumentFilter() {
+            private static final int MAX_CHARACTERS = 15;
+            private static final String VALID_CHARACTERS_REGEX = "^[a-zA-Z0-9]*$";
+
+            @Override
+            public void insertString(FilterBypass fb, int offset, String string, AttributeSet attr)
+                    throws BadLocationException {
+                if (isValidInput(fb, string)) {
+                    super.insertString(fb, offset, string, attr);
+                }
+            }
+
+            @Override
+            public void replace(FilterBypass fb, int offset, int length, String text, AttributeSet attrs)
+                    throws BadLocationException {
+                if (isValidInput(fb, text)) {
+                    super.replace(fb, offset, length, text, attrs);
+                }
+            }
+
+            private boolean isValidInput(FilterBypass fb, String text) {
+                return (fb.getDocument().getLength() + text.length() <= MAX_CHARACTERS)
+                        && text.matches(VALID_CHARACTERS_REGEX);
+            }
+        });
 
         usernamePanel.add(usernameLabel);
         usernamePanel.add(usernameTextField);
