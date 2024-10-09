@@ -13,8 +13,8 @@ import javax.swing.Timer;
 
 import com.tankbattle.models.CurrentPlayer;
 import com.tankbattle.models.Player;
+import com.tankbattle.utils.SpriteTankRenderer;
 import com.tankbattle.utils.Vector2;
-import com.tankbattle.utils.VectorTankRenderer;
 import com.tankbattle.views.GameWindow;
 
 public class GameManager {
@@ -23,6 +23,7 @@ public class GameManager {
     private HashMap<String, Player> players;
     private CurrentPlayer currentPlayer;
     public int playerCount = 0;
+    private double scaleFactor = 4.0;
 
     private GameManager() {
         webSocketManager = new WebSocketManager();
@@ -61,7 +62,7 @@ public class GameManager {
         }
 
         webSocketManager.connect(hostname, username);
-        currentPlayer = new CurrentPlayer(username, new VectorTankRenderer(), new Vector2(0, 0),
+        currentPlayer = new CurrentPlayer(username, new SpriteTankRenderer(scaleFactor), new Vector2(0, 0),
                 new Vector2(10, 10), Color.BLACK, Color.RED);
     }
 
@@ -98,7 +99,7 @@ public class GameManager {
                         otherPlayer.setSize(size);
                         otherPlayer.setRotationAngle(rotationAngle);
                     } else {
-                        Player newPlayer = new Player(username, new VectorTankRenderer(), location, size, Color.BLACK, Color.GREEN);
+                        Player newPlayer = new Player(username, new SpriteTankRenderer(scaleFactor), location, size, Color.BLACK, Color.GREEN);
                         newPlayer.setRotationAngle(rotationAngle);
                         this.players.put(username, newPlayer);
                     }

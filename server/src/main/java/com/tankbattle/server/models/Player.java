@@ -97,28 +97,28 @@ public class Player {
     private void updateRotationAngle() {
         switch (movementDirection) {
             case 0b1000: // Up
-                rotationAngle = 270;
-                break;
-            case 0b0100: // Left
-                rotationAngle = 180;
-                break;
-            case 0b0010: // Down
-                rotationAngle = 90;
-                break;
-            case 0b0001: // Right
                 rotationAngle = 0;
                 break;
+            case 0b0100: // Left
+                rotationAngle = 270;
+                break;
+            case 0b0010: // Down
+                rotationAngle = 180;
+                break;
+            case 0b0001: // Right
+                rotationAngle = 90;
+                break;
             case 0b1001: // Up + Right
-                rotationAngle = 315;
+                rotationAngle = 45;
                 break;
             case 0b1100: // Up + Left
-                rotationAngle = 225;
+                rotationAngle = 315;
                 break;
             case 0b0110: // Down + Left
-                rotationAngle = 135;
+                rotationAngle = 225;
                 break;
             case 0b0011: // Down + Right
-                rotationAngle = 45;
+                rotationAngle = 135;
                 break;
             default:
                 break;
