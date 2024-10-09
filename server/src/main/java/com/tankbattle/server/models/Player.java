@@ -12,7 +12,7 @@ public class Player {
     private Vector2 location;  // player center location coordinates
     private Vector2 size;
     private byte movementDirection;
-    private float speed = 2;
+    private float speed = 4;
     private double rotationAngle = 0;
     private static final byte DIRECTION_UP = 0b1000;
     private static final byte DIRECTION_LEFT = 0b0100;
