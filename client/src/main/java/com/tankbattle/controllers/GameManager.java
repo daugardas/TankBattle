@@ -16,7 +16,7 @@ import javax.swing.Timer;
 import com.tankbattle.models.CurrentPlayer;
 import com.tankbattle.models.Player;
 import com.tankbattle.renderers.RendererManager;
-import com.tankbattle.renderers.SpriteTankRenderer;
+import com.tankbattle.renderers.TankRenderer;
 import com.tankbattle.utils.Vector2;
 import com.tankbattle.views.GameWindow;
 
@@ -36,7 +36,7 @@ public class GameManager {
         resourceManager = new ResourceManager();
         players = new HashMap<>();
 
-        SpriteTankRenderer tankRenderer = new SpriteTankRenderer(scaleFactor, resourceManager);
+        TankRenderer tankRenderer = new TankRenderer(scaleFactor, resourceManager);
         rendererManager.registerRenderer(Player.class, tankRenderer);
     }
 
@@ -130,6 +130,11 @@ public class GameManager {
             webSocketManager.sendMovementDirection(movementDirection);
             currentPlayer.setPreviousDirection((byte) 0);
         }
+    }
+
+    public void setScaleFactor(double scaleFactor) {
+        this.scaleFactor = scaleFactor;
+        rendererManager.setScaleFactor(scaleFactor);
     }
 
     public void renderAll(Graphics2D g2d) {

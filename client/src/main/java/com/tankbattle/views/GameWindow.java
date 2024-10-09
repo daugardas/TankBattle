@@ -1,5 +1,8 @@
 package com.tankbattle.views;
 
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
+
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 
@@ -10,12 +13,19 @@ public class GameWindow extends JFrame {
     private GameWindow() {
         super("Tank Battle");
         setSize(800, 800);
-        setResizable(false);
+        setResizable(true);
 
         mainMenuPanel = new MenuPanel();
         gamePanel = new GamePanel();
 
         add(mainMenuPanel);
+
+        addComponentListener(new ComponentAdapter() {
+            @Override
+            public void componentResized(ComponentEvent e) {
+                onResize();
+            }
+        });
 
         setVisible(true);
     }
@@ -38,5 +48,9 @@ public class GameWindow extends JFrame {
 
     public JPanel getGamePanel() {
         return gamePanel;
+    }
+
+    private void onResize(){
+        // do something in the future?
     }
 }

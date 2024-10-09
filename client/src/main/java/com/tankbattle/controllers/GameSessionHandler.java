@@ -24,14 +24,11 @@ public class GameSessionHandler extends StompSessionHandlerAdapter {
 
             @Override
             public void handleFrame(StompHeaders stompHeaders, Object o) {
-
                 GameManager.getInstance().addPlayers((Object[]) o);
-
             }
-
         });
     }
-
+    
     @Override
     public void handleException(StompSession session, StompCommand command, StompHeaders headers, byte[] payload,
             Throwable exception) {

@@ -3,7 +3,7 @@ package com.tankbattle.utils;
 public class Vector2 {
     private float x;
     private float y;
-    private static final float SCALE = 2.0f; // Interesting interaction with server side, needs to be looked at later
+    private static final float SCALE = 2.0f; // Interesting interaction with server side, needs to be looked at later. pasol
 
     public Vector2() {
         this(0, 0);
@@ -14,22 +14,20 @@ public class Vector2 {
         this.y = y;
     }
 
-    public int getX() {
-        int scaledX = Math.round(x * SCALE);
-        if (scaledX % 1 >= 0.5) {
-            return scaledX + 1;
-        } else {
-            return scaledX;
-        }
+    public float getX() {
+        return this.x;
     }
 
-    public int getY() {
-        int scaledY = Math.round(y * SCALE);
-        if (scaledY % 1 >= 0.5) {
-            return scaledY + 1;
-        } else {
-            return scaledY;
-        }
+    public float getY() {
+        return this.y;
+    }
+
+    public int getScaledX() {
+        return Math.round(x * SCALE);
+    }
+
+    public int getScaledY() {
+        return Math.round(y * SCALE);
     }
 
     public void setX(float x){

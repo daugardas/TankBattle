@@ -12,7 +12,7 @@ import com.tankbattle.controllers.ResourceManager;
 import com.tankbattle.models.CurrentPlayer;
 import com.tankbattle.models.Player;
 
-public class SpriteTankRenderer implements EntityRenderer<Player> {
+public class TankRenderer implements EntityRenderer<Player>, Scalable {
     private int spriteWidth;
     private int spriteHeight;
     private double scaleFactor;
@@ -23,7 +23,7 @@ public class SpriteTankRenderer implements EntityRenderer<Player> {
     private ResourceManager resourceManager;
     private Map<String, BufferedImage> spriteSheetCache = new HashMap<>();
 
-    public SpriteTankRenderer(double scaleFactor, ResourceManager resourceManager) {
+    public TankRenderer(double scaleFactor, ResourceManager resourceManager) {
         this.resourceManager = resourceManager;
         this.scaleFactor = scaleFactor;
         this.currentFrame = 0;
@@ -66,8 +66,8 @@ public class SpriteTankRenderer implements EntityRenderer<Player> {
         updateFrame();
         BufferedImage sprite = getCurrentFrame(spriteSheet);
 
-        double x = player.getLocation().getX();
-        double y = player.getLocation().getY();
+        double x = player.getPanelX();
+        double y = player.getPanelY();
         double rotationAngle = player.getRotationAngle();
 
         double centerX = sprite.getWidth() / 2.0;
@@ -98,4 +98,9 @@ public class SpriteTankRenderer implements EntityRenderer<Player> {
         g2d.setColor(Color.BLACK);
         g2d.drawString(username, usernameX, usernameY);
     }
+
+    @Override
+    public void setScaleFactor(double scaleFactor) {
+        this.scaleFactor = scaleFactor *4;
+    }   
 }

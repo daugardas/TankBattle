@@ -3,28 +3,33 @@ package com.tankbattle.server.models;
 import java.util.Objects;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.tankbattle.server.controllers.GameController;
 import com.tankbattle.server.utils.Vector2;
 
 public class Player {
     private String sessionId;
     private String username;
-    private Vector2 location;
+    private Vector2 location;  // player center location coordinates
     private Vector2 size;
     private byte movementDirection;
-    private float speed = 2;
+    private float speed = 4;
     private double rotationAngle = 0;
+    private static final byte DIRECTION_UP = 0b1000;
+    private static final byte DIRECTION_LEFT = 0b0100;
+    private static final byte DIRECTION_DOWN = 0b0010;
+    private static final byte DIRECTION_RIGHT = 0b0001;
 
     public Player() {
         location = new Vector2(0, 0);
         movementDirection = 0;
-        size = new Vector2(21,21);
+        size = new Vector2(21, 21);
     }
 
     public Player(String sessionId, String username) {
         this.sessionId = sessionId;
         this.username = username;
         location = new Vector2(0, 0);
-        size = new Vector2(21,21);
+        size = new Vector2(21, 21);
         movementDirection = 0;
     }
 
@@ -32,7 +37,7 @@ public class Player {
         this.sessionId = sessionId;
         this.username = username;
         location = new Vector2(x, y);
-        size = new Vector2(21,21);
+        size = new Vector2(21, 21);
         movementDirection = 0;
     }
 
@@ -72,16 +77,6 @@ public class Player {
         this.size = size;
     }
 
-    @JsonIgnore
-    public int getCenterX() {
-        return location.getX() - size.getX() / 2;
-    }
-
-    @JsonIgnore
-    public int getCenterY(){
-        return location.getY() - size.getY() / 2;
-    }
-
     public String getUsername() {
         return username;
     }
@@ -96,28 +91,28 @@ public class Player {
 
     private void updateRotationAngle() {
         switch (movementDirection) {
-            case 0b1000: // Up
+            case DIRECTION_UP:
                 rotationAngle = 0;
                 break;
-            case 0b0100: // Left
+            case DIRECTION_LEFT:
                 rotationAngle = 270;
                 break;
-            case 0b0010: // Down
+            case DIRECTION_DOWN:
                 rotationAngle = 180;
                 break;
-            case 0b0001: // Right
+            case DIRECTION_RIGHT:
                 rotationAngle = 90;
                 break;
-            case 0b1001: // Up + Right
+            case DIRECTION_UP | DIRECTION_RIGHT:
                 rotationAngle = 45;
                 break;
-            case 0b1100: // Up + Left
+            case DIRECTION_UP | DIRECTION_LEFT:
                 rotationAngle = 315;
                 break;
-            case 0b0110: // Down + Left
+            case DIRECTION_DOWN | DIRECTION_LEFT:
                 rotationAngle = 225;
                 break;
-            case 0b0011: // Down + Right
+            case DIRECTION_DOWN | DIRECTION_RIGHT:
                 rotationAngle = 135;
                 break;
             default:
@@ -130,36 +125,37 @@ public class Player {
         float deltaY = 0;
         float deltaX = 0;
 
-        if ((movementDirection & 0b1000) != 0) {
-            deltaY -= (movementDirection & 0b0101) != 0 ? diagonalSpeed : speed;
+        if ((movementDirection & DIRECTION_UP) != 0) {
+            deltaY -= (movementDirection & (DIRECTION_LEFT | DIRECTION_RIGHT)) != 0 ? diagonalSpeed : speed;
         }
 
-        if ((movementDirection & 0b0010) != 0) {
-            deltaY += (movementDirection & 0b0101) != 0 ? diagonalSpeed : speed;
+        if ((movementDirection & DIRECTION_DOWN) != 0) {
+            deltaY += (movementDirection & (DIRECTION_LEFT | DIRECTION_RIGHT)) != 0 ? diagonalSpeed : speed;
         }
 
-        if ((movementDirection & 0b0100) != 0) {
-            deltaX -= (movementDirection & 0b1010) != 0 ? diagonalSpeed : speed;
+        if ((movementDirection & DIRECTION_LEFT) != 0) {
+            deltaX -= (movementDirection & (DIRECTION_UP | DIRECTION_DOWN)) != 0 ? diagonalSpeed : speed;
         }
 
-        if ((movementDirection & 0b0001) != 0) {
-            deltaX += (movementDirection & 0b1010) != 0 ? diagonalSpeed : speed;
+        if ((movementDirection & DIRECTION_RIGHT) != 0) {
+            deltaX += (movementDirection & (DIRECTION_UP | DIRECTION_DOWN)) != 0 ? diagonalSpeed : speed;
         }
 
-        float newX = location.getX() + deltaX;
-        float newY = location.getY() + deltaY;
+        // if the player is trying to move
+        if ((movementDirection & 0b1111) != 0) {
+            float newX = location.getX() + deltaX;
+            float newY = location.getY() + deltaY;
+            float leftCornerX = newX - size.getX() / 2;
+            float rightCornerX = newX + size.getX() / 2;
+            float topCornerY = newY - size.getY() / 2;
+            float bottomCornerY = newY + size.getY() / 2;
 
-        //Needs to be looked at later
-        if ((movementDirection & 0b0100) != 0 && newX - size.getX() / 2 >= 16) {
-            location.setX(newX);
-        } else if ((movementDirection & 0b0001) != 0 && newX + size.getX() / 2 <= 376) {
-            location.setX(newX);
-        }
-
-        if ((movementDirection & 0b1000) != 0 && newY - size.getY() / 2 >= 23) {
-            location.setY(newY);
-        } else if ((movementDirection & 0b0010) != 0 && newY + size.getY() / 2 <= 363) {
-            location.setY(newY);
+            if (leftCornerX >= 0 && rightCornerX <= GameController.WORLD_WIDTH) {
+                location.setX(newX);
+            }
+            if (topCornerY >= 0 && bottomCornerY <= GameController.WORLD_HEIGHT) {;
+                location.setY(newY);
+            }
         }
 
         updateRotationAngle();

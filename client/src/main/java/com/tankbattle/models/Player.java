@@ -7,11 +7,13 @@ import com.tankbattle.utils.Vector2;
 
 public class Player extends Entity {
     protected String username;
-    protected Vector2 location;
+    protected Vector2 location; // this is already the center of the player
     protected Vector2 size;
     protected Color outlineColor;
     protected Color fillColor;
     protected double rotationAngle = 0;
+    protected int panelX;
+    protected int panelY;
 
     public Player(String username, Vector2 location, Vector2 size, Color outlineColor,
                   Color fillColor) {
@@ -47,17 +49,10 @@ public class Player extends Entity {
     }
 
     public String toString() {
-        return String.format("{ username: '%s', location: { x: %d, y: %d } }", this.username, this.location.getX(),
-                this.location.getY());
+        return String.format("{ username: '%s', location: { x: %d, y: %d } }", this.username,
+                (int) this.location.getX(),
+                (int) this.location.getY());
     }
-
-    // public int getCenterX() {
-    //     return location.getX() - size.getY() / 2;
-    // }
-
-    // public int getCenterY(){
-    //     return location.getY() - size.getY() / 2;
-    // }
 
     public Color getOutlineColor() {
         return outlineColor;
@@ -85,8 +80,10 @@ public class Player extends Entity {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o)
+        return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
 
         Player player = (Player) o;
 
@@ -100,5 +97,21 @@ public class Player extends Entity {
     @Override
     public int hashCode() {
         return Objects.hash(username);
+    }
+
+    public int getPanelY() {
+        return panelY;
+    }
+
+    public void setPanelY(int panelY) {
+        this.panelY = panelY;
+    }
+
+    public int getPanelX() {
+        return panelX;
+    }
+
+    public void setPanelX(int panelX) {
+        this.panelX = panelX;
     }
 }
