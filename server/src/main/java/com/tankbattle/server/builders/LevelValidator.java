@@ -1,5 +1,6 @@
-package com.tankbattle.server.models;
+package com.tankbattle.server.builders;
 
+import com.tankbattle.server.models.Level;
 import com.tankbattle.server.utils.Vector2;
 
 public final class LevelValidator {
