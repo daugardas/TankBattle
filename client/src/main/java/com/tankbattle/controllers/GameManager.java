@@ -1,10 +1,12 @@
 package com.tankbattle.controllers;
 
 import java.awt.Color;
+import java.awt.Graphics2D;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
@@ -13,21 +15,29 @@ import javax.swing.Timer;
 
 import com.tankbattle.models.CurrentPlayer;
 import com.tankbattle.models.Player;
-import com.tankbattle.utils.SpriteTankRenderer;
+import com.tankbattle.renderers.RendererManager;
+import com.tankbattle.renderers.SpriteTankRenderer;
 import com.tankbattle.utils.Vector2;
 import com.tankbattle.views.GameWindow;
 
 public class GameManager {
 
-    private WebSocketManager webSocketManager;
-    private HashMap<String, Player> players;
+    private final WebSocketManager webSocketManager;
+    private final RendererManager rendererManager;
+    private final ResourceManager resourceManager;
+    private final HashMap<String, Player> players;
     private CurrentPlayer currentPlayer;
     public int playerCount = 0;
     private double scaleFactor = 4.0;
 
     private GameManager() {
         webSocketManager = new WebSocketManager();
+        rendererManager = new RendererManager();
+        resourceManager = new ResourceManager();
         players = new HashMap<>();
+
+        SpriteTankRenderer tankRenderer = new SpriteTankRenderer(scaleFactor, resourceManager);
+        rendererManager.registerRenderer(Player.class, tankRenderer);
     }
 
     private static final GameManager INSTANCE = new GameManager();
@@ -62,7 +72,7 @@ public class GameManager {
         }
 
         webSocketManager.connect(hostname, username);
-        currentPlayer = new CurrentPlayer(username, new SpriteTankRenderer(scaleFactor, "src/main/java/com/tankbattle/assets/images/player_sprite.png"), new Vector2(0, 0),
+        currentPlayer = new CurrentPlayer(username, new Vector2(0, 0),
                 new Vector2(10, 10), Color.BLACK, Color.RED);
     }
 
@@ -99,7 +109,7 @@ public class GameManager {
                         otherPlayer.setSize(size);
                         otherPlayer.setRotationAngle(rotationAngle);
                     } else {
-                        Player newPlayer = new Player(username, new SpriteTankRenderer(scaleFactor, "src/main/java/com/tankbattle/assets/images/enemy_sprite.png"), location, size, Color.BLACK, Color.GREEN);
+                        Player newPlayer = new Player(username, location, size, Color.BLACK, Color.GREEN);
                         newPlayer.setRotationAngle(rotationAngle);
                         this.players.put(username, newPlayer);
                     }
@@ -120,5 +130,13 @@ public class GameManager {
             webSocketManager.sendMovementDirection(movementDirection);
             currentPlayer.setPreviousDirection((byte) 0);
         }
+    }
+
+    public void renderAll(Graphics2D g2d) {
+        List<Player> allPlayers = getAllPlayers();
+        for (Player player : allPlayers) {
+            rendererManager.draw(g2d, player);
+        }
+        // same for things like bullets, powerups, map elements etc.
     }
 }

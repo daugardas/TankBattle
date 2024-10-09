@@ -9,9 +9,9 @@ import org.springframework.web.socket.messaging.WebSocketStompClient;
 
 public class WebSocketManager {
 
-    private WebSocketClient webSocketClient;
-    private WebSocketStompClient stompClient;
-    private GameSessionHandler sessionHandler;
+    private final WebSocketClient webSocketClient;
+    private final WebSocketStompClient stompClient;
+    private final GameSessionHandler sessionHandler;
 
     public WebSocketManager() {
         webSocketClient = new StandardWebSocketClient();

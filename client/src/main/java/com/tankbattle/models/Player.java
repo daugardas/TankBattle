@@ -1,27 +1,21 @@
 package com.tankbattle.models;
 
 import java.awt.Color;
-import java.awt.FontMetrics;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
 import java.util.Objects;
 
-import com.tankbattle.utils.Renderer;
 import com.tankbattle.utils.Vector2;
 
 public class Player extends Entity {
     protected String username;
     protected Vector2 location;
     protected Vector2 size;
-    protected Renderer renderer;
     protected Color outlineColor;
     protected Color fillColor;
     protected double rotationAngle = 0;
 
-    public Player(String username, Renderer renderer, Vector2 location, Vector2 size, Color outlineColor,
+    public Player(String username, Vector2 location, Vector2 size, Color outlineColor,
                   Color fillColor) {
         this.username = username;
-        this.renderer = renderer;
         this.location = location;
         this.size = size;
         this.outlineColor = outlineColor;
@@ -57,13 +51,13 @@ public class Player extends Entity {
                 this.location.getY());
     }
 
-    public int getCenterX() {
-        return location.getX() - size.getY() / 2;
-    }
+    // public int getCenterX() {
+    //     return location.getX() - size.getY() / 2;
+    // }
 
-    public int getCenterY(){
-        return location.getY() - size.getY() / 2;
-    }
+    // public int getCenterY(){
+    //     return location.getY() - size.getY() / 2;
+    // }
 
     public Color getOutlineColor() {
         return outlineColor;
@@ -89,20 +83,6 @@ public class Player extends Entity {
         this.rotationAngle = rotationAngle;
     }
 
-    public void draw(Graphics g) {
-        Graphics2D g2d = (Graphics2D) g;
-        renderer.draw(g2d, this);
-
-        // draw username on top of player, centered
-        FontMetrics metrics = g.getFontMetrics(g.getFont());
-        int usernameWidth = metrics.stringWidth(username);
-        int usernameX = location.getX() - usernameWidth / 2;
-        int usernameY = location.getY() - size.getY() / 2 -30;
-
-        g2d.setColor(Color.BLACK);
-        g2d.drawString(username, usernameX, usernameY);
-    }
-
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -111,6 +91,10 @@ public class Player extends Entity {
         Player player = (Player) o;
 
         return username.equals(player.username);
+    }
+
+    public PlayerType getPlayerType() {
+        return PlayerType.OTHER_PLAYER;
     }
 
     @Override

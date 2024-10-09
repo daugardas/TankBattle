@@ -1,12 +1,11 @@
 package com.tankbattle.views;
 
-import com.tankbattle.controllers.GameManager;
-import com.tankbattle.models.Player;
-
 import java.awt.Graphics;
-import java.util.ArrayList;
+import java.awt.Graphics2D;
 
 import javax.swing.JPanel;
+
+import com.tankbattle.controllers.GameManager;
 
 public class GamePanel extends JPanel {
     public GamePanel() {
@@ -17,9 +16,11 @@ public class GamePanel extends JPanel {
 
     @Override
     protected void paintComponent(Graphics g) {
-        ArrayList<Player> allPlayers = GameManager.getInstance().getAllPlayers();
-        g.clearRect(0, 0, getWidth(), getHeight());
+        super.paintComponent(g);
+        Graphics2D g2d = (Graphics2D) g;
 
-        allPlayers.forEach(player -> player.draw(g));
+        g2d.clearRect(0, 0, getWidth(), getHeight());
+
+        GameManager.getInstance().renderAll(g2d);
     }
 }
