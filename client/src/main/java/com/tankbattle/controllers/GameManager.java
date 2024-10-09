@@ -62,7 +62,7 @@ public class GameManager {
         }
 
         webSocketManager.connect(hostname, username);
-        currentPlayer = new CurrentPlayer(username, new SpriteTankRenderer(scaleFactor), new Vector2(0, 0),
+        currentPlayer = new CurrentPlayer(username, new SpriteTankRenderer(scaleFactor, "src/main/java/com/tankbattle/assets/images/player_sprite.png"), new Vector2(0, 0),
                 new Vector2(10, 10), Color.BLACK, Color.RED);
     }
 
@@ -99,7 +99,7 @@ public class GameManager {
                         otherPlayer.setSize(size);
                         otherPlayer.setRotationAngle(rotationAngle);
                     } else {
-                        Player newPlayer = new Player(username, new SpriteTankRenderer(scaleFactor), location, size, Color.BLACK, Color.GREEN);
+                        Player newPlayer = new Player(username, new SpriteTankRenderer(scaleFactor, "src/main/java/com/tankbattle/assets/images/enemy_sprite.png"), location, size, Color.BLACK, Color.GREEN);
                         newPlayer.setRotationAngle(rotationAngle);
                         this.players.put(username, newPlayer);
                     }

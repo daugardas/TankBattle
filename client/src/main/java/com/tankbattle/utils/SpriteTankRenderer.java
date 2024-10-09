@@ -18,12 +18,11 @@ public class SpriteTankRenderer implements Renderer {
     private long lastFrameTime;
     private int currentFrame;
     private static final int FRAME_COUNT = 2;
-    private static final int FRAME_DURATION = 60; // 45 ms per frame
-
-    public SpriteTankRenderer(double scaleFactor) {
+    private static final int FRAME_DURATION = 60; // 60ms per frame
+//"src/main/java/com/tankbattle/assets/images/test_sprite.png"
+    public SpriteTankRenderer(double scaleFactor, String spriteSheetPath) {
         try {
-            // Load the sprite sheet
-            spriteSheet = ImageIO.read(new File("src/main/java/com/tankbattle/assets/images/test_sprite.png"));
+            spriteSheet = ImageIO.read(new File(spriteSheetPath));
             spriteWidth = spriteSheet.getWidth();
             spriteHeight = spriteSheet.getHeight() / FRAME_COUNT;
             this.scaleFactor = scaleFactor;
