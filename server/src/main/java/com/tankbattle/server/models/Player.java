@@ -9,7 +9,7 @@ import com.tankbattle.server.utils.Vector2;
 public class Player {
     private String sessionId;
     private String username;
-    private Vector2 location; // player center location coordinates
+    private Vector2 location;  // player center location coordinates
     private Vector2 size;
     private byte movementDirection;
     private float speed = 2;
@@ -92,28 +92,28 @@ public class Player {
     private void updateRotationAngle() {
         switch (movementDirection) {
             case DIRECTION_UP:
-                rotationAngle = 270;
-                break;
-            case DIRECTION_LEFT:
-                rotationAngle = 180;
-                break;
-            case DIRECTION_DOWN:
-                rotationAngle = 90;
-                break;
-            case DIRECTION_RIGHT:
                 rotationAngle = 0;
                 break;
+            case DIRECTION_LEFT:
+                rotationAngle = 270;
+                break;
+            case DIRECTION_DOWN:
+                rotationAngle = 180;
+                break;
+            case DIRECTION_RIGHT:
+                rotationAngle = 90;
+                break;
             case DIRECTION_UP | DIRECTION_RIGHT:
-                rotationAngle = 315;
+                rotationAngle = 45;
                 break;
             case DIRECTION_UP | DIRECTION_LEFT:
-                rotationAngle = 225;
+                rotationAngle = 315;
                 break;
             case DIRECTION_DOWN | DIRECTION_LEFT:
-                rotationAngle = 135;
+                rotationAngle = 225;
                 break;
             case DIRECTION_DOWN | DIRECTION_RIGHT:
-                rotationAngle = 45;
+                rotationAngle = 135;
                 break;
             default:
                 break;

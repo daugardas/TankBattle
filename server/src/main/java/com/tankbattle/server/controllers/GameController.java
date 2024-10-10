@@ -52,6 +52,7 @@ public class GameController {
     public void update() {
         for (Player player : players) {
             player.updateLocation();
+            //System.out.println(player.toString());
         }
     }
 

@@ -1,8 +1,5 @@
 package com.tankbattle.views;
 
-import com.tankbattle.controllers.GameManager;
-import com.tankbattle.models.Player;
-
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
@@ -11,6 +8,9 @@ import java.awt.event.ComponentEvent;
 import java.util.ArrayList;
 
 import javax.swing.JPanel;
+
+import com.tankbattle.controllers.GameManager;
+import com.tankbattle.models.Player;
 
 public class GamePanel extends JPanel {
     private int WORLD_WIDTH = 800; // default world size
@@ -22,6 +22,7 @@ public class GamePanel extends JPanel {
     private float scaleFactor = 1;
 
     public GamePanel() {
+        
         setLayout(null);
         setFocusable(true);
         requestFocusInWindow();
@@ -40,10 +41,10 @@ public class GamePanel extends JPanel {
 
     @Override
     protected void paintComponent(Graphics g) {
+        super.paintComponent(g);
         Graphics2D g2d = (Graphics2D) g;
         ArrayList<Player> allPlayers = GameManager.getInstance().getAllPlayers();
 
-        // world rect, which will fill the background of the world
         g2d.setColor(Color.WHITE);
         g2d.fillRect(offsetX, offsetY, scaledWorldWidth,
                 scaledWorldHeight);
@@ -51,8 +52,10 @@ public class GamePanel extends JPanel {
         allPlayers.forEach(player -> {
             int panelX = worldToPanelX(player.getLocation().getX());
             int panelY = worldToPanelY(player.getLocation().getY());
-            player.draw(g2d, panelX, panelY);
+            player.setPanelX(panelX);
+            player.setPanelY(panelY);
         });
+        GameManager.getInstance().renderAll(g2d);
 
         // draw world borders (this is drawn around the world,
         // because parts of the tank would be drawn outside the
@@ -64,7 +67,6 @@ public class GamePanel extends JPanel {
         // for when the window height > width
         g2d.fillRect(0, worldToPanelY(WORLD_HEIGHT) + 1, getWidth(), getHeight());
         g2d.fillRect(0, 0, getWidth(), offsetY - 1);
-        ;
     }
 
     private void updateOffsets() {
@@ -84,6 +86,7 @@ public class GamePanel extends JPanel {
 
         System.out.println("scaleFactor: " + scaleFactor);
         System.out.println("scaledWorldWidth: " + scaledWorldWidth + " scaledWorldHeight: " + scaledWorldHeight);
+        GameManager.getInstance().setScaleFactor(scaleFactor);
     }
 
     private int worldToPanelX(float worldX) {
@@ -92,5 +95,9 @@ public class GamePanel extends JPanel {
 
     private int worldToPanelY(float worldY) {
         return Math.round(worldY * scaleFactor) + offsetY;
+    }
+
+    public float getScaleFactor() {
+        return scaleFactor;
     }
 }
