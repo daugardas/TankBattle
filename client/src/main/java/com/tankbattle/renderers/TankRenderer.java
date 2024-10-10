@@ -86,7 +86,7 @@ public class TankRenderer implements EntityRenderer<Player>, Scalable {
         g2d.setTransform(oldTransform);
 
         // Draw username above the tank
-        drawUsername(g2d, player.getUsername(), x, y - spriteHeight / 2.0 * scaleFactor - 10);
+        drawUsername(g2d, player.getUsername(), x, y - spriteHeight / 2.0 * scaleFactor +10);
     }
 
     private void drawUsername(Graphics2D g2d, String username, double x, double y) {
