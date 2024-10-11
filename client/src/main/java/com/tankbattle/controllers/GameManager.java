@@ -14,9 +14,12 @@ import java.util.UUID;
 import javax.swing.Timer;
 
 import com.tankbattle.models.CurrentPlayer;
+import com.tankbattle.models.Level;
 import com.tankbattle.models.Player;
+import com.tankbattle.models.tiles.Tile;
 import com.tankbattle.renderers.RendererManager;
 import com.tankbattle.renderers.TankRenderer;
+import com.tankbattle.renderers.TileRenderer;
 import com.tankbattle.utils.Vector2;
 import com.tankbattle.views.GameWindow;
 
@@ -25,19 +28,22 @@ public class GameManager {
     private final WebSocketManager webSocketManager;
     private final RendererManager rendererManager;
     private final ResourceManager resourceManager;
+
+    private Level level;
     private final HashMap<String, Player> players;
     private CurrentPlayer currentPlayer;
     public int playerCount = 0;
-    private double scaleFactor = 4.0;
 
     private GameManager() {
         webSocketManager = new WebSocketManager();
         rendererManager = new RendererManager();
         resourceManager = new ResourceManager();
         players = new HashMap<>();
+        level = new Level();
 
-        TankRenderer tankRenderer = new TankRenderer(scaleFactor, resourceManager);
+        TankRenderer tankRenderer = new TankRenderer(resourceManager);
         rendererManager.registerRenderer(Player.class, tankRenderer);
+        rendererManager.registerRenderer(Tile.class, new TileRenderer(resourceManager));
     }
 
     private static final GameManager INSTANCE = new GameManager();
@@ -76,29 +82,40 @@ public class GameManager {
                 new Vector2(10, 10), Color.BLACK, Color.RED);
     }
 
+    public void setLevel(Level level) {
+        System.out.println("Received level update: " + level);
+        this.level = level;
+
+        GameWindow.getInstance().setGamePanelWorldSize(level.getWidth() * 1000, level.getHeight() * 1000);
+    }
+
+    public Level getLevel() {
+        return level;
+    }
+
     public void addPlayers(Object[] o) {
         Set<String> incomingUsernames = new HashSet<>();
-    
+
         Arrays.stream(o)
                 .forEach(player -> {
                     Map<String, Object> playerData = (Map<String, Object>) player;
-    
+
                     String username = (String) playerData.get("username");
-    
+
                     Map<String, Number> locationMap = (Map<String, Number>) playerData.get("location");
                     Map<String, Number> sizeMap = (Map<String, Number>) playerData.get("size");
-    
+
                     Vector2 location = new Vector2(
                             locationMap.get("x").intValue(),
                             locationMap.get("y").intValue());
                     Vector2 size = new Vector2(
                             sizeMap.get("x").intValue(),
                             sizeMap.get("y").intValue());
-    
+
                     double rotationAngle = ((Number) playerData.get("rotationAngle")).doubleValue();
-    
+
                     incomingUsernames.add(username);
-    
+
                     if (currentPlayer.getUsername().equals(username)) {
                         currentPlayer.setLocation(location);
                         currentPlayer.setSize(size);
@@ -114,9 +131,9 @@ public class GameManager {
                         this.players.put(username, newPlayer);
                     }
                 });
-    
-    if (players.size() + 1 != o.length)
-        players.keySet().removeIf(username -> !incomingUsernames.contains(username));
+
+        if (players.size() + 1 != o.length)
+            players.keySet().removeIf(username -> !incomingUsernames.contains(username));
     }
 
     public void update() {
@@ -132,16 +149,33 @@ public class GameManager {
         }
     }
 
-    public void setScaleFactor(double scaleFactor) {
-        this.scaleFactor = scaleFactor;
-        rendererManager.setScaleFactor(scaleFactor);
+    public void setRenderingScaleFactor(float scaleFactor) {
+        rendererManager.setRenderingScaleFactor(scaleFactor);
+    }
+
+    public void setWorldLocationScaleFactor(float scaleFactor) {
+        rendererManager.setWorldLocationScaleFactor(scaleFactor);
+    }
+
+    public void setWorldOffset(Vector2 worldOffset) {
+        rendererManager.setWorldOffset(worldOffset);
     }
 
     public void renderAll(Graphics2D g2d) {
+        // level rendering
+        Tile[][] tileGrid = level.getGrid();
+        if (tileGrid != null) {
+            for (Tile[] row : tileGrid) {
+                for (Tile tile : row) {
+                    rendererManager.draw(g2d, tile);
+                }
+            }
+        }
+
         List<Player> allPlayers = getAllPlayers();
         for (Player player : allPlayers) {
             rendererManager.draw(g2d, player);
         }
-        // same for things like bullets, powerups, map elements etc.
+
     }
 }

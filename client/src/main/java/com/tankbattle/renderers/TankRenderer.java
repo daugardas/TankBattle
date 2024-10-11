@@ -11,11 +11,14 @@ import java.util.Map;
 import com.tankbattle.controllers.ResourceManager;
 import com.tankbattle.models.CurrentPlayer;
 import com.tankbattle.models.Player;
+import com.tankbattle.utils.Vector2;
 
 public class TankRenderer implements EntityRenderer<Player>, Scalable {
     private int spriteWidth;
     private int spriteHeight;
     private double scaleFactor;
+    private double worldLocationScaleFactor;
+    private Vector2 worldOffset;
     private long lastFrameTime;
     private int currentFrame;
     private static final int FRAME_COUNT = 2;
@@ -23,15 +26,21 @@ public class TankRenderer implements EntityRenderer<Player>, Scalable {
     private ResourceManager resourceManager;
     private Map<String, BufferedImage> spriteSheetCache = new HashMap<>();
 
+    public TankRenderer(ResourceManager resourceManager) {
+        this.resourceManager = resourceManager;
+        this.scaleFactor = 4;
+        this.currentFrame = 0;
+        this.lastFrameTime = System.currentTimeMillis();
+    }
+
     public TankRenderer(double scaleFactor, ResourceManager resourceManager) {
         this.resourceManager = resourceManager;
         this.scaleFactor = scaleFactor;
         this.currentFrame = 0;
         this.lastFrameTime = System.currentTimeMillis();
     }
-    
 
-     private BufferedImage getSpriteSheet(Player player) {
+    private BufferedImage getSpriteSheet(Player player) {
         String spriteSheetPath;
         if (player instanceof CurrentPlayer) {
             spriteSheetPath = "/com/tankbattle/assets/images/player_sprite.png";
@@ -46,7 +55,6 @@ public class TankRenderer implements EntityRenderer<Player>, Scalable {
         int y = currentFrame * spriteHeight;
         return spriteSheet.getSubimage(0, y, spriteWidth, spriteHeight);
     }
-    
 
     private void updateFrame() {
         long currentTime = System.currentTimeMillis();
@@ -66,8 +74,8 @@ public class TankRenderer implements EntityRenderer<Player>, Scalable {
         updateFrame();
         BufferedImage sprite = getCurrentFrame(spriteSheet);
 
-        double x = player.getPanelX();
-        double y = player.getPanelY();
+        double x = player.getLocation().getX() * worldLocationScaleFactor + worldOffset.getX();
+        double y = player.getLocation().getY() * worldLocationScaleFactor + worldOffset.getY();
         double rotationAngle = player.getRotationAngle();
 
         double centerX = sprite.getWidth() / 2.0;
@@ -86,7 +94,7 @@ public class TankRenderer implements EntityRenderer<Player>, Scalable {
         g2d.setTransform(oldTransform);
 
         // Draw username above the tank
-        drawUsername(g2d, player.getUsername(), x, y - spriteHeight / 2.0 * scaleFactor +10);
+        drawUsername(g2d, player.getUsername(), x, y - spriteHeight / 2.0 * scaleFactor + 10);
     }
 
     private void drawUsername(Graphics2D g2d, String username, double x, double y) {
@@ -100,7 +108,17 @@ public class TankRenderer implements EntityRenderer<Player>, Scalable {
     }
 
     @Override
-    public void setScaleFactor(double scaleFactor) {
-        this.scaleFactor = scaleFactor *4;
-    }   
+    public void setRenderingScaleFactor(double scaleFactor) {
+        this.scaleFactor = scaleFactor * 2;
+    }
+
+    @Override
+    public void setWorldLocationScaleFactor(double worldLocationScaleFactor) {
+        this.worldLocationScaleFactor = worldLocationScaleFactor;
+    }
+
+    @Override
+    public void setWorldOffset(Vector2 worldOffset) {
+        this.worldOffset = worldOffset;
+    }
 }

@@ -1,5 +1,7 @@
 package com.tankbattle.renderers;
 
 public interface Scalable {
-    void setScaleFactor(double scaleFactor);
+    void setRenderingScaleFactor(double scaleFactor);
+
+    void setWorldLocationScaleFactor(double worldLocationScaleFactor);
 }

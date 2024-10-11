@@ -8,7 +8,7 @@ import javax.swing.JPanel;
 
 public class GameWindow extends JFrame {
     private JPanel mainMenuPanel;
-    private JPanel gamePanel;
+    private GamePanel gamePanel;
 
     private GameWindow() {
         super("Tank Battle");
@@ -46,11 +46,15 @@ public class GameWindow extends JFrame {
         repaint();
     }
 
-    public JPanel getGamePanel() {
+    public GamePanel getGamePanel() {
         return gamePanel;
     }
 
     private void onResize(){
         // do something in the future?
+    }
+
+    public void setGamePanelWorldSize(int width, int height) {
+        gamePanel.setWorldSize(width, height);
     }
 }

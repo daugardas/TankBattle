@@ -8,8 +8,15 @@ import org.springframework.messaging.simp.stomp.StompHeaders;
 import org.springframework.messaging.simp.stomp.StompSession;
 import org.springframework.messaging.simp.stomp.StompSessionHandlerAdapter;
 
+import com.tankbattle.models.Level;
+
 public class GameSessionHandler extends StompSessionHandlerAdapter {
     public StompSession stompSession;
+
+    @Override
+    public void handleTransportError(StompSession session, Throwable exception) {
+        System.out.println("transport error: " + exception);
+    }
 
     @Override
     public void afterConnected(StompSession session, StompHeaders connectedHeaders) {
@@ -27,8 +34,23 @@ public class GameSessionHandler extends StompSessionHandlerAdapter {
                 GameManager.getInstance().addPlayers((Object[]) o);
             }
         });
+
+        session.subscribe("/client/level", new StompFrameHandler() {
+
+            @Override
+            public Type getPayloadType(StompHeaders headers) {
+                return Level.class;
+            }
+
+            @Override
+            public void handleFrame(StompHeaders stompHeaders, Object o) {
+                GameManager.getInstance().setLevel((Level) o);
+            }
+
+        });
+
     }
-    
+
     @Override
     public void handleException(StompSession session, StompCommand command, StompHeaders headers, byte[] payload,
             Throwable exception) {
