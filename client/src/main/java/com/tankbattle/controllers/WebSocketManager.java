@@ -32,6 +32,9 @@ public class WebSocketManager {
     }
 
     public void sendMovementDirection(byte movementBuffer) {
+
+        // System.out.println("session is open: " + sessionHandler.stompSession.isConnected());
+
         sessionHandler.stompSession.send("/client/update-player-movement", movementBuffer);
     }
 }

@@ -3,16 +3,23 @@ package com.tankbattle.server.models;
 import java.util.Objects;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.tankbattle.server.components.SpringContext;
 import com.tankbattle.server.controllers.GameController;
 import com.tankbattle.server.utils.Vector2;
 
 public class Player {
+    @JsonIgnore
+    private GameController gameController;
+
     private String sessionId;
     private String username;
-    private Vector2 location;  // player center location coordinates
+
+    // Player location is a coordinate system where every 1000 units is a new tile,
+    // ensuring smooth transition between tiles
+    private Vector2 location;
     private Vector2 size;
     private byte movementDirection;
-    private float speed = 2;
+    private float speed = 40;
     private double rotationAngle = 0;
     private static final byte DIRECTION_UP = 0b1000;
     private static final byte DIRECTION_LEFT = 0b0100;
@@ -23,6 +30,8 @@ public class Player {
         location = new Vector2(0, 0);
         movementDirection = 0;
         size = new Vector2(21, 21);
+
+        this.gameController = SpringContext.getBean(GameController.class);
     }
 
     public Player(String sessionId, String username) {
@@ -31,6 +40,7 @@ public class Player {
         location = new Vector2(0, 0);
         size = new Vector2(21, 21);
         movementDirection = 0;
+        this.gameController = SpringContext.getBean(GameController.class);
     }
 
     public Player(String sessionId, String username, int x, int y) {
@@ -39,6 +49,7 @@ public class Player {
         location = new Vector2(x, y);
         size = new Vector2(21, 21);
         movementDirection = 0;
+        this.gameController = SpringContext.getBean(GameController.class);
     }
 
     @JsonIgnore
@@ -150,10 +161,11 @@ public class Player {
             float topCornerY = newY - size.getY() / 2;
             float bottomCornerY = newY + size.getY() / 2;
 
-            if (leftCornerX >= 0 && rightCornerX <= GameController.WORLD_WIDTH) {
+            if (leftCornerX >= 0 && rightCornerX <= gameController.getLevelCoordinateWidth()) {
                 location.setX(newX);
             }
-            if (topCornerY >= 0 && bottomCornerY <= GameController.WORLD_HEIGHT) {;
+            if (topCornerY >= 0 && bottomCornerY <= gameController.getLevelCoordinateHeight()) {
+                ;
                 location.setY(newY);
             }
         }

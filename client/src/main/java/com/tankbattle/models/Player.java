@@ -12,8 +12,6 @@ public class Player extends Entity {
     protected Color outlineColor;
     protected Color fillColor;
     protected double rotationAngle = 0;
-    protected int panelX;
-    protected int panelY;
 
     public Player(String username, Vector2 location, Vector2 size, Color outlineColor,
                   Color fillColor) {
@@ -97,21 +95,5 @@ public class Player extends Entity {
     @Override
     public int hashCode() {
         return Objects.hash(username);
-    }
-
-    public int getPanelY() {
-        return panelY;
-    }
-
-    public void setPanelY(int panelY) {
-        this.panelY = panelY;
-    }
-
-    public int getPanelX() {
-        return panelX;
-    }
-
-    public void setPanelX(int panelX) {
-        this.panelX = panelX;
     }
 }

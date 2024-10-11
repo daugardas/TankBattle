@@ -5,10 +5,13 @@ import java.util.HashMap;
 import java.util.Map;
 
 import com.tankbattle.models.Entity;
+import com.tankbattle.utils.Vector2;
 
 public class RendererManager {
     private Map<Class<? extends Entity>, EntityRenderer<? extends Entity>> renderers = new HashMap<>();
     private double scaleFactor;
+    private double worldLocationScaleFactor;
+    private Vector2 worldOffset;
 
     public <T extends Entity> void registerRenderer(Class<T> entityClass, EntityRenderer<T> renderer) {
         renderers.put(entityClass, renderer);
@@ -29,12 +32,28 @@ public class RendererManager {
         }
     }
 
-    public void setScaleFactor(double scaleFactor) {
+    public void setRenderingScaleFactor(double scaleFactor) {
         this.scaleFactor = scaleFactor;
         for (EntityRenderer<? extends Entity> renderer : renderers.values()) {
             if (renderer instanceof Scalable) {
-                ((Scalable) renderer).setScaleFactor(scaleFactor);
+                ((Scalable) renderer).setRenderingScaleFactor(scaleFactor);
             }
+        }
+    }
+
+    public void setWorldLocationScaleFactor(double worldLocationScaleFactor) {
+        this.worldLocationScaleFactor = worldLocationScaleFactor;
+        for (EntityRenderer<? extends Entity> renderer : renderers.values()) {
+            if (renderer instanceof Scalable) {
+                ((Scalable) renderer).setWorldLocationScaleFactor(worldLocationScaleFactor);
+            }
+        }
+    }
+
+    public void setWorldOffset(Vector2 worldOffset) {
+        this.worldOffset = worldOffset;
+        for (EntityRenderer<? extends Entity> renderer : renderers.values()) {
+            renderer.setWorldOffset(worldOffset);
         }
     }
 }
