@@ -16,6 +16,6 @@ public class LiquidTile extends Tile {
 
     @Override
     public String getSymbol() {
-        return "O";
+        return "L";
     }
 }

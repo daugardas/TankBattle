@@ -16,6 +16,6 @@ public class PassableGroundTile extends Tile {
 
     @Override
     public String getSymbol() {
-        return " "; // return empty string to signify passable ground tile
+        return "G"; // return empty string to signify passable ground tile
     }
 }

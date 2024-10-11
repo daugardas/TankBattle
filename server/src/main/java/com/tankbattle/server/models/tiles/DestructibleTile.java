@@ -16,6 +16,6 @@ public class DestructibleTile extends Tile {
 
     @Override
     public String getSymbol() {
-        return "H";
+        return "D";
     }
 }

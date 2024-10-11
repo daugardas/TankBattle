@@ -16,6 +16,6 @@ public class IndestructibleTile extends Tile {
 
     @Override
     public String getSymbol() {
-        return "#";
+        return "I";
     }
 }
