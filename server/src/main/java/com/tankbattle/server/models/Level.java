@@ -1,5 +1,9 @@
 package com.tankbattle.server.models;
 
+import com.fasterxml.jackson.annotation.JsonGetter;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.tankbattle.server.models.tiles.Tile;
 import com.tankbattle.server.utils.Vector2;
 
@@ -34,6 +38,52 @@ public class Level {
         initializeLevel();
     }
 
+    // JSON getters for serialization and sending to the client
+
+    public int getWidth() {
+        return width;
+    }
+
+    public int getHeight() {
+        return height;
+    }
+
+    @JsonIgnore
+    public int getSpawnPointsCount() {
+        return spawnPointsCount;
+    }
+
+    @JsonGetter("spawnPoints")
+    public Vector2[] getSpawnPoints() {
+        return spawnPoints;
+    }
+
+    @JsonIgnore
+    public Tile[][] getGrid() {
+        return grid;
+    }
+
+    @JsonGetter("tiles")
+    public String[] getTilesJson() {
+        String[] tiles = new String[height];
+        for (int y = 0; y < height; y++) {
+            StringBuilder sb = new StringBuilder();
+            for (int x = 0; x < width; x++) {
+                Tile tile = grid[x][y];
+                if (tile == null) {
+                    sb.append("-");
+                } else {
+                    sb.append(tile.getSymbol());
+                }
+            }
+            tiles[y] = sb.toString();
+        }
+
+        return tiles;
+    }
+
+    // methods below are not serialized to JSON
+
     private void initializeLevel() {
         grid = new Tile[width][height];
         spawnPoints = new Vector2[spawnPointsCount]; // 4 spawn points for 4 players
@@ -49,12 +99,14 @@ public class Level {
         return x >= 0 && x < width && y >= 0 && y < height;
     }
 
+    @JsonIgnore
     public void setTile(int x, int y, Tile tile) {
         if (isTileWithinLevelBounds(x, y)) {
             grid[x][y] = tile;
         }
     }
 
+    @JsonIgnore
     public Tile getTile(int x, int y) {
         if (isTileWithinLevelBounds(x, y)) {
             return grid[x][y];
@@ -63,22 +115,7 @@ public class Level {
         return null;
     }
 
-    public int getWidth() {
-        return width;
-    }
-
-    public int getHeight() {
-        return height;
-    }
-
-    public int getSpawnPointsCount() {
-        return spawnPointsCount;
-    }
-
-    public Vector2[] getSpawnPoints() {
-        return spawnPoints;
-    }
-
+    @JsonIgnore
     public void setSpawnPoints(Vector2[] points) {
         if (points.length != spawnPointsCount) {
             throw new IllegalArgumentException(
@@ -102,6 +139,7 @@ public class Level {
         spawnPoints = points;
     }
 
+    @JsonIgnore
     public void addSpawnLocation(int x, int y) {
         int filledspawnPoints = 0;
         for (int i = 0; i < spawnPoints.length; i++) {
@@ -121,6 +159,7 @@ public class Level {
         spawnPoints[spawnPointsCount] = new Vector2(x, y);
     }
 
+    @JsonIgnore
     public void setSpawnLocation(int index, int x, int y) {
         if (index < 0 || index >= spawnPointsCount) {
             throw new IllegalArgumentException("Invalid spawn location index");
@@ -133,6 +172,7 @@ public class Level {
         spawnPoints[index] = new Vector2(x, y);
     }
 
+    @JsonIgnore
     public boolean isTileASpawnLocation(int x, int y) {
         for (int i = 0; i < spawnPoints.length; i++) {
             // if spawn point is null, it means that it hasn't been set yet
@@ -148,6 +188,7 @@ public class Level {
         return false;
     }
 
+    @JsonIgnore
     public String toString() {
         StringBuilder sb = new StringBuilder();
 
@@ -187,4 +228,5 @@ public class Level {
 
         return sb.append(gridSb.toString()).toString();
     }
+
 }
