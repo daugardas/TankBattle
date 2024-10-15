@@ -134,7 +134,6 @@ public class GameController {
         messagingTemplate.convertAndSend("/server/players", players);
 
         updatePlayersLocations();
-        checkCollisions();
     }
 
     private void updatePlayersLocations() {
@@ -143,17 +142,17 @@ public class GameController {
         }
     }
 
-     private void checkCollisions() {
-        // Get the level tiles
-        Tile[][] tiles = level.getGrid();
+    //  private void checkCollisions() {
+    //     // Get the level tiles
+    //     Tile[][] tiles = level.getGrid();
 
-        // Check collisions for each player
-        for (Player player : players) {
-            if (collisionManager.checkTileCollision(player, tiles)) {
-                collisionManager.handlePlayerTileCollision(player);
-            }
-        }
-    }
+    //     // Check collisions for each player
+    //     for (Player player : players) {
+    //         if (collisionManager.checkTileCollision(player, tiles)) {
+    //             collisionManager.handlePlayerTileCollision(player);
+    //         }
+    //     }
+    // }
 
     @MessageMapping("/update-player-movement")
     public void updatePlayer(@Payload byte movementDirection, SimpMessageHeaderAccessor headerAccessor) {
@@ -216,6 +215,9 @@ public class GameController {
     
         return level;
     }
-    
 
+    public CollisionManager getCollisionManager() {
+        return collisionManager;
+    }
+    
 }

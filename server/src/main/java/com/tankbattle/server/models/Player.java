@@ -21,7 +21,6 @@ public class Player {
     private byte movementDirection;
     private float speed = 40;
     private double rotationAngle = 0;
-    private Vector2 previousLocation;
     private static final byte DIRECTION_UP = 0b1000;
     private static final byte DIRECTION_LEFT = 0b0100;
     private static final byte DIRECTION_DOWN = 0b0010;
@@ -30,7 +29,7 @@ public class Player {
     public Player() {
         location = new Vector2(0, 0);
         movementDirection = 0;
-        size = new Vector2(21, 21);
+        size = new Vector2(800, 800);
 
         this.gameController = SpringContext.getBean(GameController.class);
     }
@@ -39,8 +38,7 @@ public class Player {
         this.sessionId = sessionId;
         this.username = username;
         location = new Vector2(0, 0);
-        previousLocation = new Vector2(0, 0);
-        size = new Vector2(21, 21);
+        size = new Vector2(800, 800);
         movementDirection = 0;
         this.gameController = SpringContext.getBean(GameController.class);
     }
@@ -49,8 +47,7 @@ public class Player {
         this.sessionId = sessionId;
         this.username = username;
         location = new Vector2(x, y);
-        previousLocation = new Vector2(x, y);
-        size = new Vector2(21, 21);
+        size = new Vector2(800, 800);
         movementDirection = 0;
         this.gameController = SpringContext.getBean(GameController.class);
     }
@@ -135,60 +132,59 @@ public class Player {
     }
 
     public void updateLocation() {
-        previousLocation = new Vector2(location.getX(), location.getY());
-
         float diagonalSpeed = speed / (float) Math.sqrt(2);
         float deltaY = 0;
         float deltaX = 0;
-
+    
         if ((movementDirection & DIRECTION_UP) != 0) {
             deltaY -= (movementDirection & (DIRECTION_LEFT | DIRECTION_RIGHT)) != 0 ? diagonalSpeed : speed;
         }
-
+    
         if ((movementDirection & DIRECTION_DOWN) != 0) {
             deltaY += (movementDirection & (DIRECTION_LEFT | DIRECTION_RIGHT)) != 0 ? diagonalSpeed : speed;
         }
-
+    
         if ((movementDirection & DIRECTION_LEFT) != 0) {
             deltaX -= (movementDirection & (DIRECTION_UP | DIRECTION_DOWN)) != 0 ? diagonalSpeed : speed;
         }
-
+    
         if ((movementDirection & DIRECTION_RIGHT) != 0) {
             deltaX += (movementDirection & (DIRECTION_UP | DIRECTION_DOWN)) != 0 ? diagonalSpeed : speed;
         }
-
-        // if the player is trying to move
+    
+        // If the player is trying to move
         if ((movementDirection & 0b1111) != 0) {
             float newX = location.getX() + deltaX;
             float newY = location.getY() + deltaY;
-
-            applyWorldBorderConstraints(newX, newY);
+    
+            if (!checkWorldBorderConstraints(newX, newY) && !checkTileCollision(newX, newY)) {
+                location.setX(newX);
+                location.setY(newY);
+            }
         }
-
+    
         updateRotationAngle();
     }
+    
 
-    private void applyWorldBorderConstraints(float newX, float newY) {
+    private boolean checkWorldBorderConstraints(float newX, float newY) {
         float leftCornerX = newX - size.getX() / 2;
         float rightCornerX = newX + size.getX() / 2;
         float topCornerY = newY - size.getY() / 2;
         float bottomCornerY = newY + size.getY() / 2;
-
-        if (leftCornerX >= 0 && rightCornerX <= gameController.getLevelCoordinateWidth()) {
-            location.setX(newX);
-        }
-        if (topCornerY >= 0 && bottomCornerY <= gameController.getLevelCoordinateHeight()) {
-            location.setY(newY);
-        }
+    
+        return leftCornerX < 0 ||
+               rightCornerX > gameController.getLevelCoordinateWidth() ||
+               topCornerY < 0 ||
+               bottomCornerY > gameController.getLevelCoordinateHeight();
     }
+    
 
-    public void revertToPreviousPosition() {
-        if (previousLocation != null) {
-            location.setX(previousLocation.getX());
-            location.setY(previousLocation.getY());
-        }
+    //complete abomination, needs to be reworked from the ground up
+    private boolean checkTileCollision(float newX, float newY) {
+        return gameController.getCollisionManager().checkTileCollisionAtPosition(this, newX, newY, gameController.getLevel().getGrid());
     }
-
+    
     public String toString() {
         return String.format("{ sessionId: '%s', username: '%s', location: { x: %d, y: %d } }", this.sessionId,
                 this.username, this.location.getX(), this.location.getY());
