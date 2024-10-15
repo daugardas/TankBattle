@@ -12,8 +12,8 @@ import com.tankbattle.controllers.GameManager;
 import com.tankbattle.utils.Vector2;
 
 public class GamePanel extends JPanel {
-    private int WORLD_WIDTH = 20000; // default world size
-    private int WORLD_HEIGHT = 20000; // default world size
+    private int WORLD_WIDTH = 10000; // default world size
+    private int WORLD_HEIGHT = 10000; // default world size
     private int panelWorldWidth = 800;
     private int panelWorldHeight = 800;
     private int offsetX = 0;

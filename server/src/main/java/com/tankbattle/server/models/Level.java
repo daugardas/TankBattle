@@ -2,8 +2,6 @@ package com.tankbattle.server.models;
 
 import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.tankbattle.server.models.tiles.Tile;
 import com.tankbattle.server.utils.Vector2;
 
@@ -227,6 +225,10 @@ public class Level {
         }
 
         return sb.append(gridSb.toString()).toString();
+    }
+
+    public Tile[][] getTiles() {
+        return grid;
     }
 
 }
