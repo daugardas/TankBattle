@@ -135,14 +135,11 @@ public class GameController {
     public void gameLoop() {
         // Update game entities
         updatePlayersLocations();
-        updateBullets();
-        updatePowerUps();
+        //updateBullets();
+        //updatePowerUps();
 
         // Detect and handle collisions
         collisionManager.detectCollisions(players, bullets, powerUps, level.getGrid());
-
-        // Remove bullets and power-ups that are marked for removal or consumed
-        removeMarkedEntities();
 
         // Broadcast updated game state to clients
         broadcastGameState();

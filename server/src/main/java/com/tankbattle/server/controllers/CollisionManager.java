@@ -6,6 +6,7 @@ import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.tankbattle.server.events.CollisionEvent;
@@ -26,19 +27,12 @@ public class CollisionManager {
     private static final int TILE_WIDTH = GameController.TILE_WIDTH;
     private static final int TILE_HEIGHT = GameController.TILE_HEIGHT;
 
-    // Define cell size (e.g., 2000 units)
+    // Define cell size 
     private static final int CELL_SIZE = 2000;
 
     private final SpatialGrid spatialGrid;
 
-    //private final GameController gameController; // Injected for accessing level and other components
-
-    /**
-     * Constructs the CollisionManager with injected CollisionListeners and GameController.
-     *
-     * @param listeners      List of CollisionListener implementations.
-     * @param gameController The GameController instance.
-     */
+    @Autowired
     public CollisionManager(List<CollisionListener> listeners) {
         this.listeners = listeners;
         this.spatialGrid = new SpatialGrid(
@@ -48,19 +42,9 @@ public class CollisionManager {
         );
     }
 
-    /**
-     * Detects and handles various types of collisions within the game.
-     *
-     * @param players   List of players in the game.
-     * @param bullets   List of bullets in the game.
-     * @param powerUps  List of power-ups in the game.
-     * @param mapTiles  2D array representing the game map tiles.
-     */
     public void detectCollisions(List<Player> players, List<Bullet> bullets, List<PowerUp> powerUps, Tile[][] mapTiles) {
-        // Step 1: Clear the grid
         spatialGrid.clear();
 
-        // Step 2: Add all entities to the grid
         for (Player player : players) {
             spatialGrid.addEntity(player);
         }
@@ -71,19 +55,12 @@ public class CollisionManager {
             spatialGrid.addEntity(powerUp);
         }
 
-        // Step 3: Detect various collisions
         detectPlayerMapCollisions(players, mapTiles);
         detectPlayerPlayerCollisions(players);
         detectPlayerBulletCollisions(players, bullets);
         detectPlayerPowerUpCollisions(players, powerUps);
     }
 
-    /**
-     * Detects collisions between players and the map.
-     *
-     * @param players  List of players.
-     * @param mapTiles 2D array representing the game map tiles.
-     */
     private void detectPlayerMapCollisions(List<Player> players, Tile[][] mapTiles) {
         for (Player player : players) {
             if (!canMoveTo(player, player.getLocation(), mapTiles)) {
@@ -92,11 +69,6 @@ public class CollisionManager {
         }
     }
 
-    /**
-     * Detects collisions between players using SpatialGrid.
-     *
-     * @param players List of players.
-     */
     private void detectPlayerPlayerCollisions(List<Player> players) {
         Map<String, Boolean> processedPairs = new HashMap<>();
 
@@ -119,12 +91,6 @@ public class CollisionManager {
         }
     }
 
-    /**
-     * Detects collisions between players and bullets using SpatialGrid.
-     *
-     * @param players List of players.
-     * @param bullets List of bullets.
-     */
     private void detectPlayerBulletCollisions(List<Player> players, List<Bullet> bullets) {
         for (Player player : players) {
             List<GameEntity> nearbyEntities = spatialGrid.getNearbyEntities(player);
@@ -139,12 +105,6 @@ public class CollisionManager {
         }
     }
 
-    /**
-     * Detects collisions between players and power-ups using SpatialGrid.
-     *
-     * @param players   List of players.
-     * @param powerUps  List of power-ups.
-     */
     private void detectPlayerPowerUpCollisions(List<Player> players, List<PowerUp> powerUps) {
         for (Player player : players) {
             List<GameEntity> nearbyEntities = spatialGrid.getNearbyEntities(player);

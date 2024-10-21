@@ -1,10 +1,13 @@
 package com.tankbattle.server.listeners;
 
-import com.tankbattle.server.events.CollisionEvent;
-import com.tankbattle.server.models.Player;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
 
+import com.tankbattle.server.events.CollisionEvent;
+import com.tankbattle.server.models.Player;
+
+@Component
 public class PlayerPlayerCollisionListener implements CollisionListener {
     private static final Logger logger = LoggerFactory.getLogger(PlayerPlayerCollisionListener.class);
 
@@ -19,6 +22,7 @@ public class PlayerPlayerCollisionListener implements CollisionListener {
 
         // Implement collision response, e.g., prevent overlapping
         player1.revertToPreviousPosition();
-        logger.info("Player {} collided with Player {}. Reverting position.", player1.getUsername(), player2.getUsername());
+        player2.revertToPreviousPosition();
+        logger.info("Player {} collided with Player {}. Reverting positions.", player1.getUsername(), player2.getUsername());
     }
 }

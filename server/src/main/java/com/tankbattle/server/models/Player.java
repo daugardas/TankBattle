@@ -185,17 +185,20 @@ public class Player implements GameEntity {
        }
 
        // Check for map collisions before moving
-       boolean canMove = gameController.getCollisionManager().canMoveTo(this, newPosition, gameController.getLevel().getGrid());
+       //boolean canMove = gameController.getCollisionManager().canMoveTo(this, newPosition, gameController.getLevel().getGrid());
 
-       if (canMove) {
-           // Update previous location before moving
-           previousLocation = new Vector2(location.getX(), location.getY());
-           location.setX(newX);
-           location.setY(newY);
-       } else {
-           // Movement is blocked; revert to previous position
-           revertToPreviousPosition();
-       }
+       previousLocation = new Vector2(location.getX(), location.getY());
+       location.setX(newX);
+       location.setY(newY);
+    //    if (canMove) {
+    //        // Update previous location before moving
+    //        previousLocation = new Vector2(location.getX(), location.getY());
+    //        location.setX(newX);
+    //        location.setY(newY);
+    //    } else {
+    //        // Movement is blocked; revert to previous position
+    //        revertToPreviousPosition();
+    //    }
 
        updateRotationAngle();
    }
@@ -269,5 +272,21 @@ public class Player implements GameEntity {
     @Override
     public int hashCode() {
         return Objects.hash(username);
+    }
+
+    /**
+     * Moves the player by the specified delta vector.
+     *
+     * @param delta The vector by which to move the player.
+     */
+    public void moveBy(Vector2 delta) {
+        // Store the current location as previous before moving
+        previousLocation = new Vector2(location.getX(), location.getY());
+        this.location.setX(this.location.getX() + delta.getX());
+        this.location.setY(this.location.getY() + delta.getY());
+    }
+
+    public GameController getGameController() {
+        return this.gameController;
     }
 }
