@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -13,10 +14,12 @@ import java.util.UUID;
 
 import javax.swing.Timer;
 
+import com.tankbattle.models.Collision;
 import com.tankbattle.models.CurrentPlayer;
 import com.tankbattle.models.Level;
 import com.tankbattle.models.Player;
 import com.tankbattle.models.tiles.Tile;
+import com.tankbattle.renderers.ExplosionRenderer;
 import com.tankbattle.renderers.RendererManager;
 import com.tankbattle.renderers.TankRenderer;
 import com.tankbattle.renderers.TileRenderer;
@@ -33,6 +36,8 @@ public class GameManager {
     private final HashMap<String, Player> players;
     private CurrentPlayer currentPlayer;
     public int playerCount = 0;
+    private final List<Collision> collisions = new ArrayList<>();
+    private static final long COLLISION_LIFETIME = 1000; // 5 seconds
 
     private GameManager() {
         webSocketManager = new WebSocketManager();
@@ -44,6 +49,7 @@ public class GameManager {
         TankRenderer tankRenderer = new TankRenderer(resourceManager);
         rendererManager.registerRenderer(Player.class, tankRenderer);
         rendererManager.registerRenderer(Tile.class, new TileRenderer(resourceManager));
+        rendererManager.registerRenderer(Collision.class, new ExplosionRenderer(resourceManager));
     }
 
     private static final GameManager INSTANCE = new GameManager();
@@ -161,6 +167,14 @@ public class GameManager {
         rendererManager.setWorldOffset(worldOffset);
     }
 
+    public void addCollision(Vector2 location) {
+        collisions.add(new Collision(location));
+    }
+    
+    public List<Collision> getCollisions() {
+        return new ArrayList<>(collisions);
+    }
+
     public void renderAll(Graphics2D g2d) {
         // level rendering
         Tile[][] tileGrid = level.getGrid();
@@ -176,6 +190,18 @@ public class GameManager {
         for (Player player : allPlayers) {
             rendererManager.draw(g2d, player);
         }
+
+
+        Iterator<Collision> iterator = collisions.iterator();
+    long currentTime = System.currentTimeMillis();
+    while (iterator.hasNext()) {
+        Collision collision = iterator.next();
+        if (currentTime - collision.getTimestamp() > COLLISION_LIFETIME) {
+            iterator.remove(); // Remove old collisions
+        } else {
+            rendererManager.draw(g2d, collision);
+        }
+    }
 
     }
 }

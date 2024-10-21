@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.handler.annotation.MessageMapping;
@@ -264,5 +265,16 @@ public class GameController {
 
     public CollisionManager getCollisionManager() {
         return collisionManager;
+    }
+
+    public void sendCollisionLocation(int x, int y) {
+        Map<String, Integer> collisionLocation = new HashMap<>();
+        collisionLocation.put("x", x);
+        collisionLocation.put("y", y);
+
+        // Send the collision location to clients subscribed to /server/collisions
+        messagingTemplate.convertAndSend("/server/collisions", collisionLocation);
+
+        System.out.println("Sent collision location: x=" + x + ", y=" + y);
     }
 }
