@@ -103,47 +103,41 @@ public class CollisionManager {
         return isCollidingWithMapAtPosition(player, player.getLocation(), mapTiles);
     }
 
-    public boolean isCollidingWithMapAtPosition(Player player, Vector2 position, Tile[][] mapTiles) {
-        // Determine the bounding box of the player at the new position
+    private boolean isCollidingWithMapAtPosition(Player player, Vector2 position, Tile[][] mapTiles) {
+        // Calculate the bounding box
         float left = position.getX() - player.getSize().getX() / 2;
         float right = position.getX() + player.getSize().getX() / 2;
         float top = position.getY() - player.getSize().getY() / 2;
         float bottom = position.getY() + player.getSize().getY() / 2;
-
-        // Determine which tiles the player would occupy using integer division
-        int leftTile = (int) Math.floor(left / TILE_WIDTH);
-        int rightTile = (int) Math.floor(right / TILE_WIDTH);
-        int topTile = (int) Math.floor(top / TILE_HEIGHT);
-        int bottomTile = (int) Math.floor(bottom / TILE_HEIGHT);
-
-        // Clamp tile indices to map boundaries
-        leftTile = Math.max(0, Math.min(leftTile, mapTiles[0].length - 1));
-        rightTile = Math.max(0, Math.min(rightTile, mapTiles[0].length - 1));
-        topTile = Math.max(0, Math.min(topTile, mapTiles.length - 1));
-        bottomTile = Math.max(0, Math.min(bottomTile, mapTiles.length - 1));
-
-        logger.debug("Checking collision for player '{}' at position ({}, {}). Tiles checked: x [{} to {}], y [{} to {}]",
-                     player.getUsername(), position.getX(), position.getY(),
-                     leftTile, rightTile, topTile, bottomTile);
-
-        // Iterate through the tiles the player would occupy
-        for (int y = topTile; y <= bottomTile; y++) { // y first
-            for (int x = leftTile; x <= rightTile; x++) { // x second
-                Tile tile = mapTiles[y][x]; // Access mapTiles[y][x]
-                logger.debug("Tile at ({}, {}) isPassable: {}", x, y, tile.canPass());
-                if (!tile.canPass()) { // Assuming Tile has canPass() method
-                    Vector2 tilePos = new Vector2(x * TILE_WIDTH + TILE_WIDTH / 2, y * TILE_HEIGHT + TILE_HEIGHT / 2);
-                    Vector2 tileSize = new Vector2(TILE_WIDTH, TILE_HEIGHT);
-                    if (aabbCollision(position, player.getSize(), tilePos, tileSize)) {
+    
+        // Determine tile indices
+        int leftTile = Math.max(0, (int) Math.floor(left / TILE_WIDTH));
+        int rightTile = Math.min(mapTiles[0].length - 1, (int) Math.floor(right / TILE_WIDTH));
+        int topTile = Math.max(0, (int) Math.floor(top / TILE_HEIGHT));
+        int bottomTile = Math.min(mapTiles.length - 1, (int) Math.floor(bottom / TILE_HEIGHT));
+    
+        // Iterate through non-passable tiles only
+        for (int y = topTile; y <= bottomTile; y++) {
+            for (int x = leftTile; x <= rightTile; x++) {
+                Tile tile = mapTiles[y][x];
+                if (!tile.canPass()) {
+                    // Direct AABB check can be optimized or even skipped if tile size aligns with grid
+                    if (isAABBOverlapping(position, player.getSize(), new Vector2(x * TILE_WIDTH + TILE_WIDTH / 2, y * TILE_HEIGHT + TILE_HEIGHT / 2), new Vector2(TILE_WIDTH, TILE_HEIGHT))) {
                         logger.info("Collision detected for player '{}' with tile ({}, {})", player.getUsername(), x, y);
-                        return true; // Collision detected
+                        return true;
                     }
                 }
             }
         }
-
-        return false; // No collision
+        return false;
     }
+    
+    private boolean isAABBOverlapping(Vector2 pos1, Vector2 size1, Vector2 pos2, Vector2 size2) {
+        // Simplified collision check assuming tiles are axis-aligned and same size
+        return Math.abs(pos1.getX() - pos2.getX()) * 2 < (size1.getX() + size2.getX()) &&
+               Math.abs(pos1.getY() - pos2.getY()) * 2 < (size1.getY() + size2.getY());
+    }
+    
 
     private boolean aabbCollision(Vector2 pos1, Vector2 size1, Vector2 pos2, Vector2 size2) {
         float left1 = pos1.getX() - size1.getX() / 2;
