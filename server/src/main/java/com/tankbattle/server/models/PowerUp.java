@@ -3,7 +3,7 @@ package com.tankbattle.server.models;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.tankbattle.server.utils.Vector2;
 
-public class PowerUp {
+public class PowerUp implements GameEntity {
     private Vector2 location;
     private Vector2 size;
     private PowerUpType type;

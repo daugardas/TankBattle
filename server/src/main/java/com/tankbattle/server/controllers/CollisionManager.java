@@ -1,6 +1,8 @@
 package com.tankbattle.server.controllers;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -9,9 +11,11 @@ import org.springframework.stereotype.Component;
 import com.tankbattle.server.events.CollisionEvent;
 import com.tankbattle.server.listeners.CollisionListener;
 import com.tankbattle.server.models.Bullet;
+import com.tankbattle.server.models.GameEntity;
 import com.tankbattle.server.models.Player;
 import com.tankbattle.server.models.PowerUp;
 import com.tankbattle.server.models.tiles.Tile;
+import com.tankbattle.server.utils.SpatialGrid;
 import com.tankbattle.server.utils.Vector2;
 
 @Component
@@ -22,134 +26,230 @@ public class CollisionManager {
     private static final int TILE_WIDTH = GameController.TILE_WIDTH;
     private static final int TILE_HEIGHT = GameController.TILE_HEIGHT;
 
+    // Define cell size (e.g., 2000 units)
+    private static final int CELL_SIZE = 2000;
+
+    private final SpatialGrid spatialGrid;
+
+    //private final GameController gameController; // Injected for accessing level and other components
+
+    /**
+     * Constructs the CollisionManager with injected CollisionListeners and GameController.
+     *
+     * @param listeners      List of CollisionListener implementations.
+     * @param gameController The GameController instance.
+     */
     public CollisionManager(List<CollisionListener> listeners) {
         this.listeners = listeners;
+        this.spatialGrid = new SpatialGrid(
+            CELL_SIZE,
+            GameController.WORLD_WIDTH * TILE_WIDTH,
+            GameController.WORLD_HEIGHT * TILE_HEIGHT
+        );
     }
 
+    /**
+     * Detects and handles various types of collisions within the game.
+     *
+     * @param players   List of players in the game.
+     * @param bullets   List of bullets in the game.
+     * @param powerUps  List of power-ups in the game.
+     * @param mapTiles  2D array representing the game map tiles.
+     */
     public void detectCollisions(List<Player> players, List<Bullet> bullets, List<PowerUp> powerUps, Tile[][] mapTiles) {
+        // Step 1: Clear the grid
+        spatialGrid.clear();
+
+        // Step 2: Add all entities to the grid
+        for (Player player : players) {
+            spatialGrid.addEntity(player);
+        }
+        for (Bullet bullet : bullets) {
+            spatialGrid.addEntity(bullet);
+        }
+        for (PowerUp powerUp : powerUps) {
+            spatialGrid.addEntity(powerUp);
+        }
+
+        // Step 3: Detect various collisions
         detectPlayerMapCollisions(players, mapTiles);
         detectPlayerPlayerCollisions(players);
         detectPlayerBulletCollisions(players, bullets);
         detectPlayerPowerUpCollisions(players, powerUps);
     }
 
+    /**
+     * Detects collisions between players and the map.
+     *
+     * @param players  List of players.
+     * @param mapTiles 2D array representing the game map tiles.
+     */
     private void detectPlayerMapCollisions(List<Player> players, Tile[][] mapTiles) {
         for (Player player : players) {
-            if (isCollidingWithMap(player, mapTiles)) {
+            if (!canMoveTo(player, player.getLocation(), mapTiles)) {
                 notifyListeners(new CollisionEvent(CollisionEvent.CollisionType.PLAYER_MAP, player, null));
             }
         }
     }
 
+    /**
+     * Detects collisions between players using SpatialGrid.
+     *
+     * @param players List of players.
+     */
     private void detectPlayerPlayerCollisions(List<Player> players) {
-        for (int i = 0; i < players.size(); i++) {
-            for (int j = i + 1; j < players.size(); j++) {
-                Player p1 = players.get(i);
-                Player p2 = players.get(j);
-                if (isColliding(p1, p2)) {
-                    notifyListeners(new CollisionEvent(CollisionEvent.CollisionType.PLAYER_PLAYER, p1, p2));
-                    notifyListeners(new CollisionEvent(CollisionEvent.CollisionType.PLAYER_PLAYER, p2, p1));
+        Map<String, Boolean> processedPairs = new HashMap<>();
+
+        for (Player player : players) {
+            List<GameEntity> nearbyEntities = spatialGrid.getNearbyEntities(player);
+            for (GameEntity entity : nearbyEntities) {
+                if (entity instanceof Player && !entity.equals(player)) {
+                    Player otherPlayer = (Player) entity;
+                    String pairKey = generatePairKey(player, otherPlayer);
+                    if (processedPairs.getOrDefault(pairKey, false)) {
+                        continue; // Already processed this pair
+                    }
+
+                    if (isColliding(player, otherPlayer)) {
+                        notifyListeners(new CollisionEvent(CollisionEvent.CollisionType.PLAYER_PLAYER, player, otherPlayer));
+                        processedPairs.put(pairKey, true);
+                    }
                 }
             }
         }
     }
 
+    /**
+     * Detects collisions between players and bullets using SpatialGrid.
+     *
+     * @param players List of players.
+     * @param bullets List of bullets.
+     */
     private void detectPlayerBulletCollisions(List<Player> players, List<Bullet> bullets) {
         for (Player player : players) {
-            for (Bullet bullet : bullets) {
-                if (isColliding(player, bullet)) {
-                    notifyListeners(new CollisionEvent(CollisionEvent.CollisionType.PLAYER_BULLET, player, bullet));
+            List<GameEntity> nearbyEntities = spatialGrid.getNearbyEntities(player);
+            for (GameEntity entity : nearbyEntities) {
+                if (entity instanceof Bullet) {
+                    Bullet bullet = (Bullet) entity;
+                    if (isColliding(player, bullet)) {
+                        notifyListeners(new CollisionEvent(CollisionEvent.CollisionType.PLAYER_BULLET, player, bullet));
+                    }
                 }
             }
         }
     }
 
+    /**
+     * Detects collisions between players and power-ups using SpatialGrid.
+     *
+     * @param players   List of players.
+     * @param powerUps  List of power-ups.
+     */
     private void detectPlayerPowerUpCollisions(List<Player> players, List<PowerUp> powerUps) {
         for (Player player : players) {
-            for (PowerUp powerUp : powerUps) {
-                if (isColliding(player, powerUp)) {
-                    notifyListeners(new CollisionEvent(CollisionEvent.CollisionType.PLAYER_POWERUP, player, powerUp));
+            List<GameEntity> nearbyEntities = spatialGrid.getNearbyEntities(player);
+            for (GameEntity entity : nearbyEntities) {
+                if (entity instanceof PowerUp) {
+                    PowerUp powerUp = (PowerUp) entity;
+                    if (isColliding(player, powerUp)) {
+                        notifyListeners(new CollisionEvent(CollisionEvent.CollisionType.PLAYER_POWERUP, player, powerUp));
+                    }
                 }
             }
         }
     }
 
+    /**
+     * Generates a unique key for a pair of players to avoid duplicate collision processing.
+     *
+     * @param p1 First player.
+     * @param p2 Second player.
+     * @return A unique string key representing the player pair.
+     */
+    private String generatePairKey(Player p1, Player p2) {
+        return p1.getSessionId().compareTo(p2.getSessionId()) < 0
+            ? p1.getSessionId() + "-" + p2.getSessionId()
+            : p2.getSessionId() + "-" + p1.getSessionId();
+    }
+
+    /**
+     * Notifies all registered listeners of a collision event.
+     *
+     * @param event The collision event to notify listeners about.
+     */
     private void notifyListeners(CollisionEvent event) {
         for (CollisionListener listener : listeners) {
             listener.onCollision(event);
         }
     }
 
-    // Collision Detection Methods (AABB)
-    private boolean isColliding(Player p, Player q) {
-        return aabbCollision(p.getLocation(), p.getSize(), q.getLocation(), q.getSize());
+    /**
+     * Checks if two entities are colliding using Axis-Aligned Bounding Box (AABB) collision detection.
+     *
+     * @param e1 First entity.
+     * @param e2 Second entity.
+     * @return True if entities are colliding, else false.
+     */
+    private boolean isColliding(GameEntity e1, GameEntity e2) {
+        Vector2 pos1 = e1.getLocation();
+        Vector2 size1 = e1.getSize();
+        Vector2 pos2 = e2.getLocation();
+        Vector2 size2 = e2.getSize();
+
+        return Math.abs(pos1.getX() - pos2.getX()) * 2 < (size1.getX() + size2.getX()) &&
+               Math.abs(pos1.getY() - pos2.getY()) * 2 < (size1.getY() + size2.getY());
     }
 
-    private boolean isColliding(Player p, Bullet b) {
-        return aabbCollision(p.getLocation(), p.getSize(), b.getLocation(), b.getSize());
-    }
-
-    private boolean isColliding(Player p, PowerUp pu) {
-        return aabbCollision(p.getLocation(), p.getSize(), pu.getLocation(), pu.getSize());
-    }
-
+    /**
+     * Determines if a player can move to the specified position without colliding with the map.
+     *
+     * @param player      The player attempting to move.
+     * @param newPosition The intended new position.
+     * @param mapTiles    The game map tiles.
+     * @return True if the player can move without collision, else false.
+     */
     public boolean canMoveTo(Player player, Vector2 newPosition, Tile[][] mapTiles) {
-        // Check collision with map at the new position
-        return !isCollidingWithMapAtPosition(player, newPosition, mapTiles);
-    }
-
-    private boolean isCollidingWithMap(Player player, Tile[][] mapTiles) {
-        // Implement map collision logic based on current position
-        return isCollidingWithMapAtPosition(player, player.getLocation(), mapTiles);
-    }
-
-    private boolean isCollidingWithMapAtPosition(Player player, Vector2 position, Tile[][] mapTiles) {
         // Calculate the bounding box
-        float left = position.getX() - player.getSize().getX() / 2;
-        float right = position.getX() + player.getSize().getX() / 2;
-        float top = position.getY() - player.getSize().getY() / 2;
-        float bottom = position.getY() + player.getSize().getY() / 2;
-    
+        float left = newPosition.getX() - player.getSize().getX() / 2;
+        float right = newPosition.getX() + player.getSize().getX() / 2;
+        float top = newPosition.getY() - player.getSize().getY() / 2;
+        float bottom = newPosition.getY() + player.getSize().getY() / 2;
+
         // Determine tile indices
         int leftTile = Math.max(0, (int) Math.floor(left / TILE_WIDTH));
         int rightTile = Math.min(mapTiles[0].length - 1, (int) Math.floor(right / TILE_WIDTH));
         int topTile = Math.max(0, (int) Math.floor(top / TILE_HEIGHT));
         int bottomTile = Math.min(mapTiles.length - 1, (int) Math.floor(bottom / TILE_HEIGHT));
-    
+
         // Iterate through non-passable tiles only
         for (int y = topTile; y <= bottomTile; y++) {
             for (int x = leftTile; x <= rightTile; x++) {
                 Tile tile = mapTiles[y][x];
-                if (!tile.canPass()) {
-                    // Direct AABB check can be optimized or even skipped if tile size aligns with grid
-                    if (isAABBOverlapping(position, player.getSize(), new Vector2(x * TILE_WIDTH + TILE_WIDTH / 2, y * TILE_HEIGHT + TILE_HEIGHT / 2), new Vector2(TILE_WIDTH, TILE_HEIGHT))) {
-                        logger.info("Collision detected for player '{}' with tile ({}, {})", player.getUsername(), x, y);
-                        return true;
+                if (tile != null && !tile.canPass()) {
+                    // Check AABB overlap between player and tile
+                    Vector2 tileCenter = new Vector2(x * TILE_WIDTH + TILE_WIDTH / 2, y * TILE_HEIGHT + TILE_HEIGHT / 2);
+                    Vector2 tileSize = new Vector2(TILE_WIDTH, TILE_HEIGHT);
+                    if (isAABBOverlapping(newPosition, player.getSize(), tileCenter, tileSize)) {
+                        logger.debug("Player '{}' collides with non-passable tile at ({}, {})", player.getUsername(), x, y);
+                        return false;
                     }
                 }
             }
         }
-        return false;
+        return true;
     }
-    
+
+    /**
+     * Axis-Aligned Bounding Box (AABB) collision detection between two bounding boxes.
+     *
+     * @param pos1   Center position of the first bounding box.
+     * @param size1  Size of the first bounding box.
+     * @param pos2   Center position of the second bounding box.
+     * @param size2  Size of the second bounding box.
+     * @return True if the bounding boxes overlap, else false.
+     */
     private boolean isAABBOverlapping(Vector2 pos1, Vector2 size1, Vector2 pos2, Vector2 size2) {
-        // Simplified collision check assuming tiles are axis-aligned and same size
         return Math.abs(pos1.getX() - pos2.getX()) * 2 < (size1.getX() + size2.getX()) &&
                Math.abs(pos1.getY() - pos2.getY()) * 2 < (size1.getY() + size2.getY());
-    }
-    
-
-    private boolean aabbCollision(Vector2 pos1, Vector2 size1, Vector2 pos2, Vector2 size2) {
-        float left1 = pos1.getX() - size1.getX() / 2;
-        float right1 = pos1.getX() + size1.getX() / 2;
-        float top1 = pos1.getY() - size1.getY() / 2;
-        float bottom1 = pos1.getY() + size1.getY() / 2;
-
-        float left2 = pos2.getX() - size2.getX() / 2;
-        float right2 = pos2.getX() + size2.getX() / 2;
-        float top2 = pos2.getY() - size2.getY() / 2;
-        float bottom2 = pos2.getY() + size2.getY() / 2;
-
-        return !(left1 >= right2 || right1 <= left2 || top1 >= bottom2 || bottom1 <= top2);
     }
 }

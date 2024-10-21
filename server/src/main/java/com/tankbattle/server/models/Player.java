@@ -7,7 +7,7 @@ import com.tankbattle.server.components.SpringContext;
 import com.tankbattle.server.controllers.GameController;
 import com.tankbattle.server.utils.Vector2;
 
-public class Player {
+public class Player implements GameEntity {
     @JsonIgnore
     private GameController gameController;
 
@@ -145,54 +145,68 @@ public class Player {
     }
 
     public void updateLocation() {
-        // Calculate intended movement
-        float diagonalSpeed = speed / (float) Math.sqrt(2);
-        float deltaY = 0;
-        float deltaX = 0;
+       // Calculate intended movement
+       float diagonalSpeed = speed / (float) Math.sqrt(2);
+       float deltaY = 0;
+       float deltaX = 0;
 
-        if ((movementDirection & DIRECTION_UP) != 0) {
-            deltaY -= (movementDirection & (DIRECTION_LEFT | DIRECTION_RIGHT)) != 0 ? diagonalSpeed : speed;
-        }
+       boolean movingVertically = false;
+       boolean movingHorizontally = false;
 
-        if ((movementDirection & DIRECTION_DOWN) != 0) {
-            deltaY += (movementDirection & (DIRECTION_LEFT | DIRECTION_RIGHT)) != 0 ? diagonalSpeed : speed;
-        }
+       if ((movementDirection & DIRECTION_UP) != 0) {
+           movingVertically = true;
+           deltaY -= (movementDirection & (DIRECTION_LEFT | DIRECTION_RIGHT)) != 0 ? diagonalSpeed : speed;
+       }
 
-        if ((movementDirection & DIRECTION_LEFT) != 0) {
-            deltaX -= (movementDirection & (DIRECTION_UP | DIRECTION_DOWN)) != 0 ? diagonalSpeed : speed;
-        }
+       if ((movementDirection & DIRECTION_DOWN) != 0) {
+           movingVertically = true;
+           deltaY += (movementDirection & (DIRECTION_LEFT | DIRECTION_RIGHT)) != 0 ? diagonalSpeed : speed;
+       }
 
-        if ((movementDirection & DIRECTION_RIGHT) != 0) {
-            deltaX += (movementDirection & (DIRECTION_UP | DIRECTION_DOWN)) != 0 ? diagonalSpeed : speed;
-        }
+       if ((movementDirection & DIRECTION_LEFT) != 0) {
+           movingHorizontally = true;
+           deltaX -= (movementDirection & (DIRECTION_UP | DIRECTION_DOWN)) != 0 ? diagonalSpeed : speed;
+       }
 
-        // Calculate intended new position
-        float newX = location.getX() + deltaX;
-        float newY = location.getY() + deltaY;
-        Vector2 newPosition = new Vector2(newX, newY);
+       if ((movementDirection & DIRECTION_RIGHT) != 0) {
+           movingHorizontally = true;
+           deltaX += (movementDirection & (DIRECTION_UP | DIRECTION_DOWN)) != 0 ? diagonalSpeed : speed;
+       }
 
-        // Check for world border constraints
-        if (checkWorldBorderConstraints(newX, newY)) {
-            // Prevent movement beyond world boundaries
-            return;
-        }
+       // Calculate intended new position
+       float newX = location.getX() + deltaX;
+       float newY = location.getY() + deltaY;
+       Vector2 newPosition = new Vector2(newX, newY);
 
-        // Check for map collisions before moving
-        boolean canMove = gameController.getCollisionManager().canMoveTo(this, newPosition, gameController.getLevel().getGrid());
+       // Check for world border constraints
+       if (checkWorldBorderConstraints(newX, newY)) {
+           // Prevent movement beyond world boundaries
+           return;
+       }
 
-        if (canMove) {
-            // Update previous location before moving
-            previousLocation = new Vector2(location.getX(), location.getY());
-            location.setX(newX);
-            location.setY(newY);
-        } else {
-            // Movement is blocked; optionally, handle collision response here
-            // For example, stop movement, play a bump sound, etc.
-        }
+       // Check for map collisions before moving
+       boolean canMove = gameController.getCollisionManager().canMoveTo(this, newPosition, gameController.getLevel().getGrid());
 
-        updateRotationAngle();
-    }
+       if (canMove) {
+           // Update previous location before moving
+           previousLocation = new Vector2(location.getX(), location.getY());
+           location.setX(newX);
+           location.setY(newY);
+       } else {
+           // Movement is blocked; revert to previous position
+           revertToPreviousPosition();
+       }
 
+       updateRotationAngle();
+   }
+
+    /**
+     * Checks whether the intended new position is within the world boundaries.
+     *
+     * @param newX The intended new x-coordinate.
+     * @param newY The intended new y-coordinate.
+     * @return True if the new position is outside the world boundaries, else false.
+     */
     private boolean checkWorldBorderConstraints(float newX, float newY) {
         float leftCornerX = newX - size.getX() / 2;
         float rightCornerX = newX + size.getX() / 2;
