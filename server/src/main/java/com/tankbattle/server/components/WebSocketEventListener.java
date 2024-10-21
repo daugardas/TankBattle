@@ -27,8 +27,8 @@ public class WebSocketEventListener {
 
         sessionManager.addSession(sessionId);
 
-        int x = 1000; //needs fixing Daugardas plz why is it clashing between world coordinates and tiles
-        int y = 2000; 
+        int x = 2000; //needs fixing Daugardas plz why is it clashing between world coordinates and tiles
+        int y = 3000; 
 
         Player newPlayer = new Player(sessionId, username, x, y);
         gameController.addPlayer(newPlayer);

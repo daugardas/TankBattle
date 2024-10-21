@@ -21,16 +21,23 @@ public class Player {
     private byte movementDirection;
     private float speed = 40;
     private double rotationAngle = 0;
+    private int health = 100; // Example health attribute
+
     private static final byte DIRECTION_UP = 0b1000;
     private static final byte DIRECTION_LEFT = 0b0100;
     private static final byte DIRECTION_DOWN = 0b0010;
     private static final byte DIRECTION_RIGHT = 0b0001;
 
+    @JsonIgnore
+    private Vector2 previousLocation; // To store previous position for collision response
+
     public Player() {
         location = new Vector2(0, 0);
+        previousLocation = new Vector2(0, 0);
         movementDirection = 0;
         size = new Vector2(800, 800);
 
+        // Assuming SpringContext is a utility to get Spring beans
         this.gameController = SpringContext.getBean(GameController.class);
     }
 
@@ -38,6 +45,7 @@ public class Player {
         this.sessionId = sessionId;
         this.username = username;
         location = new Vector2(0, 0);
+        previousLocation = new Vector2(0, 0);
         size = new Vector2(800, 800);
         movementDirection = 0;
         this.gameController = SpringContext.getBean(GameController.class);
@@ -47,6 +55,7 @@ public class Player {
         this.sessionId = sessionId;
         this.username = username;
         location = new Vector2(x, y);
+        previousLocation = new Vector2(x, y);
         size = new Vector2(800, 800);
         movementDirection = 0;
         this.gameController = SpringContext.getBean(GameController.class);
@@ -100,6 +109,10 @@ public class Player {
         return rotationAngle;
     }
 
+    public int getHealth() {
+        return health;
+    }
+
     private void updateRotationAngle() {
         switch (movementDirection) {
             case DIRECTION_UP:
@@ -132,62 +145,102 @@ public class Player {
     }
 
     public void updateLocation() {
+        // Calculate intended movement
         float diagonalSpeed = speed / (float) Math.sqrt(2);
         float deltaY = 0;
         float deltaX = 0;
-    
+
         if ((movementDirection & DIRECTION_UP) != 0) {
             deltaY -= (movementDirection & (DIRECTION_LEFT | DIRECTION_RIGHT)) != 0 ? diagonalSpeed : speed;
         }
-    
+
         if ((movementDirection & DIRECTION_DOWN) != 0) {
             deltaY += (movementDirection & (DIRECTION_LEFT | DIRECTION_RIGHT)) != 0 ? diagonalSpeed : speed;
         }
-    
+
         if ((movementDirection & DIRECTION_LEFT) != 0) {
             deltaX -= (movementDirection & (DIRECTION_UP | DIRECTION_DOWN)) != 0 ? diagonalSpeed : speed;
         }
-    
+
         if ((movementDirection & DIRECTION_RIGHT) != 0) {
             deltaX += (movementDirection & (DIRECTION_UP | DIRECTION_DOWN)) != 0 ? diagonalSpeed : speed;
         }
-    
-        // If the player is trying to move
-        if ((movementDirection & 0b1111) != 0) {
-            float newX = location.getX() + deltaX;
-            float newY = location.getY() + deltaY;
-    
-            if (!checkWorldBorderConstraints(newX, newY) && !checkTileCollision(newX, newY)) {
-                location.setX(newX);
-                location.setY(newY);
-            }
+
+        // Calculate intended new position
+        float newX = location.getX() + deltaX;
+        float newY = location.getY() + deltaY;
+        Vector2 newPosition = new Vector2(newX, newY);
+
+        // Check for world border constraints
+        if (checkWorldBorderConstraints(newX, newY)) {
+            // Prevent movement beyond world boundaries
+            return;
         }
-    
+
+        // Check for map collisions before moving
+        boolean canMove = gameController.getCollisionManager().canMoveTo(this, newPosition, gameController.getLevel().getGrid());
+
+        if (canMove) {
+            // Update previous location before moving
+            previousLocation = new Vector2(location.getX(), location.getY());
+            location.setX(newX);
+            location.setY(newY);
+        } else {
+            // Movement is blocked; optionally, handle collision response here
+            // For example, stop movement, play a bump sound, etc.
+        }
+
         updateRotationAngle();
     }
-    
 
     private boolean checkWorldBorderConstraints(float newX, float newY) {
         float leftCornerX = newX - size.getX() / 2;
         float rightCornerX = newX + size.getX() / 2;
         float topCornerY = newY - size.getY() / 2;
         float bottomCornerY = newY + size.getY() / 2;
-    
+
         return leftCornerX < 0 ||
                rightCornerX > gameController.getLevelCoordinateWidth() ||
                topCornerY < 0 ||
                bottomCornerY > gameController.getLevelCoordinateHeight();
     }
-    
 
-    //complete abomination, needs to be reworked from the ground up
-    private boolean checkTileCollision(float newX, float newY) {
-        return gameController.getCollisionManager().checkTileCollisionAtPosition(this, newX, newY, gameController.getLevel().getGrid());
+    public void revertToPreviousPosition() {
+        this.location = new Vector2(previousLocation.getX(), previousLocation.getY());
     }
-    
+
+    public void applyDamage(int damage) {
+        this.health -= damage;
+        if (this.health <= 0) {
+            // Handle player death (e.g., remove player, respawn, etc.)
+            System.out.println("Player " + username + " has been eliminated!");
+            // Implement additional logic as needed
+        }
+    }
+
+    public void applyPowerUp(PowerUpType type) {
+        switch (type) {
+            case HEALTH_BOOST:
+                this.health += 20; // Example boost
+                if (this.health > 100) this.health = 100; // Max health cap
+                break;
+            case SPEED_BOOST:
+                this.speed += 10; // Example boost
+                // Implement duration logic if needed
+                break;
+            case DAMAGE_BOOST:
+                // Implement damage boost logic
+                break;
+            case SHIELD:
+                // Implement shield logic
+                break;
+            // Add other power-up types as needed
+        }
+    }
+
     public String toString() {
-        return String.format("{ sessionId: '%s', username: '%s', location: { x: %d, y: %d } }", this.sessionId,
-                this.username, this.location.getX(), this.location.getY());
+        return String.format("{ sessionId: '%s', username: '%s', location: { x: %d, y: %d }, health: %d }", this.sessionId,
+                this.username, this.location.getX(), this.location.getY(), this.health);
     }
 
     @Override

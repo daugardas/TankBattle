@@ -2,6 +2,8 @@ package com.tankbattle.server.controllers;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.handler.annotation.MessageMapping;
@@ -20,8 +22,10 @@ import com.tankbattle.server.factories.DestructibleTileFactory;
 import com.tankbattle.server.factories.IndestructibleTileFactory;
 import com.tankbattle.server.factories.PassableGroundTileFactory;
 import com.tankbattle.server.factories.ProceduralGeneratorFactory;
+import com.tankbattle.server.models.Bullet;
 import com.tankbattle.server.models.Level;
 import com.tankbattle.server.models.Player;
+import com.tankbattle.server.models.PowerUp;
 import com.tankbattle.server.models.tiles.Tile;
 import com.tankbattle.server.strategies.Level.ProceduralGenerator;
 import com.tankbattle.server.utils.Vector2;
@@ -56,12 +60,16 @@ public class GameController {
     @Autowired
     private SimpMessagingTemplate messagingTemplate;
 
-    private ArrayList<Player> players = new ArrayList();
+    @Autowired
+    private CollisionManager collisionManager;
+
+    private List<Player> players = new ArrayList<>();
+    private List<Bullet> bullets = new ArrayList<>();
+    private List<PowerUp> powerUps = new ArrayList<>();
     private HashMap<String, Integer> sessionIdToPlayerIndex = new HashMap<>();
 
     private Level level;
-
-    private CollisionManager collisionManager;
+    
 
     public Level getLevel() {
         return level;
@@ -77,7 +85,6 @@ public class GameController {
 
     @PostConstruct
     public void init() {
-        collisionManager = new CollisionManager();
         boolean useProceduralGeneration = false;
 
         if (useProceduralGeneration) {
@@ -87,7 +94,6 @@ public class GameController {
         } else {
             level = buildPredefinedLevel();
         }
-
         System.out.println("Level initialized. Level:");
         System.out.println(level.toString());
     }
@@ -101,6 +107,8 @@ public class GameController {
         players.removeIf(p -> p.getSessionId().equals(sessionId));
         sessionIdToPlayerIndex.remove(sessionId);
 
+        // Rebuild the sessionIdToPlayerIndex map
+        sessionIdToPlayerIndex.clear();
         for (int i = 0; i < players.size(); i++) {
             sessionIdToPlayerIndex.put(players.get(i).getSessionId(), i);
         }
@@ -123,17 +131,21 @@ public class GameController {
         }
     }
 
-    // @Scheduled(fixedRate = 100)
-    // public void sendLevelUpdate() {
-    // messagingTemplate.convertAndSend("/server/level", level);
-    // System.out.println("Sending level update to client");
-    // }
-
     @Scheduled(fixedRate = 33)
-    public void sendPlayers() {
-        messagingTemplate.convertAndSend("/server/players", players);
-
+    public void gameLoop() {
+        // Update game entities
         updatePlayersLocations();
+        updateBullets();
+        updatePowerUps();
+
+        // Detect and handle collisions
+        collisionManager.detectCollisions(players, bullets, powerUps, level.getGrid());
+
+        // Remove bullets and power-ups that are marked for removal or consumed
+        removeMarkedEntities();
+
+        // Broadcast updated game state to clients
+        broadcastGameState();
     }
 
     private void updatePlayersLocations() {
@@ -142,28 +154,65 @@ public class GameController {
         }
     }
 
-    //  private void checkCollisions() {
-    //     // Get the level tiles
-    //     Tile[][] tiles = level.getGrid();
+    private void updateBullets() {
+        for (Bullet bullet : bullets) {
+            bullet.updatePosition();
+        }
+    }
 
-    //     // Check collisions for each player
-    //     for (Player player : players) {
-    //         if (collisionManager.checkTileCollision(player, tiles)) {
-    //             collisionManager.handlePlayerTileCollision(player);
-    //         }
-    //     }
-    // }
+    private void updatePowerUps() {
+        // Implement power-up effects and spawning logic if needed
+    }
+
+    private void removeMarkedEntities() {
+        // Remove bullets marked for removal
+        Iterator<Bullet> bulletIterator = bullets.iterator();
+        while (bulletIterator.hasNext()) {
+            Bullet bullet = bulletIterator.next();
+            if (bullet.isMarkedForRemoval()) {
+                bulletIterator.remove();
+            }
+        }
+
+        // Remove consumed power-ups
+        Iterator<PowerUp> powerUpIterator = powerUps.iterator();
+        while (powerUpIterator.hasNext()) {
+            PowerUp powerUp = powerUpIterator.next();
+            if (powerUp.isConsumed()) {
+                powerUpIterator.remove();
+            }
+        }
+    }
+
+    private void broadcastGameState() {
+        messagingTemplate.convertAndSend("/server/players", players);
+        messagingTemplate.convertAndSend("/server/bullets", bullets);
+        messagingTemplate.convertAndSend("/server/powerups", powerUps);
+        // Include additional state information as needed
+    }
 
     @MessageMapping("/update-player-movement")
     public void updatePlayer(@Payload byte movementDirection, SimpMessageHeaderAccessor headerAccessor) {
         String sessionId = headerAccessor.getSessionId();
-        int playerIndex = sessionIdToPlayerIndex.get(sessionId);
-
-        players.get(playerIndex).setMovementDirection(movementDirection);
+        Integer playerIndex = sessionIdToPlayerIndex.get(sessionId);
+        if (playerIndex != null && playerIndex < players.size()) {
+            players.get(playerIndex).setMovementDirection(movementDirection);
+        } else {
+            System.err.println("Invalid session ID or player index: " + sessionId);
+        }
     }
 
+    // Method to add bullets (can be triggered by player actions)
+    public void addBullet(Bullet bullet) {
+        bullets.add(bullet);
+    }
 
-    //Does not match what I wanted but still works Daugardas will fix it
+    // Method to add power-ups (can be triggered by game events)
+    public void addPowerUp(PowerUp powerUp) {
+        powerUps.add(powerUp);
+    }
+
+    // Predefined Level Builder
     public Level buildPredefinedLevel() {
         String mapString = "G G G I I I D D G D\n" +
                            "G G G I G D G G G G\n" +
@@ -219,5 +268,4 @@ public class GameController {
     public CollisionManager getCollisionManager() {
         return collisionManager;
     }
-    
 }
