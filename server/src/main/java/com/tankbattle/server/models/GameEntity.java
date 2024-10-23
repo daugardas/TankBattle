@@ -1,5 +1,8 @@
 package com.tankbattle.server.models;
 
+import java.util.List;
+
+import com.tankbattle.server.utils.SpatialGrid.GridNode;
 import com.tankbattle.server.utils.Vector2;
 
 public interface GameEntity {
@@ -8,4 +11,16 @@ public interface GameEntity {
 
     int getQueryId();
     void setQueryId(int queryId);
+
+    // Methods for spatial grid management
+    void setCellIndices(int[] minIndices, int[] maxIndices);
+    int[] getCellIndicesMin();
+    int[] getCellIndicesMax();
+
+    void addGridNode(GridNode node);
+    List<GridNode> getGridNodes();
+    void clearGridNodes();
+
+    void setStaticEntity(boolean isStatic);
+    boolean isStaticEntity();
 }

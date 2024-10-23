@@ -1,12 +1,14 @@
 package com.tankbattle.views;
 
 import java.awt.Color;
+import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 
 import javax.swing.JPanel;
+import javax.swing.Timer;
 
 import com.tankbattle.controllers.GameManager;
 import com.tankbattle.utils.Vector2;
@@ -26,6 +28,11 @@ public class GamePanel extends JPanel {
     // Do not use this to scale sprites or other graphics
     private float worldToPanelScaleFactor = 1;
 
+    // FPS calculation, running independently
+    private float fps = 0;
+    private long frameCount = 0;
+    private long fpsTimerStart = System.currentTimeMillis();
+
     public GamePanel() {
 
         setLayout(null);
@@ -33,6 +40,9 @@ public class GamePanel extends JPanel {
         requestFocusInWindow();
         updateScaleFactor();
         updateOffsets();
+
+        Timer fpsTimer = new Timer(1000, e -> updateFps());
+        fpsTimer.start();
 
         addComponentListener(new ComponentAdapter() {
             @Override
@@ -44,10 +54,20 @@ public class GamePanel extends JPanel {
         });
     }
 
+    private void updateFps() {
+        long currentTime = System.currentTimeMillis();
+        fps = (frameCount * 1000.0f) / (currentTime - fpsTimerStart); // FPS based on elapsed time
+        fpsTimerStart = currentTime;
+        frameCount = 0; // Reset frame count for the next second
+    }
+
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
         Graphics2D g2d = (Graphics2D) g;
+
+        // Calculate FPS
+        frameCount++;
 
         // clear the panel
         g2d.setColor(Color.WHITE);
@@ -67,6 +87,23 @@ public class GamePanel extends JPanel {
         // for when the window height > width
         g2d.fillRect(0, worldToPanelY(WORLD_HEIGHT) + 1, getWidth(), getHeight());
         g2d.fillRect(0, 0, getWidth(), offsetY - 1);
+
+        // Draw FPS
+        g2d.setFont(new Font("Arial", Font.BOLD, 36));
+        g2d.setColor(Color.RED);
+        String fpsText = String.format("FPS: %.2f", fps);
+        int stringWidth = g2d.getFontMetrics().stringWidth(fpsText);
+        int xPosition = getWidth() - stringWidth - 20;
+        int yPosition = 40;
+        g2d.drawString(fpsText, xPosition, yPosition);
+
+        // Draw server update FPS
+        float serverFps = GameManager.getInstance().getServerFps();
+        String serverFpsText = String.format("Server: %.2f", serverFps);
+        int serverFpsStringWidth = g2d.getFontMetrics().stringWidth(serverFpsText);
+        int serverFpsXPosition = getWidth() - serverFpsStringWidth - 20;
+        int serverFpsYPosition = 80;
+        g2d.drawString(serverFpsText, serverFpsXPosition, serverFpsYPosition);
     }
 
     private void updateOffsets() {

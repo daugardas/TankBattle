@@ -39,6 +39,11 @@ public class GameManager {
     private final List<Collision> collisions = new ArrayList<>();
     private static final long COLLISION_LIFETIME = 1000; // 5 seconds
 
+    // FPS for server updates
+    private long serverUpdateCount = 0;
+    private float serverFps = 0;
+    private long serverFpsTimerStart = System.currentTimeMillis();    
+
     private GameManager() {
         webSocketManager = new WebSocketManager();
         rendererManager = new RendererManager();
@@ -50,6 +55,9 @@ public class GameManager {
         rendererManager.registerRenderer(Player.class, tankRenderer);
         rendererManager.registerRenderer(Tile.class, new TileRenderer(resourceManager));
         rendererManager.registerRenderer(Collision.class, new ExplosionRenderer(resourceManager));
+
+        Timer serverFpsTimer = new Timer(1000, e -> updateServerFps());
+        serverFpsTimer.start();
     }
 
     private static final GameManager INSTANCE = new GameManager();
@@ -191,17 +199,31 @@ public class GameManager {
             rendererManager.draw(g2d, player);
         }
 
-
         Iterator<Collision> iterator = collisions.iterator();
-    long currentTime = System.currentTimeMillis();
-    while (iterator.hasNext()) {
-        Collision collision = iterator.next();
-        if (currentTime - collision.getTimestamp() > COLLISION_LIFETIME) {
-            iterator.remove(); // Remove old collisions
-        } else {
-            rendererManager.draw(g2d, collision);
+        long currentTime = System.currentTimeMillis();
+        while (iterator.hasNext()) {
+            Collision collision = iterator.next();
+            if (currentTime - collision.getTimestamp() > COLLISION_LIFETIME) {
+                iterator.remove(); // Remove old collisions
+            } else {
+                rendererManager.draw(g2d, collision);
+            }
         }
+
     }
 
+    public void incrementServerUpdateCount() {
+        serverUpdateCount++;
+    }
+
+    private void updateServerFps() {
+        long currentTime = System.currentTimeMillis();
+        serverFps = (serverUpdateCount * 1000.0f) / (currentTime - serverFpsTimerStart);
+        serverFpsTimerStart = currentTime;
+        serverUpdateCount = 0;
+    }
+
+    public float getServerFps() {
+        return serverFps;
     }
 }

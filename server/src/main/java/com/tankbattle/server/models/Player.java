@@ -1,10 +1,13 @@
 package com.tankbattle.server.models;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.tankbattle.server.components.SpringContext;
 import com.tankbattle.server.controllers.GameController;
+import com.tankbattle.server.utils.SpatialGrid.GridNode;
 import com.tankbattle.server.utils.Vector2;
 
 public class Player implements GameEntity {
@@ -291,7 +294,16 @@ public class Player implements GameEntity {
     }
 
     //region Collision_stuff
+    @JsonIgnore
     private int queryId;
+    @JsonIgnore
+    private int[] cellIndicesMin;
+    @JsonIgnore
+    private int[] cellIndicesMax;
+    @JsonIgnore
+    private List<GridNode> gridNodes = new ArrayList<>();
+    @JsonIgnore
+    private boolean isStaticEntity = false;
 
     @Override
     public int getQueryId() {
@@ -301,6 +313,47 @@ public class Player implements GameEntity {
     @Override
     public void setQueryId(int queryId) {
         this.queryId = queryId;
+    }
+
+    @Override
+    public void setCellIndices(int[] minIndices, int[] maxIndices) {
+        this.cellIndicesMin = minIndices;
+        this.cellIndicesMax = maxIndices;
+    }
+
+    @Override
+    public int[] getCellIndicesMin() {
+        return cellIndicesMin;
+    }
+
+    @Override
+    public int[] getCellIndicesMax() {
+        return cellIndicesMax;
+    }
+
+    @Override
+    public void addGridNode(GridNode node) {
+        gridNodes.add(node);
+    }
+
+    @Override
+    public List<GridNode> getGridNodes() {
+        return gridNodes;
+    }
+
+    @Override
+    public void clearGridNodes() {
+        gridNodes.clear();
+    }
+
+    @Override
+    public void setStaticEntity(boolean isStatic) {
+        this.isStaticEntity = isStatic;
+    }
+
+    @Override
+    public boolean isStaticEntity() {
+        return isStaticEntity;
     }
     //endregion
 }

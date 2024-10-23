@@ -1,6 +1,7 @@
 package com.tankbattle.server.controllers;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -97,17 +98,38 @@ public class GameController {
         }
         System.out.println("Level initialized. Level:");
         System.out.println(level.toString());
+
+        collisionManager.initializeStaticEntities(level);
     }
 
     public void addPlayer(Player player) {
         sessionIdToPlayerIndex.put(player.getSessionId(), this.players.size());
         this.players.add(player);
+        collisionManager.spatialGrid.addEntity(player, false);
     }
 
     public void removePlayerBySessionId(String sessionId) {
-        players.removeIf(p -> p.getSessionId().equals(sessionId));
+        Player playerToRemove = null;
+        Iterator<Player> iterator = players.iterator();
+        while (iterator.hasNext()) {
+            Player player = iterator.next();
+            if (player.getSessionId().equals(sessionId)) {
+                playerToRemove = player;
+                iterator.remove();
+                break;
+            }
+        }
+    
+        if (playerToRemove != null) {
+            // Remove the player from the spatial grid
+             System.out.println("Removing player from grid cells. MinIndices: " + 
+                       Arrays.toString(playerToRemove.getCellIndicesMin()) + 
+                       ", MaxIndices: " + Arrays.toString(playerToRemove.getCellIndicesMax()));
+            collisionManager.spatialGrid.removeEntity(playerToRemove);
+        }
+    
         sessionIdToPlayerIndex.remove(sessionId);
-
+    
         // Rebuild the sessionIdToPlayerIndex map
         sessionIdToPlayerIndex.clear();
         for (int i = 0; i < players.size(); i++) {
@@ -140,7 +162,7 @@ public class GameController {
         //updatePowerUps();
 
         // Detect and handle collisions
-        collisionManager.detectCollisions(players, bullets, powerUps, level.getGrid());
+        collisionManager.detectCollisions(players, bullets, powerUps);
 
         // Broadcast updated game state to clients
         broadcastGameState();
@@ -149,6 +171,7 @@ public class GameController {
     private void updatePlayersLocations() {
         for (Player player : players) {
             player.updateLocation();
+            //collisionManager.spatialGrid.updateEntity(player);
         }
     }
 

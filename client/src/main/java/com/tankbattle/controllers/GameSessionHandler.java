@@ -34,6 +34,7 @@ public class GameSessionHandler extends StompSessionHandlerAdapter {
             @Override
             public void handleFrame(StompHeaders stompHeaders, Object o) {
                 GameManager.getInstance().addPlayers((Object[]) o);
+                GameManager.getInstance().incrementServerUpdateCount();
             }
         });
 

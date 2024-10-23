@@ -1,7 +1,9 @@
 package com.tankbattle.server.utils;
 
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 
 import com.tankbattle.server.models.GameEntity;
 
@@ -10,10 +12,9 @@ public class SpatialGrid {
     private final int totalCellsX;
     private final int totalCellsY;
     private final GridNode[][] grid;
-    private int queryId = 0;  // To track unique query IDs
+    private int queryId = 0;
 
-    // GridNode class for linked list implementation in each cell
-    private static class GridNode {
+    public static class GridNode {
         GameEntity entity;
         GridNode next;
         GridNode prev;
@@ -30,40 +31,47 @@ public class SpatialGrid {
         this.grid = new GridNode[totalCellsX][totalCellsY];
     }
 
-    public void clear() {
-        for (int x = 0; x < totalCellsX; x++) {
-            for (int y = 0; y < totalCellsY; y++) {
-                grid[x][y] = null;
-            }
-        }
+    public void addEntity(GameEntity entity, boolean isStatic) {
+        int[] cellIndicesMin = getCellIndices(entity, true);
+        int[] cellIndicesMax = getCellIndices(entity, false);
+        insertEntityInCells(entity, cellIndicesMin, cellIndicesMax);
+
+        entity.setCellIndices(cellIndicesMin, cellIndicesMax);
+        entity.setStaticEntity(isStatic);
     }
 
-    public void addEntity(GameEntity entity) {
-        int[] cellIndices = getCellIndices(entity);
-        insertEntityInCell(entity, cellIndices[0], cellIndices[1]);
-    }
-
-    public void updateEntity(GameEntity entity, int oldX, int oldY) {
-        int[] newCellIndices = getCellIndices(entity);
-        if (oldX != newCellIndices[0] || oldY != newCellIndices[1]) {
-            removeEntityFromCell(entity, oldX, oldY);
-            insertEntityInCell(entity, newCellIndices[0], newCellIndices[1]);
+    public void updateEntity(GameEntity entity) {
+        if (entity.isStaticEntity()) return;  // Static entities do not move
+    
+        int[] oldCellIndicesMin = entity.getCellIndicesMin();
+        int[] oldCellIndicesMax = entity.getCellIndicesMax();
+    
+        int[] newCellIndicesMin = getCellIndices(entity, true);
+        int[] newCellIndicesMax = getCellIndices(entity, false);
+    
+        if (!cellIndicesEqual(oldCellIndicesMin, newCellIndicesMin) ||
+            !cellIndicesEqual(oldCellIndicesMax, newCellIndicesMax)) {
+            
+            removeEntityFromCells(entity, oldCellIndicesMin, oldCellIndicesMax);
+            
+            insertEntityInCells(entity, newCellIndicesMin, newCellIndicesMax);
+    
+            entity.setCellIndices(newCellIndicesMin, newCellIndicesMax);
         }
     }
+    
 
     public List<GameEntity> getNearbyEntities(GameEntity entity) {
-        int[] cellIndices = getCellIndices(entity);
-        List<GameEntity> nearbyEntities = new LinkedList<>();
+        int[] cellIndicesMin = getCellIndices(entity, true);
+        int[] cellIndicesMax = getCellIndices(entity, false);
 
+        Set<GameEntity> nearbyEntities = new HashSet<>();
         queryId++;
 
-        for (int dx = -1; dx <= 1; dx++) {
-            for (int dy = -1; dy <= 1; dy++) {
-                int adjacentX = cellIndices[0] + dx;
-                int adjacentY = cellIndices[1] + dy;
-
-                if (adjacentX >= 0 && adjacentX < totalCellsX && adjacentY >= 0 && adjacentY < totalCellsY) {
-                    GridNode node = grid[adjacentX][adjacentY];
+        for (int x = cellIndicesMin[0]; x <= cellIndicesMax[0]; x++) {
+            for (int y = cellIndicesMin[1]; y <= cellIndicesMax[1]; y++) {
+                if (x >= 0 && x < totalCellsX && y >= 0 && y < totalCellsY) {
+                    GridNode node = grid[x][y];
                     while (node != null) {
                         GameEntity nearbyEntity = node.entity;
 
@@ -78,40 +86,92 @@ public class SpatialGrid {
             }
         }
 
-        return nearbyEntities;
+        nearbyEntities.remove(entity);
+
+        return new LinkedList<>(nearbyEntities);
     }
 
-    private int[] getCellIndices(GameEntity entity) {
+    private int[] getCellIndices(GameEntity entity, boolean isMin) {
         float x = entity.getLocation().getX();
         float y = entity.getLocation().getY();
-        int cellX = Math.max(0, Math.min(totalCellsX - 1, (int) (x / cellSize)));
-        int cellY = Math.max(0, Math.min(totalCellsY - 1, (int) (y / cellSize)));
+        float halfWidth = entity.getSize().getX() / 2;
+        float halfHeight = entity.getSize().getY() / 2;
+
+        float left = x - halfWidth;
+        float right = x + halfWidth;
+        float top = y - halfHeight;
+        float bottom = y + halfHeight;
+
+        int cellX = (int) ((isMin ? left : right) / cellSize);
+        int cellY = (int) ((isMin ? top : bottom) / cellSize);
+
+        cellX = Math.max(0, Math.min(totalCellsX - 1, cellX));
+        cellY = Math.max(0, Math.min(totalCellsY - 1, cellY));
+
         return new int[]{cellX, cellY};
     }
 
-    private void insertEntityInCell(GameEntity entity, int x, int y) {
-        GridNode newNode = new GridNode(entity);
-        newNode.next = grid[x][y];
-        if (grid[x][y] != null) {
-            grid[x][y].prev = newNode;
-        }
-        grid[x][y] = newNode;
-    }
-
-    private void removeEntityFromCell(GameEntity entity, int x, int y) {
-        GridNode node = grid[x][y];
-        while (node != null && node.entity != entity) {
-            node = node.next;
-        }
-        if (node == null) return;  // Entity not found in the cell
-
-        if (node.prev != null) {
-            node.prev.next = node.next;
-        } else {
-            grid[x][y] = node.next;  // Node was the head of the list
-        }
-        if (node.next != null) {
-            node.next.prev = node.prev;
+    private void insertEntityInCells(GameEntity entity, int[] minIndices, int[] maxIndices) {
+        for (int x = minIndices[0]; x <= maxIndices[0]; x++) {
+            for (int y = minIndices[1]; y <= maxIndices[1]; y++) {
+                System.out.println("Inserting player into grid cell: " + x + "," + y);
+    
+                GridNode newNode = new GridNode(entity);
+                newNode.next = grid[x][y];
+                if (grid[x][y] != null) {
+                    grid[x][y].prev = newNode;
+                }
+                grid[x][y] = newNode;
+    
+                entity.addGridNode(newNode);
+            }
         }
     }
+    
+
+    private void removeEntityFromCells(GameEntity entity, int[] minIndices, int[] maxIndices) {
+        for (GridNode node : entity.getGridNodes()) {
+            int[] indices = getNodeIndices(node);
+            System.out.println("Removing player from grid cell: " + indices[0] + "," + indices[1]);
+    
+            if (node.prev != null) {
+                node.prev.next = node.next;
+            } else {
+                grid[indices[0]][indices[1]] = node.next;
+            }
+            if (node.next != null) {
+                node.next.prev = node.prev;
+            }
+        }
+        entity.clearGridNodes();
+    }
+    
+    
+    
+
+    public void removeEntity(GameEntity entity) {
+        int[] cellIndicesMin = entity.getCellIndicesMin();
+        int[] cellIndicesMax = entity.getCellIndicesMax();
+    
+        if (cellIndicesMin != null && cellIndicesMax != null) {
+            removeEntityFromCells(entity, cellIndicesMin, cellIndicesMax);
+        }
+    
+        entity.setCellIndices(null, null);
+        entity.clearGridNodes();
+    }
+    
+
+    private boolean cellIndicesEqual(int[] indices1, int[] indices2) {
+        return indices1[0] == indices2[0] && indices1[1] == indices2[1];
+    }
+
+    private int[] getNodeIndices(GridNode node) {
+        GameEntity entity = node.entity;
+    
+        int[] cellIndicesMin = getCellIndices(entity, true);
+
+        return cellIndicesMin; 
+    }
+    
 }

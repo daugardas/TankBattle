@@ -3,67 +3,40 @@ package com.tankbattle.server.models;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.tankbattle.server.controllers.GameController;
+import com.tankbattle.server.models.tiles.Tile;
 import com.tankbattle.server.utils.SpatialGrid.GridNode;
 import com.tankbattle.server.utils.Vector2;
 
-public class PowerUp implements GameEntity {
-    private Vector2 location;
-    private Vector2 size;
-    private PowerUpType type;
+public class TileEntity implements GameEntity {
+    private Tile tile;
+    private int gridX;
+    private int gridY;
 
-    @JsonIgnore
-    private boolean consumed = false;
-
-    public PowerUp(Vector2 location, PowerUpType type) {
-        this.location = location;
-        this.type = type;
-        this.size = new Vector2(100, 100); // Example size
-    }
-
-    public Vector2 getLocation() {
-        return location;
-    }
-
-    public void setLocation(Vector2 location) {
-        this.location = location;
-    }
-
-    public Vector2 getSize() {
-        return size;
-    }
-
-    public void setSize(Vector2 size) {
-        this.size = size;
-    }
-
-    public PowerUpType getType() {
-        return type;
-    }
-
-    public void setType(PowerUpType type) {
-        this.type = type;
-    }
-
-    public boolean isConsumed() {
-        return consumed;
-    }
-
-    public void consume() {
-        this.consumed = true;
-    }
-
-        //region Collision_stuff
-    @JsonIgnore
-    private int queryId;
-    @JsonIgnore
+    // For spatial grid management
     private int[] cellIndicesMin;
-    @JsonIgnore
     private int[] cellIndicesMax;
-    @JsonIgnore
     private List<GridNode> gridNodes = new ArrayList<>();
-    @JsonIgnore
-    private boolean isStaticEntity = true;
+    private boolean isStaticEntity = true; // Tiles are static by default
+    private int queryId;
+
+    public TileEntity(Tile tile, int gridX, int gridY) {
+        this.tile = tile;
+        this.gridX = gridX;
+        this.gridY = gridY;
+    }
+
+    @Override
+    public Vector2 getLocation() {
+        float x = gridX * GameController.TILE_WIDTH + GameController.TILE_WIDTH / 2.0f;
+        float y = gridY * GameController.TILE_HEIGHT + GameController.TILE_HEIGHT / 2.0f;
+        return new Vector2(x, y);
+    }
+
+    @Override
+    public Vector2 getSize() {
+        return new Vector2(GameController.TILE_WIDTH, GameController.TILE_HEIGHT);
+    }
 
     @Override
     public int getQueryId() {
@@ -115,5 +88,12 @@ public class PowerUp implements GameEntity {
     public boolean isStaticEntity() {
         return isStaticEntity;
     }
-        //endregion
+
+    public Tile getTile() {
+        return tile;
+    }
+
+    public boolean canPass() {
+        return tile.canPass();
+    }
 }
