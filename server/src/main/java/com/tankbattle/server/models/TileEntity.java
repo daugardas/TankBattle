@@ -1,8 +1,11 @@
 package com.tankbattle.server.models;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.tankbattle.server.controllers.GameController;
 import com.tankbattle.server.models.tiles.Tile;
 import com.tankbattle.server.utils.SpatialGrid.GridNode;
@@ -14,11 +17,18 @@ public class TileEntity implements GameEntity {
     private int gridY;
 
     // For spatial grid management
-    private int[] cellIndicesMin;
-    private int[] cellIndicesMax;
-    private List<GridNode> gridNodes = new ArrayList<>();
-    private boolean isStaticEntity = true; // Tiles are static by default
+    @JsonIgnore
     private int queryId;
+    @JsonIgnore
+    private int[] cellIndicesMin;
+    @JsonIgnore
+    private int[] cellIndicesMax;
+    @JsonIgnore
+    private List<GridNode> gridNodes = new ArrayList<>();
+    @JsonIgnore
+    private boolean isStaticEntity = false;
+    @JsonIgnore
+    private Set<String> occupiedCells = new HashSet<>();
 
     public TileEntity(Tile tile, int gridX, int gridY) {
         this.tile = tile;
@@ -96,4 +106,15 @@ public class TileEntity implements GameEntity {
     public boolean canPass() {
         return tile.canPass();
     }
+
+        @Override
+    public Set<String> getOccupiedCellKeys() {
+       return new HashSet<>(occupiedCells);
+    }
+
+    @Override
+    public void setOccupiedCells(Set<String> occupiedCells) {
+        this.occupiedCells = (occupiedCells != null) ? new HashSet<>(occupiedCells) : new HashSet<>();
+    }
+    
 }

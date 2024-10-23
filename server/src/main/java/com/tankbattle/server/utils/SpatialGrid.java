@@ -1,6 +1,7 @@
 package com.tankbattle.server.utils;
 
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
@@ -39,31 +40,54 @@ public class SpatialGrid {
     public void addEntity(GameEntity entity, boolean isStatic) {
         int[] cellIndicesMin = getCellIndices(entity, true);
         int[] cellIndicesMax = getCellIndices(entity, false);
-        insertEntityInCells(entity, cellIndicesMin, cellIndicesMax);
-
+    
+        Set<String> cellsToAdd = new HashSet<>();
+        for (int x = cellIndicesMin[0]; x <= cellIndicesMax[0]; x++) {
+            for (int y = cellIndicesMin[1]; y <= cellIndicesMax[1]; y++) {
+                cellsToAdd.add(x + "," + y);
+            }
+        }
+    
+        insertEntityInCells(entity, cellsToAdd);
+    
+        entity.setOccupiedCells(cellsToAdd);
         entity.setCellIndices(cellIndicesMin, cellIndicesMax);
         entity.setStaticEntity(isStatic);
     }
+    
 
     public void updateEntity(GameEntity entity) {
-        if (entity.isStaticEntity()) return;  // Static entities do not move
+        if (entity.isStaticEntity()) return;
     
-        int[] oldCellIndicesMin = entity.getCellIndicesMin();
-        int[] oldCellIndicesMax = entity.getCellIndicesMax();
+        Set<String> oldCells = entity.getOccupiedCellKeys(); // Returns set of "x,y" strings for occupied cells
     
         int[] newCellIndicesMin = getCellIndices(entity, true);
         int[] newCellIndicesMax = getCellIndices(entity, false);
     
-        if (!cellIndicesEqual(oldCellIndicesMin, newCellIndicesMin) ||
-            !cellIndicesEqual(oldCellIndicesMax, newCellIndicesMax)) {
-            
-            removeEntityFromCells(entity, oldCellIndicesMin, oldCellIndicesMax);
-            
-            insertEntityInCells(entity, newCellIndicesMin, newCellIndicesMax);
-    
-            entity.setCellIndices(newCellIndicesMin, newCellIndicesMax);
+        Set<String> newCells = new HashSet<>();
+        for (int x = newCellIndicesMin[0]; x <= newCellIndicesMax[0]; x++) {
+            for (int y = newCellIndicesMin[1]; y <= newCellIndicesMax[1]; y++) {
+                newCells.add(x + "," + y);
+            }
         }
+    
+        if (oldCells.equals(newCells)) {
+            return; // Entity hasn't moved to new cells
+        }
+    
+        Set<String> cellsToRemove = new HashSet<>(oldCells);
+        cellsToRemove.removeAll(newCells);
+    
+        Set<String> cellsToAdd = new HashSet<>(newCells);
+        cellsToAdd.removeAll(oldCells);
+    
+        removeEntityFromCells(entity, cellsToRemove);
+        insertEntityInCells(entity, cellsToAdd);
+    
+        entity.setOccupiedCells(newCells); // Update the entity's occupied cells
+        entity.setCellIndices(newCellIndicesMin, newCellIndicesMax);
     }
+    
     
 
     public List<GameEntity> getNearbyEntities(GameEntity entity) {
@@ -116,66 +140,61 @@ public class SpatialGrid {
         return new int[]{cellX, cellY};
     }
 
-    private void insertEntityInCells(GameEntity entity, int[] minIndices, int[] maxIndices) {
-        for (int x = minIndices[0]; x <= maxIndices[0]; x++) {
-            for (int y = minIndices[1]; y <= maxIndices[1]; y++) {
-                System.out.println("Inserting player into grid cell: " + x + "," + y);
+    private void insertEntityInCells(GameEntity entity, Set<String> cellsToAdd) {
+        for (String cellKey : cellsToAdd) {
+            String[] indices = cellKey.split(",");
+            int x = Integer.parseInt(indices[0]);
+            int y = Integer.parseInt(indices[1]);
     
-                GridNode newNode = new GridNode(entity, x, y); // Store indices here
-                newNode.next = grid[x][y];
-                if (grid[x][y] != null) {
-                    grid[x][y].prev = newNode;
-                }
-                grid[x][y] = newNode;
+            System.out.println("Inserting player into grid cell: " + x + "," + y);
     
-                entity.addGridNode(newNode);
+            GridNode newNode = new GridNode(entity, x, y);
+            newNode.next = grid[x][y];
+            if (grid[x][y] != null) {
+                grid[x][y].prev = newNode;
             }
+            grid[x][y] = newNode;
+    
+            entity.addGridNode(newNode);
         }
     }
+    
     
     
 
-    private void removeEntityFromCells(GameEntity entity, int[] minIndices, int[] maxIndices) {
-        for (GridNode node : entity.getGridNodes()) {
-            int x = node.xIndex;
-            int y = node.yIndex;
-            System.out.println("Removing player from grid cell: " + x + "," + y);
+    private void removeEntityFromCells(GameEntity entity, Set<String> cellsToRemove) {
+        Iterator<GridNode> iterator = entity.getGridNodes().iterator();
+        while (iterator.hasNext()) {
+            GridNode node = iterator.next();
+            String nodeKey = node.xIndex + "," + node.yIndex;
     
-            if (node.prev != null) {
-                node.prev.next = node.next;
-            } else {
-                grid[x][y] = node.next;
-            }
-            if (node.next != null) {
-                node.next.prev = node.prev;
+            if (cellsToRemove.contains(nodeKey)) {
+                System.out.println("Removing player from grid cell: " + node.xIndex + "," + node.yIndex);
+    
+                if (node.prev != null) {
+                    node.prev.next = node.next;
+                } else {
+                    grid[node.xIndex][node.yIndex] = node.next;
+                }
+                if (node.next != null) {
+                    node.next.prev = node.prev;
+                }
+                iterator.remove();
             }
         }
-        entity.clearGridNodes();
     }
+    
     
     public void removeEntity(GameEntity entity) {
-        int[] cellIndicesMin = entity.getCellIndicesMin();
-        int[] cellIndicesMax = entity.getCellIndicesMax();
+        Set<String> cellsToRemove = entity.getOccupiedCellKeys();
     
-        if (cellIndicesMin != null && cellIndicesMax != null) {
-            removeEntityFromCells(entity, cellIndicesMin, cellIndicesMax);
+        if (cellsToRemove != null && !cellsToRemove.isEmpty()) {
+            removeEntityFromCells(entity, cellsToRemove);
         }
     
+        entity.setOccupiedCells(null);
         entity.setCellIndices(null, null);
         entity.clearGridNodes();
-    }
-    
-
-    private boolean cellIndicesEqual(int[] indices1, int[] indices2) {
-        return indices1[0] == indices2[0] && indices1[1] == indices2[1];
-    }
-
-    private int[] getNodeIndices(GridNode node) {
-        GameEntity entity = node.entity;
-    
-        int[] cellIndicesMin = getCellIndices(entity, true);
-
-        return cellIndicesMin; 
     }
     
 }

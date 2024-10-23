@@ -1,7 +1,9 @@
 package com.tankbattle.server.models;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.tankbattle.server.utils.SpatialGrid.GridNode;
@@ -75,6 +77,8 @@ public class Bullet  implements GameEntity {
     private List<GridNode> gridNodes = new ArrayList<>();
     @JsonIgnore
     private boolean isStaticEntity = false;
+    @JsonIgnore
+    private Set<String> occupiedCells = new HashSet<>();
 
     @Override
     public int getQueryId() {
@@ -126,5 +130,16 @@ public class Bullet  implements GameEntity {
     public boolean isStaticEntity() {
         return isStaticEntity;
     }
+
+    @Override
+    public Set<String> getOccupiedCellKeys() {
+       return new HashSet<>(occupiedCells);
+    }
+
+    @Override
+    public void setOccupiedCells(Set<String> occupiedCells) {
+        this.occupiedCells = (occupiedCells != null) ? new HashSet<>(occupiedCells) : new HashSet<>();
+    }
+    
     //endregion
 }

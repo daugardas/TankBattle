@@ -1,6 +1,7 @@
 package com.tankbattle.server.models;
 
 import java.util.List;
+import java.util.Set;
 
 import com.tankbattle.server.utils.SpatialGrid.GridNode;
 import com.tankbattle.server.utils.Vector2;
@@ -23,4 +24,9 @@ public interface GameEntity {
 
     void setStaticEntity(boolean isStatic);
     boolean isStaticEntity();
+
+    //Not sure if this helps or hurts the performance
+    //It reduces incert and remove operations but replaces them with new checks
+    Set<String> getOccupiedCellKeys();
+    void setOccupiedCells(Set<String> occupiedCells);
 }

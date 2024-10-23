@@ -1,8 +1,10 @@
 package com.tankbattle.server.models;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.tankbattle.server.components.SpringContext;
@@ -304,6 +306,8 @@ public class Player implements GameEntity {
     private List<GridNode> gridNodes = new ArrayList<>();
     @JsonIgnore
     private boolean isStaticEntity = false;
+    @JsonIgnore
+    private Set<String> occupiedCells = new HashSet<>();
 
     @Override
     public int getQueryId() {
@@ -355,5 +359,16 @@ public class Player implements GameEntity {
     public boolean isStaticEntity() {
         return isStaticEntity;
     }
+
+    @Override
+    public Set<String> getOccupiedCellKeys() {
+       return new HashSet<>(occupiedCells);
+    }
+
+    @Override
+    public void setOccupiedCells(Set<String> occupiedCells) {
+        this.occupiedCells = (occupiedCells != null) ? new HashSet<>(occupiedCells) : new HashSet<>();
+    }
+    
     //endregion
 }
