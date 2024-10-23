@@ -289,4 +289,18 @@ public class Player implements GameEntity {
     public GameController getGameController() {
         return this.gameController;
     }
+
+    //region Collision_stuff
+    private int queryId;
+
+    @Override
+    public int getQueryId() {
+        return queryId;
+    }
+
+    @Override
+    public void setQueryId(int queryId) {
+        this.queryId = queryId;
+    }
+    //endregion
 }

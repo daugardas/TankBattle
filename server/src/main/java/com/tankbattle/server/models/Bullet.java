@@ -59,4 +59,18 @@ public class Bullet  implements GameEntity {
         this.location.addToX(velocity.getX());
         this.location.addToY(velocity.getY());
     }
+
+    //region Collision_stuff
+    private int queryId;
+
+    @Override
+    public int getQueryId() {
+        return queryId;
+    }
+
+    @Override
+    public void setQueryId(int queryId) {
+        this.queryId = queryId;
+    }
+    //endregion
 }

@@ -48,4 +48,18 @@ public class PowerUp implements GameEntity {
     public void consume() {
         this.consumed = true;
     }
+
+        //region Collision_stuff
+        private int queryId;
+
+        @Override
+        public int getQueryId() {
+            return queryId;
+        }
+    
+        @Override
+        public void setQueryId(int queryId) {
+            this.queryId = queryId;
+        }
+        //endregion
 }

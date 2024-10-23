@@ -1,134 +1,117 @@
 package com.tankbattle.server.utils;
 
-import java.util.ArrayList;
-import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 import com.tankbattle.server.models.GameEntity;
 
-/**
- * SpatialGrid partitions the game world into grid cells to optimize collision detection.
- * Utilizes an immutable GridCell as keys and thread-safe collections for high performance.
- */
 public class SpatialGrid {
     private final int cellSize;
-    private final int worldWidth;
-    private final int worldHeight;
-    private final Map<GridCell, List<GameEntity>> grid;
+    private final int totalCellsX;
+    private final int totalCellsY;
+    private final GridNode[][] grid;
+    private int queryId = 0;  // To track unique query IDs
 
-    /**
-     * Initializes the SpatialGrid.
-     *
-     * @param cellSize   Size of each grid cell in world units.
-     * @param worldWidth  Width of the game world in units.
-     * @param worldHeight Height of the game world in units.
-     */
-    public SpatialGrid(int cellSize, int worldWidth, int worldHeight) {
-        this.cellSize = cellSize;
-        this.worldWidth = worldWidth;
-        this.worldHeight = worldHeight;
-        this.grid = new ConcurrentHashMap<>();
-    }
+    // GridNode class for linked list implementation in each cell
+    private static class GridNode {
+        GameEntity entity;
+        GridNode next;
+        GridNode prev;
 
-    /**
-     * Clears all entities from the grid.
-     */
-    public void clear() {
-        grid.clear();
-    }
-
-    /**
-     * Adds an entity to the appropriate grid cell(s) based on its position and size.
-     *
-     * @param entity The game entity to add.
-     */
-    public void addEntity(GameEntity entity) {
-        List<GridCell> occupiedCells = getOccupiedCells(entity);
-        for (GridCell cell : occupiedCells) {
-            grid.computeIfAbsent(cell, k -> Collections.synchronizedList(new ArrayList<>())).add(entity);
+        GridNode(GameEntity entity) {
+            this.entity = entity;
         }
     }
 
-    /**
-     * Retrieves a list of entities that are in the same or adjacent cells as the given entity.
-     *
-     * @param entity The reference game entity.
-     * @return A list of nearby entities.
-     */
+    public SpatialGrid(int cellSize, int worldWidth, int worldHeight) {
+        this.cellSize = cellSize;
+        this.totalCellsX = (int) Math.ceil((double) worldWidth / cellSize);
+        this.totalCellsY = (int) Math.ceil((double) worldHeight / cellSize);
+        this.grid = new GridNode[totalCellsX][totalCellsY];
+    }
+
+    public void clear() {
+        for (int x = 0; x < totalCellsX; x++) {
+            for (int y = 0; y < totalCellsY; y++) {
+                grid[x][y] = null;
+            }
+        }
+    }
+
+    public void addEntity(GameEntity entity) {
+        int[] cellIndices = getCellIndices(entity);
+        insertEntityInCell(entity, cellIndices[0], cellIndices[1]);
+    }
+
+    public void updateEntity(GameEntity entity, int oldX, int oldY) {
+        int[] newCellIndices = getCellIndices(entity);
+        if (oldX != newCellIndices[0] || oldY != newCellIndices[1]) {
+            removeEntityFromCell(entity, oldX, oldY);
+            insertEntityInCell(entity, newCellIndices[0], newCellIndices[1]);
+        }
+    }
+
     public List<GameEntity> getNearbyEntities(GameEntity entity) {
-        List<GridCell> occupiedCells = getOccupiedCells(entity);
-        List<GameEntity> nearby = new ArrayList<>();
+        int[] cellIndices = getCellIndices(entity);
+        List<GameEntity> nearbyEntities = new LinkedList<>();
 
-        for (GridCell cell : occupiedCells) {
-            // Check the cell and its 8 neighbors
-            for (int dx = -1; dx <= 1; dx++) {
-                for (int dy = -1; dy <= 1; dy++) {
-                    int adjacentX = cell.getX() + dx;
-                    int adjacentY = cell.getY() + dy;
+        queryId++;
 
-                    // Ensure adjacent cells are within world boundaries
-                    if (adjacentX < 0 || adjacentX >= getTotalCellsX() ||
-                        adjacentY < 0 || adjacentY >= getTotalCellsY()) {
-                        continue;
-                    }
+        for (int dx = -1; dx <= 1; dx++) {
+            for (int dy = -1; dy <= 1; dy++) {
+                int adjacentX = cellIndices[0] + dx;
+                int adjacentY = cellIndices[1] + dy;
 
-                    GridCell adjacentCell = new GridCell(adjacentX, adjacentY);
-                    List<GameEntity> entitiesInCell = grid.getOrDefault(adjacentCell, Collections.emptyList());
-                    synchronized (entitiesInCell) {
-                        nearby.addAll(entitiesInCell);
+                if (adjacentX >= 0 && adjacentX < totalCellsX && adjacentY >= 0 && adjacentY < totalCellsY) {
+                    GridNode node = grid[adjacentX][adjacentY];
+                    while (node != null) {
+                        GameEntity nearbyEntity = node.entity;
+
+                        if (nearbyEntity.getQueryId() != queryId) {
+                            nearbyEntity.setQueryId(queryId);
+                            nearbyEntities.add(nearbyEntity);
+                        }
+
+                        node = node.next;
                     }
                 }
             }
         }
 
-        return nearby;
+        return nearbyEntities;
     }
 
-    /**
-     * Determines which grid cells an entity occupies based on its position and size.
-     *
-     * @param entity The game entity.
-     * @return A list of grid cells occupied by the entity.
-     */
-    private List<GridCell> getOccupiedCells(GameEntity entity) {
-        List<GridCell> cells = new ArrayList<>();
+    private int[] getCellIndices(GameEntity entity) {
+        float x = entity.getLocation().getX();
+        float y = entity.getLocation().getY();
+        int cellX = Math.max(0, Math.min(totalCellsX - 1, (int) (x / cellSize)));
+        int cellY = Math.max(0, Math.min(totalCellsY - 1, (int) (y / cellSize)));
+        return new int[]{cellX, cellY};
+    }
 
-        float left = entity.getLocation().getX() - entity.getSize().getX() / 2;
-        float right = entity.getLocation().getX() + entity.getSize().getX() / 2;
-        float top = entity.getLocation().getY() - entity.getSize().getY() / 2;
-        float bottom = entity.getLocation().getY() + entity.getSize().getY() / 2;
-
-        int leftCell = Math.max(0, (int) Math.floor(left / cellSize));
-        int rightCell = Math.min(getTotalCellsX() - 1, (int) Math.floor(right / cellSize));
-        int topCell = Math.max(0, (int) Math.floor(top / cellSize));
-        int bottomCell = Math.min(getTotalCellsY() - 1, (int) Math.floor(bottom / cellSize));
-
-        for (int x = leftCell; x <= rightCell; x++) {
-            for (int y = topCell; y <= bottomCell; y++) {
-                cells.add(new GridCell(x, y));
-            }
+    private void insertEntityInCell(GameEntity entity, int x, int y) {
+        GridNode newNode = new GridNode(entity);
+        newNode.next = grid[x][y];
+        if (grid[x][y] != null) {
+            grid[x][y].prev = newNode;
         }
-
-        return cells;
+        grid[x][y] = newNode;
     }
 
-    /**
-     * Calculates the total number of cells along the X-axis.
-     *
-     * @return Total cells in X direction.
-     */
-    private int getTotalCellsX() {
-        return (int) Math.ceil((double) worldWidth / cellSize);
-    }
+    private void removeEntityFromCell(GameEntity entity, int x, int y) {
+        GridNode node = grid[x][y];
+        while (node != null && node.entity != entity) {
+            node = node.next;
+        }
+        if (node == null) return;  // Entity not found in the cell
 
-    /**
-     * Calculates the total number of cells along the Y-axis.
-     *
-     * @return Total cells in Y direction.
-     */
-    private int getTotalCellsY() {
-        return (int) Math.ceil((double) worldHeight / cellSize);
+        if (node.prev != null) {
+            node.prev.next = node.next;
+        } else {
+            grid[x][y] = node.next;  // Node was the head of the list
+        }
+        if (node.next != null) {
+            node.next.prev = node.prev;
+        }
     }
 }
