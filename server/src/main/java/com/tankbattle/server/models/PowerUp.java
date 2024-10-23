@@ -115,5 +115,5 @@ public class PowerUp implements GameEntity {
     public boolean isStaticEntity() {
         return isStaticEntity;
     }
-        //endregion
+    //endregion
 }

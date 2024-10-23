@@ -18,11 +18,16 @@ public class SpatialGrid {
         GameEntity entity;
         GridNode next;
         GridNode prev;
-
-        GridNode(GameEntity entity) {
+        int xIndex;
+        int yIndex;
+    
+        GridNode(GameEntity entity, int xIndex, int yIndex) {
             this.entity = entity;
+            this.xIndex = xIndex;
+            this.yIndex = yIndex;
         }
     }
+    
 
     public SpatialGrid(int cellSize, int worldWidth, int worldHeight) {
         this.cellSize = cellSize;
@@ -116,7 +121,7 @@ public class SpatialGrid {
             for (int y = minIndices[1]; y <= maxIndices[1]; y++) {
                 System.out.println("Inserting player into grid cell: " + x + "," + y);
     
-                GridNode newNode = new GridNode(entity);
+                GridNode newNode = new GridNode(entity, x, y); // Store indices here
                 newNode.next = grid[x][y];
                 if (grid[x][y] != null) {
                     grid[x][y].prev = newNode;
@@ -128,16 +133,18 @@ public class SpatialGrid {
         }
     }
     
+    
 
     private void removeEntityFromCells(GameEntity entity, int[] minIndices, int[] maxIndices) {
         for (GridNode node : entity.getGridNodes()) {
-            int[] indices = getNodeIndices(node);
-            System.out.println("Removing player from grid cell: " + indices[0] + "," + indices[1]);
+            int x = node.xIndex;
+            int y = node.yIndex;
+            System.out.println("Removing player from grid cell: " + x + "," + y);
     
             if (node.prev != null) {
                 node.prev.next = node.next;
             } else {
-                grid[indices[0]][indices[1]] = node.next;
+                grid[x][y] = node.next;
             }
             if (node.next != null) {
                 node.next.prev = node.prev;
@@ -146,9 +153,6 @@ public class SpatialGrid {
         entity.clearGridNodes();
     }
     
-    
-    
-
     public void removeEntity(GameEntity entity) {
         int[] cellIndicesMin = entity.getCellIndicesMin();
         int[] cellIndicesMax = entity.getCellIndicesMax();
