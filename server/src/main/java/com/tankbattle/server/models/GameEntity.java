@@ -10,10 +10,10 @@ public interface GameEntity {
     Vector2 getLocation();
     Vector2 getSize();
 
+    // Stuff for spatial grid management
     int getQueryId();
     void setQueryId(int queryId);
 
-    // Methods for spatial grid management
     void setCellIndices(int[] minIndices, int[] maxIndices);
     int[] getCellIndicesMin();
     int[] getCellIndicesMax();

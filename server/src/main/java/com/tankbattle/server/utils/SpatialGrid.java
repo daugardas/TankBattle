@@ -29,7 +29,6 @@ public class SpatialGrid {
         }
     }
     
-
     public SpatialGrid(int cellSize, int worldWidth, int worldHeight) {
         this.cellSize = cellSize;
         this.totalCellsX = (int) Math.ceil((double) worldWidth / cellSize);
@@ -54,7 +53,6 @@ public class SpatialGrid {
         entity.setCellIndices(cellIndicesMin, cellIndicesMax);
         entity.setStaticEntity(isStatic);
     }
-    
 
     public void updateEntity(GameEntity entity) {
         if (entity.isStaticEntity()) return;
@@ -87,8 +85,6 @@ public class SpatialGrid {
         entity.setOccupiedCells(newCells); // Update the entity's occupied cells
         entity.setCellIndices(newCellIndicesMin, newCellIndicesMax);
     }
-    
-    
 
     public List<GameEntity> getNearbyEntities(GameEntity entity) {
         int[] cellIndicesMin = getCellIndices(entity, true);
@@ -158,9 +154,6 @@ public class SpatialGrid {
             entity.addGridNode(newNode);
         }
     }
-    
-    
-    
 
     private void removeEntityFromCells(GameEntity entity, Set<String> cellsToRemove) {
         Iterator<GridNode> iterator = entity.getGridNodes().iterator();
@@ -184,7 +177,6 @@ public class SpatialGrid {
         }
     }
     
-    
     public void removeEntity(GameEntity entity) {
         Set<String> cellsToRemove = entity.getOccupiedCellKeys();
     
@@ -196,5 +188,4 @@ public class SpatialGrid {
         entity.setCellIndices(null, null);
         entity.clearGridNodes();
     }
-    
 }

@@ -36,7 +36,6 @@ public class GameManager {
     private final HashMap<String, Player> players;
     private CurrentPlayer currentPlayer;
     public int playerCount = 0;
-    private final List<Collision> collisions = new ArrayList<>();
     private static final long COLLISION_LIFETIME = 1000; // 5 seconds
 
     // FPS for server updates
@@ -175,13 +174,23 @@ public class GameManager {
         rendererManager.setWorldOffset(worldOffset);
     }
 
+    //region Temporary, only for testing
+    private final Set<Vector2> activeCollisionLocations = new HashSet<>();
+    private final List<Collision> collisions = new ArrayList<>();
+
     public void addCollision(Vector2 location) {
-        collisions.add(new Collision(location));
+        Vector2 collisionLocation = new Vector2(location.getX(), location.getY());
+        if (activeCollisionLocations.contains(collisionLocation)) {
+            return;
+        }
+        activeCollisionLocations.add(collisionLocation);
+        collisions.add(new Collision(collisionLocation));
     }
     
     public List<Collision> getCollisions() {
         return new ArrayList<>(collisions);
     }
+    //endregion
 
     public void renderAll(Graphics2D g2d) {
         // level rendering
@@ -204,12 +213,12 @@ public class GameManager {
         while (iterator.hasNext()) {
             Collision collision = iterator.next();
             if (currentTime - collision.getTimestamp() > COLLISION_LIFETIME) {
-                iterator.remove(); // Remove old collisions
+                activeCollisionLocations.remove(collision.getLocation());
+                iterator.remove();
             } else {
                 rendererManager.draw(g2d, collision);
             }
         }
-
     }
 
     public void incrementServerUpdateCount() {

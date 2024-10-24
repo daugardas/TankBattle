@@ -156,10 +156,7 @@ public class GameController {
 
     @Scheduled(fixedRate = 33)
     public void gameLoop() {
-        // Update game entities
         updatePlayersLocations();
-        //updateBullets();
-        //updatePowerUps();
 
         // Detect and handle collisions
         collisionManager.detectCollisions(players, bullets, powerUps);
@@ -171,45 +168,11 @@ public class GameController {
     private void updatePlayersLocations() {
         for (Player player : players) {
             player.updateLocation();
-            //collisionManager.spatialGrid.updateEntity(player);
-        }
-    }
-
-    private void updateBullets() {
-        for (Bullet bullet : bullets) {
-            bullet.updatePosition();
-        }
-    }
-
-    private void updatePowerUps() {
-        // Implement power-up effects and spawning logic if needed
-    }
-
-    private void removeMarkedEntities() {
-        // Remove bullets marked for removal
-        Iterator<Bullet> bulletIterator = bullets.iterator();
-        while (bulletIterator.hasNext()) {
-            Bullet bullet = bulletIterator.next();
-            if (bullet.isMarkedForRemoval()) {
-                bulletIterator.remove();
-            }
-        }
-
-        // Remove consumed power-ups
-        Iterator<PowerUp> powerUpIterator = powerUps.iterator();
-        while (powerUpIterator.hasNext()) {
-            PowerUp powerUp = powerUpIterator.next();
-            if (powerUp.isConsumed()) {
-                powerUpIterator.remove();
-            }
         }
     }
 
     private void broadcastGameState() {
         messagingTemplate.convertAndSend("/server/players", players);
-        messagingTemplate.convertAndSend("/server/bullets", bullets);
-        messagingTemplate.convertAndSend("/server/powerups", powerUps);
-        // Include additional state information as needed
     }
 
     @MessageMapping("/update-player-movement")
@@ -221,16 +184,6 @@ public class GameController {
         } else {
             System.err.println("Invalid session ID or player index: " + sessionId);
         }
-    }
-
-    // Method to add bullets (can be triggered by player actions)
-    public void addBullet(Bullet bullet) {
-        bullets.add(bullet);
-    }
-
-    // Method to add power-ups (can be triggered by game events)
-    public void addPowerUp(PowerUp powerUp) {
-        powerUps.add(powerUp);
     }
 
     // Predefined Level Builder
@@ -295,7 +248,6 @@ public class GameController {
         collisionLocation.put("x", x);
         collisionLocation.put("y", y);
 
-        // Send the collision location to clients subscribed to /server/collisions
         messagingTemplate.convertAndSend("/server/collisions", collisionLocation);
 
         System.out.println("Sent collision location: x=" + x + ", y=" + y);

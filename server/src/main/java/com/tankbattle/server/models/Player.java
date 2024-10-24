@@ -26,7 +26,6 @@ public class Player implements GameEntity {
     private byte movementDirection;
     private float speed = 40;
     private double rotationAngle = 0;
-    private int health = 100; // Example health attribute
 
     private static final byte DIRECTION_UP = 0b1000;
     private static final byte DIRECTION_LEFT = 0b0100;
@@ -114,10 +113,6 @@ public class Player implements GameEntity {
         return rotationAngle;
     }
 
-    public int getHealth() {
-        return health;
-    }
-
     private void updateRotationAngle() {
         switch (movementDirection) {
             case DIRECTION_UP:
@@ -188,33 +183,13 @@ public class Player implements GameEntity {
            // Prevent movement beyond world boundaries
            return;
        }
-
-       // Check for map collisions before moving
-       //boolean canMove = gameController.getCollisionManager().canMoveTo(this, newPosition, gameController.getLevel().getGrid());
-
        previousLocation = new Vector2(location.getX(), location.getY());
        location.setX(newX);
        location.setY(newY);
-    //    if (canMove) {
-    //        // Update previous location before moving
-    //        previousLocation = new Vector2(location.getX(), location.getY());
-    //        location.setX(newX);
-    //        location.setY(newY);
-    //    } else {
-    //        // Movement is blocked; revert to previous position
-    //        revertToPreviousPosition();
-    //    }
 
        updateRotationAngle();
    }
 
-    /**
-     * Checks whether the intended new position is within the world boundaries.
-     *
-     * @param newX The intended new x-coordinate.
-     * @param newY The intended new y-coordinate.
-     * @return True if the new position is outside the world boundaries, else false.
-     */
     private boolean checkWorldBorderConstraints(float newX, float newY) {
         float leftCornerX = newX - size.getX() / 2;
         float rightCornerX = newX + size.getX() / 2;
@@ -231,38 +206,9 @@ public class Player implements GameEntity {
         this.location = new Vector2(previousLocation.getX(), previousLocation.getY());
     }
 
-    public void applyDamage(int damage) {
-        this.health -= damage;
-        if (this.health <= 0) {
-            // Handle player death (e.g., remove player, respawn, etc.)
-            System.out.println("Player " + username + " has been eliminated!");
-            // Implement additional logic as needed
-        }
-    }
-
-    public void applyPowerUp(PowerUpType type) {
-        switch (type) {
-            case HEALTH_BOOST:
-                this.health += 20; // Example boost
-                if (this.health > 100) this.health = 100; // Max health cap
-                break;
-            case SPEED_BOOST:
-                this.speed += 10; // Example boost
-                // Implement duration logic if needed
-                break;
-            case DAMAGE_BOOST:
-                // Implement damage boost logic
-                break;
-            case SHIELD:
-                // Implement shield logic
-                break;
-            // Add other power-up types as needed
-        }
-    }
-
     public String toString() {
-        return String.format("{ sessionId: '%s', username: '%s', location: { x: %d, y: %d }, health: %d }", this.sessionId,
-                this.username, this.location.getX(), this.location.getY(), this.health);
+        return String.format("{ sessionId: '%s', username: '%s', location: { x: %d, y: %d }}", this.sessionId,
+                this.username, this.location.getX(), this.location.getY());
     }
 
     @Override
@@ -277,18 +223,6 @@ public class Player implements GameEntity {
     @Override
     public int hashCode() {
         return Objects.hash(username);
-    }
-
-    /**
-     * Moves the player by the specified delta vector.
-     *
-     * @param delta The vector by which to move the player.
-     */
-    public void moveBy(Vector2 delta) {
-        // Store the current location as previous before moving
-        previousLocation = new Vector2(location.getX(), location.getY());
-        this.location.setX(this.location.getX() + delta.getX());
-        this.location.setY(this.location.getY() + delta.getY());
     }
 
     public GameController getGameController() {
