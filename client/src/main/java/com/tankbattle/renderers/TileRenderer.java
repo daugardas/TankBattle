@@ -70,8 +70,8 @@ public class TileRenderer implements EntityRenderer<Tile>, Scalable {
         // updateFrame();
         BufferedImage sprite = getCurrentFrame(spriteSheet);
 
-        double x = tile.getWorldX() * worldLocationScaleFactor + worldOffset.getX();
-        double y = tile.getWorldY() * worldLocationScaleFactor + worldOffset.getY();
+        double x = Math.floor(tile.getWorldX() * worldLocationScaleFactor + worldOffset.getX()); //helped a bit but still not fixed
+        double y = Math.floor(tile.getWorldY() * worldLocationScaleFactor + worldOffset.getY());
 
         AffineTransform oldTransform = g2d.getTransform();
 

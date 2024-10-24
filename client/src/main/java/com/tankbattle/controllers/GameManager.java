@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -13,10 +14,12 @@ import java.util.UUID;
 
 import javax.swing.Timer;
 
+import com.tankbattle.models.Collision;
 import com.tankbattle.models.CurrentPlayer;
 import com.tankbattle.models.Level;
 import com.tankbattle.models.Player;
 import com.tankbattle.models.tiles.Tile;
+import com.tankbattle.renderers.ExplosionRenderer;
 import com.tankbattle.renderers.RendererManager;
 import com.tankbattle.renderers.TankRenderer;
 import com.tankbattle.renderers.TileRenderer;
@@ -33,6 +36,12 @@ public class GameManager {
     private final HashMap<String, Player> players;
     private CurrentPlayer currentPlayer;
     public int playerCount = 0;
+    private static final long COLLISION_LIFETIME = 1000; // 5 seconds
+
+    // FPS for server updates
+    private long serverUpdateCount = 0;
+    private float serverFps = 0;
+    private long serverFpsTimerStart = System.currentTimeMillis();    
 
     private GameManager() {
         webSocketManager = new WebSocketManager();
@@ -44,6 +53,10 @@ public class GameManager {
         TankRenderer tankRenderer = new TankRenderer(resourceManager);
         rendererManager.registerRenderer(Player.class, tankRenderer);
         rendererManager.registerRenderer(Tile.class, new TileRenderer(resourceManager));
+        rendererManager.registerRenderer(Collision.class, new ExplosionRenderer(resourceManager));
+
+        Timer serverFpsTimer = new Timer(1000, e -> updateServerFps());
+        serverFpsTimer.start();
     }
 
     private static final GameManager INSTANCE = new GameManager();
@@ -161,6 +174,24 @@ public class GameManager {
         rendererManager.setWorldOffset(worldOffset);
     }
 
+    //region Temporary, only for testing
+    private final Set<Vector2> activeCollisionLocations = new HashSet<>();
+    private final List<Collision> collisions = new ArrayList<>();
+
+    public void addCollision(Vector2 location) {
+        Vector2 collisionLocation = new Vector2(location.getX(), location.getY());
+        if (activeCollisionLocations.contains(collisionLocation)) {
+            return;
+        }
+        activeCollisionLocations.add(collisionLocation);
+        collisions.add(new Collision(collisionLocation));
+    }
+    
+    public List<Collision> getCollisions() {
+        return new ArrayList<>(collisions);
+    }
+    //endregion
+
     public void renderAll(Graphics2D g2d) {
         // level rendering
         Tile[][] tileGrid = level.getGrid();
@@ -177,5 +208,31 @@ public class GameManager {
             rendererManager.draw(g2d, player);
         }
 
+        Iterator<Collision> iterator = collisions.iterator();
+        long currentTime = System.currentTimeMillis();
+        while (iterator.hasNext()) {
+            Collision collision = iterator.next();
+            if (currentTime - collision.getTimestamp() > COLLISION_LIFETIME) {
+                activeCollisionLocations.remove(collision.getLocation());
+                iterator.remove();
+            } else {
+                rendererManager.draw(g2d, collision);
+            }
+        }
+    }
+
+    public void incrementServerUpdateCount() {
+        serverUpdateCount++;
+    }
+
+    private void updateServerFps() {
+        long currentTime = System.currentTimeMillis();
+        serverFps = (serverUpdateCount * 1000.0f) / (currentTime - serverFpsTimerStart);
+        serverFpsTimerStart = currentTime;
+        serverUpdateCount = 0;
+    }
+
+    public float getServerFps() {
+        return serverFps;
     }
 }
