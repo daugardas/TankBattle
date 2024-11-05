@@ -26,7 +26,7 @@ public class ExplosionRenderer implements EntityRenderer<Collision>, Scalable {
     }
 
     private void loadSpriteSheetAndFrames() {
-        String spriteSheetPath = "/com/tankbattle/assets/images/Explosion.png";
+        String spriteSheetPath = "assets/images/Explosion.png";
         BufferedImage spriteSheet = resourceManager.loadImage(spriteSheetPath);
 
         if (spriteSheet == null) {

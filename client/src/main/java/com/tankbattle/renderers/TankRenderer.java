@@ -43,9 +43,9 @@ public class TankRenderer implements EntityRenderer<Player>, Scalable {
     private BufferedImage getSpriteSheet(Player player) {
         String spriteSheetPath;
         if (player instanceof CurrentPlayer) {
-            spriteSheetPath = "/com/tankbattle/assets/images/player_sprite.png";
+            spriteSheetPath = "assets/images/player_sprite.png";
         } else {
-            spriteSheetPath = "/com/tankbattle/assets/images/enemy_sprite.png";
+            spriteSheetPath = "assets/images/enemy_sprite.png";
         }
 
         return spriteSheetCache.computeIfAbsent(spriteSheetPath, path -> resourceManager.loadImage(path));

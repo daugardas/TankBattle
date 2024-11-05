@@ -42,7 +42,7 @@ public class TileRenderer implements EntityRenderer<Tile>, Scalable {
     private BufferedImage getSpriteSheet(Tile tile) {
         String spriteSheetPath;
 
-        spriteSheetPath = "/com/tankbattle/assets/tiles/" + tile.getClass().getSimpleName() + ".png";
+        spriteSheetPath = "assets/tiles/" + tile.getClass().getSimpleName() + ".png";
 
         return spriteSheetCache.computeIfAbsent(spriteSheetPath, path -> resourceManager.loadImage(path));
     }
