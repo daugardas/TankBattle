@@ -196,10 +196,10 @@ public class GameController {
     // Predefined Level Builder
     public Level buildPredefinedLevel() {
         String mapString = """
-                G G G I I I D D G G
-                G G G I G D G G G G
+                G G G G I I D D G G
+                G G G G G D G G G G
                 G G G D G G G D G G
-                D G G I D G G I G G
+                D G G G G G G I G G
                 G G G I G G G I G G
                 G G I G G G G G G G
                 G I G G G D G I I G
