@@ -9,8 +9,8 @@ import java.awt.RenderingHints;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
-import java.io.File;
 import java.io.IOException;
+import java.net.URL;
 
 import javax.imageio.ImageIO;
 import javax.swing.BoxLayout;
@@ -32,7 +32,12 @@ public class MenuPanel extends JPanel {
         setLayout(new GridBagLayout());
 
         try {
-            backgroundImage = ImageIO.read(new File("src/main/java/com/tankbattle/assets/images/background.png"));
+            String backgroundPath = "assets/images/background.png";
+            URL backgroundResource = this.getClass().getClassLoader().getResource(backgroundPath);
+            if (backgroundResource == null) {
+                throw new RuntimeException("Resource not found: " + backgroundPath);
+            }
+            backgroundImage = ImageIO.read(backgroundResource);
         } catch (IOException e) {
             System.out.println(e);
         }
