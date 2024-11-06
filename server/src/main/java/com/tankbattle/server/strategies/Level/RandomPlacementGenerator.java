@@ -1,10 +1,12 @@
 package com.tankbattle.server.strategies.Level;
 
+import java.util.ArrayList;
 import java.util.Random;
 
 import com.tankbattle.server.factories.TileFactory;
 import com.tankbattle.server.models.tiles.Tile;
 import com.tankbattle.server.models.Level;
+import com.tankbattle.server.utils.Vector2;
 
 public class RandomPlacementGenerator implements ProceduralGenerator {
     private Random random = new Random();
@@ -19,55 +21,63 @@ public class RandomPlacementGenerator implements ProceduralGenerator {
     @Override
     public Level generateLevel(int width, int height, TileFactory groundFactory, TileFactory destructibleFactory,
             TileFactory indestructibleFactory, TileFactory liquidFactory) {
+
         Level level = new Level(width, height);
+        // generate level until it is possible to create spawn locations and they are connectable
+        boolean spawnLocationsAreValid = false;
+        while (!spawnLocationsAreValid) {
+            // place wall randomly based on density
+            for (int x = 0; x < width; x++) {
+                for (int y = 0; y < height; y++) {
+                    Tile tile;
+                    if (random.nextInt(100) < wallDensity) {
+//                        tile = random.nextInt(100) < indestructibleWallChance ? indestructibleFactory.createTile()
+//                                : destructibleFactory.createTile();
+                        tile = destructibleFactory.createTile();
+                    } else {
+                        tile = groundFactory.createTile();
+                    }
 
-        // place wall randomly based on density
-        for (int x = 0; x < width; x++) {
-            for (int y = 0; y < height; y++) {
-                Tile tile;
-                if (random.nextInt(100) < wallDensity) {
-                    tile = random.nextInt(100) < indestructibleWallChance ? indestructibleFactory.createTile()
-                            : destructibleFactory.createTile();
-                } else {
-                    tile = groundFactory.createTile();
+                    level.setTile(x, y, tile);
                 }
+            }
 
-                level.setTile(x, y, tile);
+            // set corner tiles to ground tiles
+            level.setTile(0, 0, groundFactory.createTile());
+            level.setTile(width - 1, 0, groundFactory.createTile());
+            level.setTile(0, height - 1, groundFactory.createTile());
+            level.setTile(width - 1, height - 1, groundFactory.createTile());
+
+            spawnLocationsAreValid = placeSpawnLocations(level);
+            if (!spawnLocationsAreValid) {
+                level = new Level(width, height);
             }
         }
-
-        placeSpawnLocations(level);
 
         return level;
     }
 
-    public void placeSpawnLocations(Level level) {
-        int placed = 0;
 
-        while (placed < level.getSpawnPointsCount()) {
-            int x = random.nextInt(level.getWidth());
-            int y = random.nextInt(level.getHeight());
+    public boolean placeSpawnLocations(Level level) {
+        // as all player locations are in the corners of the map, we can just place them there and then check if they are connectable through passable tiles
+        Vector2[] spawnPoints = new Vector2[level.getSpawnPointsCount()];
+        spawnPoints[0] = new Vector2(0, 0);
+        spawnPoints[1] = new Vector2(level.getWidth() - 1, 0);
+        spawnPoints[2] = new Vector2(0, level.getHeight() - 1);
+        spawnPoints[3] = new Vector2(level.getWidth() - 1, level.getHeight() - 1);
 
-            // if tile is not already a spawn location, and is of PassableGroundTile class
-            if (level.getTile(x, y).canPass() && !level.isTileASpawnLocation(x, y) && isSafe(level, x, y)) {
-                level.setSpawnLocation(placed, x, y);
-                placed++;
-            }
-        }
-    }
+        // check if you can get from one point to another with A*
+//        for (int i = 0; i < level.getSpawnPointsCount(); i++) {
+//            for (int j = i + 1; j < level.getSpawnPointsCount(); j++) {
+//                if (!level.canConnect(spawnPoints[i], spawnPoints[j])) {
+//                    // if you can't connect the spawn points, return false
+//                    return false;
+//                }
+//            }
+//        }
 
-    // check if the tile is surrounded by passable tiles
-    private boolean isSafe(Level level, int x, int y) {
-        for (int dx = -1; dx <= 1; dx++) {
-            for (int dy = -1; dy <= 1; dy++) {
-                int nx = x + dx;
-                int ny = y + dy;
-
-                Tile tile = level.getTile(nx, ny);
-                if (tile != null && !tile.canPass()) {
-                    return false;
-                }
-            }
+        for (int i = 0; i < level.getSpawnPointsCount(); i++) {
+            level.setSpawnLocation(i, spawnPoints[i].getX(), spawnPoints[i].getY());
         }
 
         return true;

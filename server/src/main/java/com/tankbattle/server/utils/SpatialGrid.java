@@ -141,8 +141,8 @@ public class SpatialGrid {
             String[] indices = cellKey.split(",");
             int x = Integer.parseInt(indices[0]);
             int y = Integer.parseInt(indices[1]);
-    
-            System.out.println("Inserting player into grid cell: " + x + "," + y);
+
+//            System.out.println("Inserting player into grid cell: " + x + "," + y);
     
             GridNode newNode = new GridNode(entity, x, y);
             newNode.next = grid[x][y];

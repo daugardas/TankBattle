@@ -93,6 +93,12 @@ public class Player implements GameEntity {
         this.location = location;
     }
 
+    @JsonIgnore
+    public void setLocationToTile(Vector2 location) {
+        Vector2 newLocation = new Vector2(location.getX() * 1000 + 500, location.getY() * 1000 + 500);
+        this.setLocation(newLocation);
+    }
+
     public Vector2 getSize() {
         return this.size;
     }

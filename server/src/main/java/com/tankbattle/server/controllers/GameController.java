@@ -87,7 +87,7 @@ public class GameController {
 
     @PostConstruct
     public void init() {
-        boolean useProceduralGeneration = false;
+        boolean useProceduralGeneration = true;
 
         if (useProceduralGeneration) {
             ProceduralGenerator generator = ProceduralGeneratorFactory.createGenerator("random");
@@ -104,6 +104,12 @@ public class GameController {
 
     public void addPlayer(Player player) {
         sessionIdToPlayerIndex.put(player.getSessionId(), this.players.size());
+
+        // assign player starting location
+        int existingPlayers = this.players.size();
+        Vector2 newPlayerLocation = level.getSpawnPoints()[existingPlayers];
+        player.setLocationToTile(newPlayerLocation);
+
         this.players.add(player);
         collisionManager.spatialGrid.addEntity(player, false);
     }
@@ -143,6 +149,7 @@ public class GameController {
         System.out.println("Subscribed to level");
         // messagingTemplate.convertAndSend("/server/level", level);
 
+        // workaround for sending the hard-coded map, as the generation sometimes crashes
         ObjectMapper mapper = new ObjectMapper();
         try {
             String levelJson = mapper.writeValueAsString(level);
@@ -188,16 +195,17 @@ public class GameController {
 
     // Predefined Level Builder
     public Level buildPredefinedLevel() {
-        String mapString = "G G G I I I D D G D\n" +
-                           "G G G I G D G G G G\n" +
-                           "G G I D G D G D G G\n" +
-                           "D G G I D G G I I G\n" +
-                           "G G G I G G G I G G\n" +
-                           "G G I G G G G G G G\n" +
-                           "G I G G G D G I I G\n" +
-                           "G D G G I G G G D D\n" +
-                           "D G G G G G D I G I\n" +
-                           "I G G G G G G D G G";
+        String mapString = """
+                G G G I I I D D G D
+                G G G I G D G G G G
+                G G I D G D G D G G
+                D G G I D G G I I G
+                G G G I G G G I G G
+                G G I G G G G G G G
+                G I G G G D G I I G
+                G D G G I G G G D D
+                D G G G G G D I G I
+                I G G G G G G D G G""";
     
         String[] lines = mapString.split("\n");
         int height = lines.length;
