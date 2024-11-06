@@ -3,7 +3,12 @@ package com.tankbattle.server.models;
 import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.tankbattle.server.models.tiles.Tile;
+import com.tankbattle.server.utils.Node;
 import com.tankbattle.server.utils.Vector2;
+
+import java.util.PriorityQueue;
+import java.util.HashSet;
+import java.util.Set;
 
 public class Level {
     private int width;
@@ -167,7 +172,7 @@ public class Level {
             throw new IllegalArgumentException("Spawn location is out of bounds");
         }
 
-        spawnPoints[index] = new Vector2(x, y);
+        spawnPoints[index] = new Vector2(x, y); // converting to moving coordinates from tile coordinates and adding padding
     }
 
     @JsonIgnore
@@ -187,44 +192,127 @@ public class Level {
     }
 
     @JsonIgnore
+    public boolean canConnect(Vector2 start, Vector2 end) {
+        // if the start or end point is not within the level bounds, return false
+        if (!isTileWithinLevelBounds(start.getX(), start.getY()) || !isTileWithinLevelBounds(end.getX(), end.getY())) {
+            return false;
+        }
+
+        // if the start and end points are the same, return true
+        if (start.getX() == end.getX() && start.getY() == end.getY()) {
+            return true;
+        }
+
+        // A* algorithm implementation
+        PriorityQueue<Node> openSet = new PriorityQueue<>();
+        Set<Node> closedSet = new HashSet<>();
+
+        Node startNode = new Node(start, null, 0, start.distanceTo(end));
+        openSet.add(startNode);
+
+        while (!openSet.isEmpty()) {
+            Node current = openSet.poll();
+
+            if (current.equals(end)) {
+                return true;
+            }
+
+            closedSet.add(current);
+            var neighbors = getNeighbors(current.position);
+            for (Vector2 neighbor : neighbors) {
+                if (closedSet.contains(new Node(neighbor))) {
+                    continue;
+                }
+
+                double tentativeG = current.g + current.position.distanceTo(neighbor);
+                Node neighborNode = new Node(neighbor, current, tentativeG, neighbor.distanceTo(end));
+
+                if (!openSet.contains(neighborNode) || tentativeG < neighborNode.g) {
+                    openSet.add(neighborNode);
+                }
+            }
+        }
+
+        return false;
+    }
+
+    private Set<Vector2> getNeighbors(Vector2 position) {
+        Set<Vector2> neighbors = new HashSet<>();
+        int x = position.getX();
+        int y = position.getY();
+
+
+        if (isTileWithinLevelBounds(x + 1, y) && (isTileDestroyable(x + 1, y) || isTilePassable(x + 1, y)))
+            neighbors.add(new Vector2(x + 1, y));
+        if (isTileWithinLevelBounds(x - 1, y) && (isTileDestroyable(x - 1, y) || isTilePassable(x - 1, y)))
+            neighbors.add(new Vector2(x - 1, y));
+        if (isTileWithinLevelBounds(x, y + 1) && (isTileDestroyable(x, y + 1) || isTilePassable(x, y + 1)))
+            neighbors.add(new Vector2(x, y + 1));
+        if (isTileWithinLevelBounds(x, y - 1) && (isTileDestroyable(x, y - 1) || isTilePassable(x, y - 1)))
+            neighbors.add(new Vector2(x, y - 1));
+
+        return neighbors;
+    }
+
+    private boolean isTilePassable(int x, int y) {
+        Tile tile = getTile(x, y);
+        return tile != null && tile.canPass();
+    }
+
+    private boolean isTileDestroyable(int x, int y) {
+        Tile tile = getTile(x, y);
+        return tile != null && tile.canBeDestroyed();
+    }
+
+    @JsonIgnore
     public String toString() {
         StringBuilder sb = new StringBuilder();
 
         // level dimensions
-        sb.append("{ width: " + width + ", height: " + height + ", spawnPoints: [");
+        if (this.spawnPoints != null && this.spawnPoints[this.spawnPointsCount - 1] != null) {
+            sb.append("{ width: ").append(width).append(", height: ").append(height).append(", spawnPoints: [");
 
-        for (int i = 0; i < spawnPoints.length; i++) {
-            sb.append(spawnPoints[i].toString());
-            if (i < spawnPoints.length - 1) {
-                sb.append(", ");
-            }
-        }
-
-        sb.append("] }\n\n");
-
-        // level grid
-        sb.append("Level grid:\n");
-
-        StringBuilder gridSb = new StringBuilder();
-        for (int y = 0; y < height; y++) {
-            for (int x = 0; x < width; x++) {
-                Tile tile = grid[x][y];
-                if (tile == null) {
-                    System.out.println("Tile is null. This should't happen.");
-                } else {
-                    gridSb.append(tile.getSymbol());
+            for (int i = 0; i < spawnPoints.length; i++) {
+                sb.append(spawnPoints[i].toString());
+                if (i < spawnPoints.length - 1) {
+                    sb.append(", ");
                 }
             }
-            gridSb.append("\n");
+
+            sb.append("] }\n\n");
+        } else {
+            sb.append("{ width: ").append(width).append(", height: ").append(height).append(" }");
         }
 
-        // set the spawn points on the grid
-        for (int i = 0; i < spawnPoints.length; i++) {
-            Vector2 spawnPoint = spawnPoints[i];
-            gridSb.setCharAt(spawnPoint.getY() * (width + 1) + spawnPoint.getX(), (char) ('0' + i));
+        if (grid != null) {
+            // level grid
+            sb.append("Level grid:\n");
+
+            StringBuilder gridSb = new StringBuilder();
+            for (int y = 0; y < height; y++) {
+                for (int x = 0; x < width; x++) {
+                    Tile tile = grid[x][y];
+                    if (tile == null) {
+                        System.out.println("Tile is null. This should't happen.");
+                    } else {
+                        gridSb.append(tile.getSymbol());
+                    }
+                }
+                gridSb.append("\n");
+            }
+
+            if (spawnPoints != null && this.spawnPoints[this.spawnPointsCount - 1] != null) {
+                // set the spawn points on the grid
+                for (int i = 0; i < spawnPoints.length; i++) {
+                    Vector2 spawnPoint = spawnPoints[i];
+                    gridSb.setCharAt(spawnPoint.getY() * (width + 1) + spawnPoint.getX(), (char) ('0' + i));
+                }
+            }
+
+            sb.append(gridSb.toString());
         }
 
-        return sb.append(gridSb.toString()).toString();
+        return sb.toString();
     }
 
     public Tile[][] getTiles() {

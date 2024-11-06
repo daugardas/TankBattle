@@ -44,4 +44,24 @@ public class Vector2 {
     public void addToY(float y){
         this.y += y;
     }
+
+    public float manhattanDistance(Vector2 other) {
+        return Math.abs(this.x - other.x) + Math.abs(this.y - other.y);
+    }
+
+    public double distanceTo(Vector2 other) {
+        return Math.sqrt(Math.pow(this.x - other.x, 2) + Math.pow(this.y - other.y, 2));
+    }
+
+    public boolean equals(Vector2 other) {
+        return this.x == other.x && this.y == other.y;
+    }
+
+    @Override
+    public String toString() {
+        return "Vector2{" +
+                "x=" + x +
+                ", y=" + y +
+                '}';
+    }
 }
