@@ -87,7 +87,7 @@ public class GameController {
 
     @PostConstruct
     public void init() {
-        boolean useProceduralGeneration = true;
+        boolean useProceduralGeneration = false;
 
         if (useProceduralGeneration) {
             ProceduralGenerator generator = ProceduralGeneratorFactory.createGenerator("random");
@@ -196,16 +196,16 @@ public class GameController {
     // Predefined Level Builder
     public Level buildPredefinedLevel() {
         String mapString = """
-                G G G I I I D D G D
+                G G G I I I D D G G
                 G G G I G D G G G G
-                G G I D G D G D G G
-                D G G I D G G I I G
+                G G G D G G G D G G
+                D G G I D G G I G G
                 G G G I G G G I G G
                 G G I G G G G G G G
                 G I G G G D G I I G
                 G D G G I G G G D D
-                D G G G G G D I G I
-                I G G G G G G D G G""";
+                D G G G G G D G G I
+                G G G G G G G G G G""";
     
         String[] lines = mapString.split("\n");
         int height = lines.length;
