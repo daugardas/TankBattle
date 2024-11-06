@@ -1,0 +1,15 @@
+command - Gvidas
+adapter - Gvidas
+bridge - Gvidas
+
+* singleton - Mindaugas
+facade - Mindaugas
+prototype - Mindaugas
+
+* observer - Aivaras
+decorator - Aivaras
+* abstract factory? - Aivaras
+
+* factory - Daugardas
+* strategy - Daugardas
+* builder - Daugardas
