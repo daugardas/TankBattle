@@ -52,6 +52,18 @@ public class GameSessionHandler extends StompSessionHandlerAdapter {
 
         });
 
+        session.subscribe("/server/bullets", new StompFrameHandler() {
+            @Override
+            public Type getPayloadType(StompHeaders headers) {
+                return Object[].class;
+            }
+
+            @Override
+            public void handleFrame(StompHeaders stompHeaders, Object o) {
+                System.out.println("bullet frame: " + o);
+            }
+        });
+
         session.subscribe("/server/collisions", new StompFrameHandler() {
 
         @Override

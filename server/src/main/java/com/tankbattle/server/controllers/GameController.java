@@ -93,6 +93,14 @@ public class GameController {
         System.out.println(level.toString());
 
         collisionManager.initializeStaticEntities(level);
+
+        // add test bullet
+        Bullet bullet = new Bullet(
+                new Vector2((float) level.getWidth() * 1000 + 500, (float) level.getHeight() * 1000 + 500),
+                new Vector2(0.0f, 0.0f),
+                0);
+
+        this.bullets.add(bullet);
     }
 
     public void addPlayer(Player player) {
@@ -173,6 +181,7 @@ public class GameController {
 
     private void broadcastGameState() {
         messagingTemplate.convertAndSend("/server/players", players);
+        messagingTemplate.convertAndSend("/server/bullets", bullets);
     }
 
     @MessageMapping("/update-player-movement")
