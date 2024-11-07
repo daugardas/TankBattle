@@ -3,10 +3,8 @@ package com.tankbattle.server.models;
 import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.tankbattle.server.models.tiles.Tile;
-import com.tankbattle.server.utils.Node;
 import com.tankbattle.server.utils.Vector2;
 
-import java.util.PriorityQueue;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -54,6 +52,11 @@ public class Level {
     @JsonIgnore
     public int getSpawnPointsCount() {
         return spawnPointsCount;
+    }
+
+    @JsonIgnore
+    public void setSpawnPointsCount(int count) {
+        this.spawnPointsCount = count;
     }
 
     @JsonGetter("spawnPoints")
@@ -203,35 +206,35 @@ public class Level {
             return true;
         }
 
-        // A* algorithm implementation
-        PriorityQueue<Node> openSet = new PriorityQueue<>();
-        Set<Node> closedSet = new HashSet<>();
-
-        Node startNode = new Node(start, null, 0, start.distanceTo(end));
-        openSet.add(startNode);
-
-        while (!openSet.isEmpty()) {
-            Node current = openSet.poll();
-
-            if (current.equals(end)) {
-                return true;
-            }
-
-            closedSet.add(current);
-            var neighbors = getNeighbors(current.position);
-            for (Vector2 neighbor : neighbors) {
-                if (closedSet.contains(new Node(neighbor))) {
-                    continue;
-                }
-
-                double tentativeG = current.g + current.position.distanceTo(neighbor);
-                Node neighborNode = new Node(neighbor, current, tentativeG, neighbor.distanceTo(end));
-
-                if (!openSet.contains(neighborNode) || tentativeG < neighborNode.g) {
-                    openSet.add(neighborNode);
-                }
-            }
-        }
+//        // A* algorithm implementation
+//        PriorityQueue<Node> openSet = new PriorityQueue<>();
+//        Set<Node> closedSet = new HashSet<>();
+//
+//        Node startNode = new Node(start, null, 0, start.distanceTo(end));
+//        openSet.add(startNode);
+//
+//        while (!openSet.isEmpty()) {
+//            Node current = openSet.poll();
+//
+//            if (current.equals(end)) {
+//                return true;
+//            }
+//
+//            closedSet.add(current);
+//            var neighbors = getNeighbors(current.position);
+//            for (Vector2 neighbor : neighbors) {
+//                if (closedSet.contains(new Node(neighbor))) {
+//                    continue;
+//                }
+//
+//                double tentativeG = current.g + current.position.distanceTo(neighbor);
+//                Node neighborNode = new Node(neighbor, current, tentativeG, neighbor.distanceTo(end));
+//
+//                if (!openSet.contains(neighborNode) || tentativeG < neighborNode.g) {
+//                    openSet.add(neighborNode);
+//                }
+//            }
+//        }
 
         return false;
     }
@@ -318,5 +321,4 @@ public class Level {
     public Tile[][] getTiles() {
         return grid;
     }
-
 }

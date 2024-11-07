@@ -1,12 +1,17 @@
 package com.tankbattle.server.controllers;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.tankbattle.server.builders.BasicLevelBuilder;
+import com.tankbattle.server.components.WebSocketSessionManager;
+import com.tankbattle.server.factories.LevelGeneratorFactory;
+import com.tankbattle.server.models.Bullet;
+import com.tankbattle.server.models.Level;
+import com.tankbattle.server.models.Player;
+import com.tankbattle.server.models.PowerUp;
+import com.tankbattle.server.strategies.Level.LevelGenerator;
+import com.tankbattle.server.utils.Vector2;
+import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
@@ -16,23 +21,7 @@ import org.springframework.messaging.simp.annotation.SubscribeMapping;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Controller;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.tankbattle.server.builders.LevelBuilder;
-import com.tankbattle.server.components.WebSocketSessionManager;
-import com.tankbattle.server.factories.DestructibleTileFactory;
-import com.tankbattle.server.factories.IndestructibleTileFactory;
-import com.tankbattle.server.factories.PassableGroundTileFactory;
-import com.tankbattle.server.factories.ProceduralGeneratorFactory;
-import com.tankbattle.server.models.Bullet;
-import com.tankbattle.server.models.Level;
-import com.tankbattle.server.models.Player;
-import com.tankbattle.server.models.PowerUp;
-import com.tankbattle.server.models.tiles.Tile;
-import com.tankbattle.server.strategies.Level.ProceduralGenerator;
-import com.tankbattle.server.utils.Vector2;
-
-import jakarta.annotation.PostConstruct;
+import java.util.*;
 
 @Controller
 public class GameController {
@@ -87,15 +76,19 @@ public class GameController {
 
     @PostConstruct
     public void init() {
+        LevelGenerator generator;
         boolean useProceduralGeneration = false;
 
         if (useProceduralGeneration) {
-            ProceduralGenerator generator = ProceduralGeneratorFactory.createGenerator("random");
-            LevelBuilder levelBuilder = new LevelBuilder(generator);
-            level = levelBuilder.buildLevel(WORLD_WIDTH, WORLD_HEIGHT);
+            generator = LevelGeneratorFactory.createGenerator("random");
         } else {
-            level = buildPredefinedLevel();
+            generator = LevelGeneratorFactory.createGenerator("prebuilt");
         }
+
+        var levelBuilder = new BasicLevelBuilder(generator);
+        levelBuilder.generateLevel().addSpawnPoints(4).addPowerUps(10);
+        level = levelBuilder.build();
+
         System.out.println("Level initialized. Level:");
         System.out.println(level.toString());
 
@@ -191,60 +184,6 @@ public class GameController {
         } else {
             System.err.println("Invalid session ID or player index: " + sessionId);
         }
-    }
-
-    // Predefined Level Builder
-    public Level buildPredefinedLevel() {
-        String mapString = """
-                G G G G I I D D G G
-                G G G G G D G G G G
-                G G G D G G G D G G
-                D G G G G G G I G G
-                G G G I G G G I G G
-                G G I G G G G G G G
-                G I G G G D G I I G
-                G D G G I G G G D D
-                D G G G G G D G G I
-                G G G G G G G G G G""";
-    
-        String[] lines = mapString.split("\n");
-        int height = lines.length;
-        int width = lines[0].split(" ").length;
-    
-        Level level = new Level(width, height);
-    
-        for (int y = 0; y < height; y++) {
-            String[] tiles = lines[height - y - 1].split(" ");
-            for (int x = 0; x < width; x++) {
-                String tileSymbol = tiles[x];
-                Tile tile;
-                switch(tileSymbol) {
-                    case "G":
-                        tile = new PassableGroundTileFactory().createTile();
-                        break;
-                    case "I":
-                        tile = new IndestructibleTileFactory().createTile();
-                        break;
-                    case "D":
-                        tile = new DestructibleTileFactory().createTile();
-                        break;
-                    default:
-                        tile = new PassableGroundTileFactory().createTile();
-                        break;
-                }
-                level.setTile(x, y, tile);
-            }
-        }
-    
-        Vector2[] spawnPoints = new Vector2[] {
-            new Vector2(0, height - 1),
-            new Vector2(width - 1, height - 1),
-            new Vector2(0, 0),
-            new Vector2(width -1, 0)
-        };
-        level.setSpawnPoints(spawnPoints);
-    
-        return level;
     }
 
     public CollisionManager getCollisionManager() {

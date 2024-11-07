@@ -8,4 +8,9 @@ public class PassableGroundTileFactory implements TileFactory {
     public Tile createTile() {
         return new PassableGroundTile();
     }
+
+    @Override
+    public Tile createTile(String type) {
+        return this.createTile();
+    }
 }
