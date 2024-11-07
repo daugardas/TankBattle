@@ -2,15 +2,7 @@ package com.tankbattle.controllers;
 
 import java.awt.Color;
 import java.awt.Graphics2D;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 
 import javax.swing.Timer;
 
@@ -19,17 +11,14 @@ import com.tankbattle.models.CurrentPlayer;
 import com.tankbattle.models.Level;
 import com.tankbattle.models.Player;
 import com.tankbattle.models.tiles.Tile;
-import com.tankbattle.renderers.ExplosionRenderer;
-import com.tankbattle.renderers.RendererManager;
-import com.tankbattle.renderers.TankRenderer;
-import com.tankbattle.renderers.TileRenderer;
+import com.tankbattle.renderers.RenderFacade;
 import com.tankbattle.utils.Vector2;
 import com.tankbattle.views.GameWindow;
 
 public class GameManager {
 
     private final WebSocketManager webSocketManager;
-    private final RendererManager rendererManager;
+    private final RenderFacade renderFacade;
     private final ResourceManager resourceManager;
 
     private Level level;
@@ -41,19 +30,14 @@ public class GameManager {
     // FPS for server updates
     private long serverUpdateCount = 0;
     private float serverFps = 0;
-    private long serverFpsTimerStart = System.currentTimeMillis();    
+    private long serverFpsTimerStart = System.currentTimeMillis();
 
     private GameManager() {
         webSocketManager = new WebSocketManager();
-        rendererManager = new RendererManager();
         resourceManager = new ResourceManager();
+        renderFacade = new RenderFacade(resourceManager);
         players = new HashMap<>();
         level = new Level();
-
-        TankRenderer tankRenderer = new TankRenderer(resourceManager);
-        rendererManager.registerRenderer(Player.class, tankRenderer);
-        rendererManager.registerRenderer(Tile.class, new TileRenderer(resourceManager));
-        rendererManager.registerRenderer(Collision.class, new ExplosionRenderer(resourceManager));
 
         Timer serverFpsTimer = new Timer(1000, e -> updateServerFps());
         serverFpsTimer.start();
@@ -68,7 +52,6 @@ public class GameManager {
     public ArrayList<Player> getAllPlayers() {
         ArrayList<Player> allPlayers = new ArrayList<>(this.players.values());
         allPlayers.add(currentPlayer);
-
         return allPlayers;
     }
 
@@ -85,20 +68,17 @@ public class GameManager {
     }
 
     private void connectToServer(String hostname, String username) {
-        if (username.length() == 0) {
-
+        if (username.isEmpty()) {
             username = "Guest#" + UUID.randomUUID().toString().substring(0, 4);
         }
 
         webSocketManager.connect(hostname, username);
-        currentPlayer = new CurrentPlayer(username, new Vector2(0, 0),
-                new Vector2(10, 10), Color.BLACK, Color.RED);
+        currentPlayer = new CurrentPlayer(username, new Vector2(0, 0), new Vector2(10, 10), Color.BLACK, Color.RED);
     }
 
     public void setLevel(Level level) {
         System.out.println("Received level update: " + level);
         this.level = level;
-
         GameWindow.getInstance().setGamePanelWorldSize(level.getWidth() * 1000, level.getHeight() * 1000);
     }
 
@@ -163,18 +143,17 @@ public class GameManager {
     }
 
     public void setRenderingScaleFactor(float scaleFactor) {
-        rendererManager.setRenderingScaleFactor(scaleFactor);
+        renderFacade.setRenderingScaleFactor(scaleFactor);
     }
 
     public void setWorldLocationScaleFactor(float scaleFactor) {
-        rendererManager.setWorldLocationScaleFactor(scaleFactor);
+        renderFacade.setWorldLocationScaleFactor(scaleFactor);
     }
 
     public void setWorldOffset(Vector2 worldOffset) {
-        rendererManager.setWorldOffset(worldOffset);
+        renderFacade.setWorldOffset(worldOffset);
     }
 
-    //region Temporary, only for testing
     private final Set<Vector2> activeCollisionLocations = new HashSet<>();
     private final List<Collision> collisions = new ArrayList<>();
 
@@ -186,37 +165,33 @@ public class GameManager {
         activeCollisionLocations.add(collisionLocation);
         collisions.add(new Collision(collisionLocation));
     }
-    
+
     public List<Collision> getCollisions() {
         return new ArrayList<>(collisions);
     }
-    //endregion
 
     public void renderAll(Graphics2D g2d) {
-        // level rendering
+        // Render level tiles
         Tile[][] tileGrid = level.getGrid();
         if (tileGrid != null) {
             for (Tile[] row : tileGrid) {
-                for (Tile tile : row) {
-                    rendererManager.draw(g2d, tile);
-                }
+                renderFacade.drawEntities(g2d, Arrays.asList(row));
             }
         }
 
-        List<Player> allPlayers = getAllPlayers();
-        for (Player player : allPlayers) {
-            rendererManager.draw(g2d, player);
-        }
+        // Render all players
+        renderFacade.drawEntities(g2d, getAllPlayers());
 
-        Iterator<Collision> iterator = collisions.iterator();
+        // Render collisions with lifetime check
         long currentTime = System.currentTimeMillis();
+        Iterator<Collision> iterator = collisions.iterator();
         while (iterator.hasNext()) {
             Collision collision = iterator.next();
             if (currentTime - collision.getTimestamp() > COLLISION_LIFETIME) {
                 activeCollisionLocations.remove(collision.getLocation());
                 iterator.remove();
             } else {
-                rendererManager.draw(g2d, collision);
+                renderFacade.drawEntity(g2d, collision);
             }
         }
     }
