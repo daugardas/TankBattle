@@ -4,4 +4,5 @@ import com.tankbattle.server.models.tiles.Tile;
 
 public interface TileFactory {
     Tile createTile();
+    Tile createTile(String type);
 }

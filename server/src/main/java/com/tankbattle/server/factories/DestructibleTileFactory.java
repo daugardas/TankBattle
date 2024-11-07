@@ -8,4 +8,10 @@ public class DestructibleTileFactory implements TileFactory {
     public Tile createTile() {
         return new DestructibleTile();
     }
+
+    @Override
+    public Tile createTile(String type) {
+        return createTile();
+    }
+
 }
