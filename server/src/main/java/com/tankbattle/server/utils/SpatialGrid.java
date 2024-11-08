@@ -6,7 +6,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
-import com.tankbattle.server.models.GameEntity;
+import com.tankbattle.server.models.AbstractCollidableEntity;
 
 public class SpatialGrid {
     private final int cellSize;
@@ -16,13 +16,13 @@ public class SpatialGrid {
     private int queryId = 0;
 
     public static class GridNode {
-        GameEntity entity;
+        AbstractCollidableEntity entity;
         GridNode next;
         GridNode prev;
         int xIndex;
         int yIndex;
     
-        GridNode(GameEntity entity, int xIndex, int yIndex) {
+        GridNode(AbstractCollidableEntity entity, int xIndex, int yIndex) {
             this.entity = entity;
             this.xIndex = xIndex;
             this.yIndex = yIndex;
@@ -36,7 +36,7 @@ public class SpatialGrid {
         this.grid = new GridNode[totalCellsX][totalCellsY];
     }
 
-    public void addEntity(GameEntity entity, boolean isStatic) {
+    public void addEntity(AbstractCollidableEntity entity, boolean isStatic) {
         int[] cellIndicesMin = getCellIndices(entity, true);
         int[] cellIndicesMax = getCellIndices(entity, false);
     
@@ -54,7 +54,7 @@ public class SpatialGrid {
         entity.setStaticEntity(isStatic);
     }
 
-    public void updateEntity(GameEntity entity) {
+    public void updateEntity(AbstractCollidableEntity entity) {
         if (entity.isStaticEntity()) return;
     
         Set<String> oldCells = entity.getOccupiedCellKeys(); // Returns set of "x,y" strings for occupied cells
@@ -86,11 +86,11 @@ public class SpatialGrid {
         entity.setCellIndices(newCellIndicesMin, newCellIndicesMax);
     }
 
-    public List<GameEntity> getNearbyEntities(GameEntity entity) {
+    public List<AbstractCollidableEntity> getNearbyEntities(AbstractCollidableEntity entity) {
         int[] cellIndicesMin = getCellIndices(entity, true);
         int[] cellIndicesMax = getCellIndices(entity, false);
 
-        Set<GameEntity> nearbyEntities = new HashSet<>();
+        Set<AbstractCollidableEntity> nearbyEntities = new HashSet<>();
         queryId++;
 
         for (int x = cellIndicesMin[0]; x <= cellIndicesMax[0]; x++) {
@@ -98,7 +98,7 @@ public class SpatialGrid {
                 if (x >= 0 && x < totalCellsX && y >= 0 && y < totalCellsY) {
                     GridNode node = grid[x][y];
                     while (node != null) {
-                        GameEntity nearbyEntity = node.entity;
+                        AbstractCollidableEntity nearbyEntity = node.entity;
 
                         if (nearbyEntity.getQueryId() != queryId) {
                             nearbyEntity.setQueryId(queryId);
@@ -116,7 +116,7 @@ public class SpatialGrid {
         return new LinkedList<>(nearbyEntities);
     }
 
-    private int[] getCellIndices(GameEntity entity, boolean isMin) {
+    private int[] getCellIndices(AbstractCollidableEntity entity, boolean isMin) {
         float x = entity.getLocation().getX();
         float y = entity.getLocation().getY();
         float halfWidth = entity.getSize().getX() / 2;
@@ -136,7 +136,7 @@ public class SpatialGrid {
         return new int[]{cellX, cellY};
     }
 
-    private void insertEntityInCells(GameEntity entity, Set<String> cellsToAdd) {
+    private void insertEntityInCells(AbstractCollidableEntity entity, Set<String> cellsToAdd) {
         for (String cellKey : cellsToAdd) {
             String[] indices = cellKey.split(",");
             int x = Integer.parseInt(indices[0]);
@@ -155,7 +155,7 @@ public class SpatialGrid {
         }
     }
 
-    private void removeEntityFromCells(GameEntity entity, Set<String> cellsToRemove) {
+    private void removeEntityFromCells(AbstractCollidableEntity entity, Set<String> cellsToRemove) {
         Iterator<GridNode> iterator = entity.getGridNodes().iterator();
         while (iterator.hasNext()) {
             GridNode node = iterator.next();
@@ -177,7 +177,7 @@ public class SpatialGrid {
         }
     }
     
-    public void removeEntity(GameEntity entity) {
+    public void removeEntity(AbstractCollidableEntity entity) {
         Set<String> cellsToRemove = entity.getOccupiedCellKeys();
     
         if (cellsToRemove != null && !cellsToRemove.isEmpty()) {

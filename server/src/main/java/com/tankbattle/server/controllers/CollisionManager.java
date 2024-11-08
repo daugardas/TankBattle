@@ -9,6 +9,7 @@ import org.springframework.stereotype.Component;
 
 import com.tankbattle.server.events.CollisionEvent;
 import com.tankbattle.server.listeners.CollisionListener;
+import com.tankbattle.server.models.AbstractCollidableEntity;
 import com.tankbattle.server.models.Bullet;
 import com.tankbattle.server.models.GameEntity;
 import com.tankbattle.server.models.Level;
@@ -54,7 +55,7 @@ public class CollisionManager {
         }
     }
     
-
+    
     //updating may be done after update player, bullet, powerup
     public void detectCollisions(List<Player> players, List<Bullet> bullets, List<PowerUp> powerUps) {
         for (Player player : players) {
@@ -74,9 +75,9 @@ public class CollisionManager {
         Set<String> processedPairs = new HashSet<>();
 
         for (Player player : players) {
-            List<GameEntity> nearbyEntities = spatialGrid.getNearbyEntities(player);
+            List<AbstractCollidableEntity> nearbyEntities = spatialGrid.getNearbyEntities(player);
 
-            for (GameEntity entity : nearbyEntities) {
+            for (AbstractCollidableEntity entity : nearbyEntities) {
                 if (entity == player) continue;
 
                 //switch
