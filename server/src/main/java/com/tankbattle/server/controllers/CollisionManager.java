@@ -69,9 +69,9 @@ public class CollisionManager {
         Set<String> processedPairs = new HashSet<>();
 
         for(Bullet bullet : bullets) {
-            List<GameEntity> nearbyEntities = spatialGrid.getNearbyEntities(bullet);
+            List<AbstractCollidableEntity> nearbyEntities = spatialGrid.getNearbyEntities(bullet);
 
-            for (GameEntity gameEntity : nearbyEntities) {
+            for (AbstractCollidableEntity gameEntity : nearbyEntities) {
                 if (gameEntity instanceof TileEntity tileEntity){
                     if (!tileEntity.canProjectilePass() && isColliding(bullet, tileEntity)) {
                         notifyListeners(new CollisionEvent(CollisionEvent.CollisionType.BULLET_MAP, bullet, tileEntity));
