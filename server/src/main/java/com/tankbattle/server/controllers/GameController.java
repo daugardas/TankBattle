@@ -94,10 +94,9 @@ public class GameController {
 
         collisionManager.initializeStaticEntities(level);
 
-        // add test bullet
-        Bullet bullet = new Bullet(new Vector2((float) (WORLD_WIDTH / 2) * TILE_WIDTH, (float) (WORLD_HEIGHT / 2) * TILE_HEIGHT), new Vector2(1f, 1f), 1);
-
-        this.bullets.add(bullet);
+        // add test bullets
+        this.bullets.add(new Bullet(new Vector2(4000, 3000), new Vector2(0f, 0f), 1));
+        this.bullets.add(new Bullet(new Vector2((float) (WORLD_WIDTH / 2) * TILE_WIDTH, (float) (WORLD_HEIGHT / 2) * TILE_HEIGHT), new Vector2(1f, 1f), 1));
     }
 
     public void addPlayer(Player player) {

@@ -107,6 +107,14 @@ public class TileEntity implements GameEntity {
         return tile.canPass();
     }
 
+    public boolean canProjectilePass() {
+        return tile.canProjectilePass();
+    }
+
+    public void takeDamage(int damage) {
+        tile.takeDamage(damage);
+    }
+
         @Override
     public Set<String> getOccupiedCellKeys() {
        return new HashSet<>(occupiedCells);

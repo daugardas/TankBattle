@@ -36,6 +36,13 @@ public class PlayerBulletCollisionListener implements CollisionListener {
 
         logger.info("Player {} was hit by a bullet. Remaining health: {}", player.getUsername(), player.getHealth());
 
+        // Calculate collision location (e.g., midpoint between the two players)
+        int collisionX = (player.getLocation().getX() + bullet.getLocation().getX()) / 2;
+        int collisionY = (player.getLocation().getY() + bullet.getLocation().getY()) / 2;
+
         gameController.removeCollidedBullet(bullet);
+
+        // Notify GameController about the collision location
+        gameController.sendCollisionLocation(collisionX, collisionY);
     }
 }

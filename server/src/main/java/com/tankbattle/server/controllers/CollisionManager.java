@@ -57,12 +57,6 @@ public class CollisionManager {
 
     //updating may be done after update player, bullet, powerup
     public void detectCollisions(List<Player> players, List<Bullet> bullets, List<PowerUp> powerUps) {
-//        for (Player player : players) {
-//            spatialGrid.updateEntity(player);
-//        }
-//        for (Bullet bullet : bullets) {
-//            spatialGrid.updateEntity(bullet);
-//        }
         for (PowerUp powerUp : powerUps) {
             spatialGrid.updateEntity(powerUp);
         }
@@ -72,6 +66,23 @@ public class CollisionManager {
 
     private void detectEntityCollisions(List<Player> players, List<Bullet> bullets, List<PowerUp> powerUps) {
         Set<String> processedPairs = new HashSet<>();
+
+        for(Bullet bullet : bullets) {
+            List<GameEntity> nearbyEntities = spatialGrid.getNearbyEntities(bullet);
+
+            for (GameEntity gameEntity : nearbyEntities) {
+                if (gameEntity instanceof TileEntity tileEntity){
+                    if (!tileEntity.canProjectilePass() && isColliding(bullet, tileEntity)) {
+                        notifyListeners(new CollisionEvent(CollisionEvent.CollisionType.BULLET_MAP, bullet, tileEntity));
+                    }
+                }
+            }
+        }
+
+        // if bullet can hit two tiles simultaneously, we can just mark it for removal,
+        // and when checking collisions, check if it's marked.
+        // If it is marked, we just not send the collision event.
+        // After checking every bullet for collisions, we can remove collided bullets
 
         for (Player player : players) {
             List<GameEntity> nearbyEntities = spatialGrid.getNearbyEntities(player);

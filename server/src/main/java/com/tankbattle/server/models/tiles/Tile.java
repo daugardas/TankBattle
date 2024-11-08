@@ -10,11 +10,15 @@ public abstract class Tile {
     private ProjectilePassabilityBehaviour projectilePassabilityBehaviour;
     private DestructibilityBehavior destructibilityBehavior;
 
+    private int health;
+
     public Tile(PassabilityBehavior passability, ProjectilePassabilityBehaviour projectilePassability,
             DestructibilityBehavior destructibility) {
         passabilityBehavior = passability;
         projectilePassabilityBehaviour = projectilePassability;
         destructibilityBehavior = destructibility;
+
+        health = 3;
     }
 
     @JsonIgnore
@@ -30,6 +34,11 @@ public abstract class Tile {
     @JsonIgnore
     public boolean canBeDestroyed() {
         return destructibilityBehavior.canBeDestroyed();
+    }
+
+    public void takeDamage(int damage) {
+        if(this.canBeDestroyed())
+            health -= damage;
     }
 
     @JsonIgnore
