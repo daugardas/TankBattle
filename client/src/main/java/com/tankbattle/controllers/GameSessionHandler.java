@@ -1,16 +1,14 @@
 package com.tankbattle.controllers;
 
-import java.lang.reflect.Type;
-import java.util.Map;
-
-import org.springframework.messaging.simp.stomp.StompCommand;
-import org.springframework.messaging.simp.stomp.StompFrameHandler;
-import org.springframework.messaging.simp.stomp.StompHeaders;
-import org.springframework.messaging.simp.stomp.StompSession;
-import org.springframework.messaging.simp.stomp.StompSessionHandlerAdapter;
-
+import com.tankbattle.models.Bullet;
 import com.tankbattle.models.Level;
 import com.tankbattle.utils.Vector2;
+import org.springframework.messaging.simp.stomp.*;
+
+import java.lang.reflect.Type;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 public class GameSessionHandler extends StompSessionHandlerAdapter {
     public StompSession stompSession;
@@ -50,6 +48,24 @@ public class GameSessionHandler extends StompSessionHandlerAdapter {
                 GameManager.getInstance().setLevel((Level) o);
             }
 
+        });
+
+        session.subscribe("/server/bullets", new StompFrameHandler() {
+            @Override
+            public Type getPayloadType(StompHeaders headers) {
+                return Bullet[].class;
+            }
+
+            @Override
+            public void handleFrame(StompHeaders stompHeaders, Object o) {
+                ArrayList<Bullet> bullets = new ArrayList<>(List.of((Bullet[]) o));
+                if (!bullets.isEmpty()) {
+                    GameManager.getInstance().updateBullets(bullets);
+                } else {
+                    GameManager.getInstance().clearBullets();
+                }
+
+            }
         });
 
         session.subscribe("/server/collisions", new StompFrameHandler() {

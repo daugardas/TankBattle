@@ -35,5 +35,13 @@ public class TileEntity extends AbstractCollidableEntity implements GameEntity {
     public boolean canPass() {
         return tile.canPass();
     }
+
+    public boolean canProjectilePass() {
+        return tile.canProjectilePass();
+    }
+
+    public void takeDamage(int damage) {
+        tile.takeDamage(damage);
+    }
     
 }

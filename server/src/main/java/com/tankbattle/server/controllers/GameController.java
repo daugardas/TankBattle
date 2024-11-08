@@ -57,7 +57,7 @@ public class GameController {
     private CollisionManager collisionManager;
 
     private List<Player> players = new ArrayList<>();
-    private List<Bullet> bullets = new ArrayList<>();
+    private final ArrayList<Bullet> bullets = new ArrayList<>();
     private List<PowerUp> powerUps = new ArrayList<>();
     private HashMap<String, Integer> sessionIdToPlayerIndex = new HashMap<>();
 
@@ -99,6 +99,10 @@ public class GameController {
         System.out.println(level.toString());
 
         collisionManager.initializeStaticEntities(level);
+
+        // add test bullets
+        this.bullets.add(new Bullet(new Vector2(4000, 3000), new Vector2(0f, 0f), 1));
+        this.bullets.add(new Bullet(new Vector2((float) (WORLD_WIDTH / 2) * TILE_WIDTH, (float) (WORLD_HEIGHT / 2) * TILE_HEIGHT), new Vector2(1f, 1f), 1));
     }
 
     public void addPlayer(Player player) {
@@ -170,7 +174,8 @@ public class GameController {
 
         commands.clear();
 
-        // updatePlayersLocations();
+        //updatePlayersLocations();
+        updateBulletsLocations();
 
         // Detect and handle collisions
         collisionManager.detectCollisions(players, bullets, powerUps);
@@ -180,14 +185,28 @@ public class GameController {
 
     }
 
-    // private void updatePlayersLocations() {
-    // for (Player player : players) {
-    // player.updateLocation();
-    // }
-    // }
+    private void updatePlayersLocations() {
+        for (Player player : players) {
+            player.updateLocation();
+            collisionManager.spatialGrid.updateEntity(player);
+        }
+    }
+
+    public void removeCollidedBullet(Bullet bullet) {
+        collisionManager.spatialGrid.removeEntity(bullet);
+        bullets.remove(bullet);
+    }
+
+    private void updateBulletsLocations() {
+        for (Bullet bullet : bullets) {
+            bullet.updatePosition();
+            collisionManager.spatialGrid.updateEntity(bullet);
+        }
+    }
 
     private void broadcastGameState() {
         messagingTemplate.convertAndSend("/server/players", players);
+        messagingTemplate.convertAndSend("/server/bullets", bullets);
     }
 
     @MessageMapping("/command")

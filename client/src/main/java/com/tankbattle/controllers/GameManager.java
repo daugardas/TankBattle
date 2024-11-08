@@ -1,5 +1,6 @@
 package com.tankbattle.controllers;
 
+import com.tankbattle.models.*;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.util.ArrayList;
@@ -24,6 +25,11 @@ import com.tankbattle.renderers.RenderFacade;
 import com.tankbattle.utils.Vector2;
 import com.tankbattle.views.GameWindow;
 
+import javax.swing.Timer;
+import java.awt.*;
+import java.util.List;
+import java.util.*;
+
 public class GameManager {
 
     private final WebSocketManager webSocketManager;
@@ -32,6 +38,7 @@ public class GameManager {
 
     private Level level;
     private final HashMap<String, Player> players;
+    private final ArrayList<Bullet> bullets;
     private CurrentPlayer currentPlayer;
     public int playerCount = 0;
     private static final long COLLISION_LIFETIME = 1000; // 5 seconds
@@ -46,6 +53,7 @@ public class GameManager {
         resourceManager = new ResourceManager();
         renderFacade = new RenderFacade(resourceManager);
         players = new HashMap<>();
+        bullets = new ArrayList<>();
         level = new Level();
 
         Timer serverFpsTimer = new Timer(1000, e -> updateServerFps());
@@ -138,6 +146,15 @@ public class GameManager {
             players.keySet().removeIf(username -> !incomingUsernames.contains(username));
     }
 
+    public void updateBullets(ArrayList<Bullet> bullets) {
+        this.bullets.clear();
+        this.bullets.addAll(bullets);
+    }
+
+    public void clearBullets() {
+        this.bullets.clear();
+    }
+
     public void update() {
         GameWindow.getInstance().getGamePanel().repaint();
 
@@ -206,6 +223,9 @@ public class GameManager {
                 renderFacade.drawEntity(g2d, collision);
             }
         }
+
+        // Render bullets
+        renderFacade.drawEntities(g2d, this.bullets);
     }
 
     public void incrementServerUpdateCount() {
