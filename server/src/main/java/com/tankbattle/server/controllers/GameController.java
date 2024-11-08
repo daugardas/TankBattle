@@ -99,10 +99,6 @@ public class GameController {
         System.out.println(level.toString());
 
         collisionManager.initializeStaticEntities(level);
-
-        // add test bullets
-        this.bullets.add(new Bullet(new Vector2(4000, 3000), new Vector2(0f, 0f), 1));
-        this.bullets.add(new Bullet(new Vector2((float) (WORLD_WIDTH / 2) * TILE_WIDTH, (float) (WORLD_HEIGHT / 2) * TILE_HEIGHT), new Vector2(1f, 1f), 1));
     }
 
     public void addPlayer(Player player) {
@@ -174,7 +170,7 @@ public class GameController {
 
         commands.clear();
 
-        //updatePlayersLocations();
+        updatePlayersLocations();
         updateBulletsLocations();
 
         // Detect and handle collisions
