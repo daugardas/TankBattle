@@ -169,7 +169,7 @@ public class GameController {
         }
 
         commands.clear();
-
+        
         updatePlayersLocations();
         updateBulletsLocations();
 
