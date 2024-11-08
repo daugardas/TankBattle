@@ -1,5 +1,7 @@
 package com.tankbattle.server.commands;
 
+import java.util.Objects;
+
 import com.tankbattle.server.models.Player;
 import com.tankbattle.server.utils.Constants;
 
@@ -40,5 +42,26 @@ public class MoveCommand implements ICommand {
 
         player.setMovementDirection(reverseDirection);
         player.updateLocation();
+    }
+
+    public String toString() {
+        return String.format("%s %d", player.toString(), direction);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null || getClass() != obj.getClass()) {
+            return false;
+        }
+        MoveCommand that = (MoveCommand) obj;
+        return direction == that.direction && player.equals(that.player);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(player, direction);
     }
 }

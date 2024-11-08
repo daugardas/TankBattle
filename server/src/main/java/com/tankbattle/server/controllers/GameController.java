@@ -164,24 +164,11 @@ public class GameController {
     @Scheduled(fixedRate = 33)
     public void gameLoop() {
 
-        System.out.println(commandLog.size());
-        if (something) {
-            if (commandLog.size() < 400) {
-                for (int i = 0; i < commands.size(); i++) {
-                    commands.get(i).execute();
-                }
-                commands.clear();
-            } else {
-                something = false;
-            }
-        } else {
-            if (commandLog.size() != 0) {
-                commandLog.get(commandLog.size() - 1).undo();
-                commandLog.remove(commandLog.size() - 1);
-            } else {
-                something = true;
-            }
+        for (int i = 0; i < commands.size(); i++) {
+            commands.get(i).execute();
         }
+
+        commands.clear();
 
         // updatePlayersLocations();
 
@@ -214,15 +201,11 @@ public class GameController {
 
             switch (type) {
                 case "MOVE":
-                    System.out.println("Move command created");
                     MoveCommand moveCommand = new MoveCommand(players.get(playerIndex),
                             ((Integer) command.get("direction")).byteValue());
 
                     if (!commands.contains(moveCommand)) {
-                        if (something) {
-                            commands.add(moveCommand);
-                            commandLog.add(moveCommand);
-                        }
+                        commands.add(moveCommand);
                     }
 
                 default:

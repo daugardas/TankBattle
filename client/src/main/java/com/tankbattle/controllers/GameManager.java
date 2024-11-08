@@ -65,7 +65,7 @@ public class GameManager {
         connectToServer(url, username);
         GameWindow.getInstance().initializeGameScreen();
 
-        Timer timer = new Timer(33, event -> this.update());
+        Timer timer = new Timer(1, event -> this.update());
         timer.start();
     }
 
