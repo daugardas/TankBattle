@@ -11,16 +11,16 @@ public class PrebuiltLevelGenerator implements LevelGenerator {
 
     public PrebuiltLevelGenerator() {
         this.levelString = """
-                G G G G I I D D G G
-                G G G G G D G G G G
-                G G G D G G G D G G
-                D G G G G G G I G G
-                G G G I G G G I G G
-                G G I G G G G G G G
-                G I G G G D G I I G
-                G D G G I G G G D D
-                D G G G G G D G G I
-                G G G G G G G G G G""";
+                G G G D D D D G G G
+                G G G D D D D G G G
+                G G G G G G G G G G
+                D D D G G G G D D D
+                L L L L G G L L L L
+                L L L L G G L L L L
+                D D D G G G G D D D
+                G G G G G G G G G G
+                G G G D D D D G G G
+                G G G D D D D G G G""";
 
         String[] lines = levelString.split("\n");
         this.height = lines.length;
