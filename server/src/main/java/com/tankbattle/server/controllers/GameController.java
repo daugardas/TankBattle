@@ -174,7 +174,7 @@ public class GameController {
 
         commands.clear();
 
-        updatePlayersLocations();
+        //updatePlayersLocations();
         updateBulletsLocations();
 
         // Detect and handle collisions
