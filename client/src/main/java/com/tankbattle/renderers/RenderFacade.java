@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 
 
+import com.tankbattle.models.Bullet;
 import com.tankbattle.models.Player;
 import com.tankbattle.models.tiles.Tile;
 import com.tankbattle.models.Collision;
@@ -24,6 +25,7 @@ public class RenderFacade {
         registerRenderer(Player.class, new TankRenderer(resourceManager));
         registerRenderer(Tile.class, new TileRenderer(resourceManager));
         registerRenderer(Collision.class, new ExplosionRenderer(resourceManager));
+        registerRenderer(Bullet.class, new BulletRenderer(resourceManager));
     }
 
     public <T extends Entity> void registerRenderer(Class<T> entityClass, EntityRenderer<T> renderer) {

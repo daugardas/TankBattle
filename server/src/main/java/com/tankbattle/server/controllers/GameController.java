@@ -55,7 +55,7 @@ public class GameController {
     private CollisionManager collisionManager;
 
     private List<Player> players = new ArrayList<>();
-    private List<Bullet> bullets = new ArrayList<>();
+    private final ArrayList<Bullet> bullets = new ArrayList<>();
     private List<PowerUp> powerUps = new ArrayList<>();
     private HashMap<String, Integer> sessionIdToPlayerIndex = new HashMap<>();
 
@@ -95,10 +95,7 @@ public class GameController {
         collisionManager.initializeStaticEntities(level);
 
         // add test bullet
-        Bullet bullet = new Bullet(
-                new Vector2((float) level.getWidth() * 1000 + 500, (float) level.getHeight() * 1000 + 500),
-                new Vector2(0.0f, 0.0f),
-                0);
+        Bullet bullet = new Bullet(new Vector2((float) (WORLD_WIDTH / 2) * TILE_WIDTH, (float) (WORLD_HEIGHT / 2) * TILE_HEIGHT), new Vector2(1f, 1f), 1);
 
         this.bullets.add(bullet);
     }
@@ -165,6 +162,7 @@ public class GameController {
     @Scheduled(fixedRate = 33)
     public void gameLoop() {
         updatePlayersLocations();
+        updateBulletsLocations();
 
         // Detect and handle collisions
         collisionManager.detectCollisions(players, bullets, powerUps);
@@ -176,6 +174,19 @@ public class GameController {
     private void updatePlayersLocations() {
         for (Player player : players) {
             player.updateLocation();
+            collisionManager.spatialGrid.updateEntity(player);
+        }
+    }
+
+    public void removeCollidedBullet(Bullet bullet) {
+        collisionManager.spatialGrid.removeEntity(bullet);
+        bullets.remove(bullet);
+    }
+
+    private void updateBulletsLocations() {
+        for (Bullet bullet : bullets) {
+            bullet.updatePosition();
+            collisionManager.spatialGrid.updateEntity(bullet);
         }
     }
 

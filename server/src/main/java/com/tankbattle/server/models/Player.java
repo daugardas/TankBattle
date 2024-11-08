@@ -27,6 +27,9 @@ public class Player implements GameEntity {
     private float speed = 40;
     private double rotationAngle = 0;
 
+    @JsonIgnore
+    private int health = 20;
+
     private static final byte DIRECTION_UP = 0b1000;
     private static final byte DIRECTION_LEFT = 0b0100;
     private static final byte DIRECTION_DOWN = 0b0010;
@@ -117,6 +120,20 @@ public class Player implements GameEntity {
 
     public double getRotationAngle() {
         return rotationAngle;
+    }
+
+    @JsonIgnore
+    public int getHealth(){
+        return health;
+    }
+
+    @JsonIgnore
+    public void setHealth(int health) {
+        this.health = health;
+    }
+
+    public void takeDamage(int damage) {
+        health -= damage;
     }
 
     private void updateRotationAngle() {
