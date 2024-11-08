@@ -9,7 +9,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.tankbattle.server.utils.SpatialGrid.GridNode;
 import com.tankbattle.server.utils.Vector2;
 
-public class PowerUp implements GameEntity {
+public class PowerUp implements GameEntity, Cloneable {
     private Vector2 location;
     private Vector2 size;
     private PowerUpType type;
@@ -120,14 +120,41 @@ public class PowerUp implements GameEntity {
         return isStaticEntity;
     }
 
-        @Override
+    @Override
     public Set<String> getOccupiedCellKeys() {
-       return new HashSet<>(occupiedCells);
+        return new HashSet<>(occupiedCells);
     }
 
     @Override
     public void setOccupiedCells(Set<String> occupiedCells) {
         this.occupiedCells = (occupiedCells != null) ? new HashSet<>(occupiedCells) : new HashSet<>();
-    }    
+    }
+
+    // Deep copy implementation in clone()
+    @Override
+    public PowerUp clone() {
+        try {
+            PowerUp clonedPowerUp = (PowerUp) super.clone();
+
+            // Deep copy for mutable fields
+            clonedPowerUp.location = new Vector2(this.location.getX(), this.location.getY());
+            clonedPowerUp.size = new Vector2(this.size.getX(), this.size.getY());
+
+            // Deep copy cell indices arrays
+            clonedPowerUp.cellIndicesMin = this.cellIndicesMin != null ? this.cellIndicesMin.clone() : null;
+            clonedPowerUp.cellIndicesMax = this.cellIndicesMax != null ? this.cellIndicesMax.clone() : null;
+
+            // Deep copy for gridNodes list
+            clonedPowerUp.gridNodes = new ArrayList<>(this.gridNodes);
+
+            // Deep copy for occupiedCells set
+            clonedPowerUp.occupiedCells = new HashSet<>(this.occupiedCells);
+
+            return clonedPowerUp;
+        } catch (CloneNotSupportedException e) {
+            throw new AssertionError("Cloning failed", e);
+        }
+    }
+
     //endregion
 }

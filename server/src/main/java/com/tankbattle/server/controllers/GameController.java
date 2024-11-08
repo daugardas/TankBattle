@@ -9,6 +9,7 @@ import com.tankbattle.server.models.Bullet;
 import com.tankbattle.server.models.Level;
 import com.tankbattle.server.models.Player;
 import com.tankbattle.server.models.PowerUp;
+import com.tankbattle.server.models.PowerUpType;
 import com.tankbattle.server.strategies.Level.LevelGenerator;
 import com.tankbattle.server.utils.Vector2;
 import jakarta.annotation.PostConstruct;
@@ -93,7 +94,29 @@ public class GameController {
         System.out.println(level.toString());
 
         collisionManager.initializeStaticEntities(level);
+
+        // Bullet
+        Bullet originalBullet = new Bullet(new Vector2(0, 0), new Vector2(2, 3), 50);
+
+        Bullet deepClonedBullet = originalBullet.deepClone();
+
+        System.out.println("Original: hashcode" + System.identityHashCode(originalBullet));
+        System.out.println("Clone: hashcode" + System.identityHashCode(deepClonedBullet));
+
+        PowerUp originalPowerUp = new PowerUp(new Vector2(10, 10), PowerUpType.SHIELD);
+
+        // Act: Perform a shallow clone
+        PowerUp shallowClonedPowerUp = originalPowerUp.clone();
+
+        // Print hashcodes to verify different objects
+        System.out.println("Original PowerUp hashcode: " + System.identityHashCode(originalPowerUp));
+        System.out.println("Shallow Cloned PowerUp hashcode: " + System.identityHashCode(shallowClonedPowerUp));
+
+
     }
+
+
+
 
     public void addPlayer(Player player) {
         sessionIdToPlayerIndex.put(player.getSessionId(), this.players.size());
@@ -199,4 +222,5 @@ public class GameController {
 
         System.out.println("Sent collision location: x=" + x + ", y=" + y);
     }
+
 }

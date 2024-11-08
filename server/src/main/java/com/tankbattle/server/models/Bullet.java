@@ -9,7 +9,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.tankbattle.server.utils.SpatialGrid.GridNode;
 import com.tankbattle.server.utils.Vector2;
 
-public class Bullet  implements GameEntity {
+public class Bullet implements GameEntity, Cloneable {
     private Vector2 location;
     private Vector2 size;
     private int damage;
@@ -133,13 +133,41 @@ public class Bullet  implements GameEntity {
 
     @Override
     public Set<String> getOccupiedCellKeys() {
-       return new HashSet<>(occupiedCells);
+        return new HashSet<>(occupiedCells);
     }
 
     @Override
     public void setOccupiedCells(Set<String> occupiedCells) {
         this.occupiedCells = (occupiedCells != null) ? new HashSet<>(occupiedCells) : new HashSet<>();
     }
-    
+
     //endregion
+
+    public Bullet deepClone() {
+        try {
+            // Clone the Bullet itself
+            Bullet cloned = (Bullet) super.clone();
+
+            // Deep copy for mutable Vector2 fields
+            cloned.location = new Vector2(this.location.getX(), this.location.getY());
+            cloned.size = new Vector2(this.size.getX(), this.size.getY());
+            cloned.velocity = new Vector2(this.velocity.getX(), this.velocity.getY());
+
+            // Shallow copy for gridNodes if GridNode is immutable or does not require deep cloning
+            cloned.gridNodes = new ArrayList<>(this.gridNodes.size());
+            for (GridNode node : this.gridNodes) {
+                cloned.gridNodes.add(node); // Directly add node if deep cloning is unnecessary
+            }
+
+            // Deep copy for the occupiedCells set
+            cloned.occupiedCells = new HashSet<>(this.occupiedCells);
+
+            return cloned;
+        } catch (CloneNotSupportedException e) {
+            throw new AssertionError("Cloning not supported", e);
+        }
+    }
+
+
+
 }
