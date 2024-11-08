@@ -7,6 +7,8 @@ import org.springframework.web.socket.client.WebSocketClient;
 import org.springframework.web.socket.client.standard.StandardWebSocketClient;
 import org.springframework.web.socket.messaging.WebSocketStompClient;
 
+import com.tankbattle.commands.ICommand;
+
 public class WebSocketManager {
 
     private final WebSocketClient webSocketClient;
@@ -31,10 +33,11 @@ public class WebSocketManager {
         return username;
     }
 
-    public void sendMovementDirection(byte movementBuffer) {
+    public void sendCommand(ICommand command) {
 
-        // System.out.println("session is open: " + sessionHandler.stompSession.isConnected());
+        // System.out.println("session is open: " +
+        // sessionHandler.stompSession.isConnected());
 
-        sessionHandler.stompSession.send("/client/update-player-movement", movementBuffer);
+        sessionHandler.stompSession.send("/client/command", command);
     }
 }

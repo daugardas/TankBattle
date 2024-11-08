@@ -3,6 +3,8 @@ package com.tankbattle.server.controllers;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.tankbattle.server.builders.BasicLevelBuilder;
+import com.tankbattle.server.commands.ICommand;
+import com.tankbattle.server.commands.MoveCommand;
 import com.tankbattle.server.components.WebSocketSessionManager;
 import com.tankbattle.server.factories.LevelGeneratorFactory;
 import com.tankbattle.server.models.Bullet;
@@ -30,14 +32,14 @@ public class GameController {
      * Level consists of tiles, which indicated the width and height of the world.
      * Coordinate system will assume that a tile has 1000 units of width and height,
      * so a 20x20 level will be 20000x20000 coordinate units.
-     * 
+     *
      * This will ensure smooth movement of players and objects in the world, and
      * still make it possible to have the level be made up of a limited number of
      * tiles.
-     * 
+     *
      * It will be easy to convert between tile coordinates and world coordinates, as
      * the conversion factor is 1000.
-     * 
+     *
      */
 
     public static final int TILE_HEIGHT = 1000;
@@ -59,8 +61,12 @@ public class GameController {
     private List<PowerUp> powerUps = new ArrayList<>();
     private HashMap<String, Integer> sessionIdToPlayerIndex = new HashMap<>();
 
+    private List<ICommand> commands = new ArrayList<>();
+    private List<ICommand> commandLog = new ArrayList<>();
+
+    boolean something = true;
+
     private Level level;
-    
 
     public Level getLevel() {
         return level;
@@ -122,17 +128,17 @@ public class GameController {
                 break;
             }
         }
-    
+
         if (playerToRemove != null) {
             // Remove the player from the spatial grid
-             System.out.println("Removing player from grid cells. MinIndices: " + 
-                       Arrays.toString(playerToRemove.getCellIndicesMin()) + 
-                       ", MaxIndices: " + Arrays.toString(playerToRemove.getCellIndicesMax()));
+            System.out.println("Removing player from grid cells. MinIndices: " +
+                    Arrays.toString(playerToRemove.getCellIndicesMin()) +
+                    ", MaxIndices: " + Arrays.toString(playerToRemove.getCellIndicesMax()));
             collisionManager.spatialGrid.removeEntity(playerToRemove);
         }
-    
+
         sessionIdToPlayerIndex.remove(sessionId);
-    
+
         // Rebuild the sessionIdToPlayerIndex map
         sessionIdToPlayerIndex.clear();
         for (int i = 0; i < players.size(); i++) {
@@ -146,7 +152,8 @@ public class GameController {
         System.out.println("Subscribed to level");
         // messagingTemplate.convertAndSend("/server/level", level);
 
-        // workaround for sending the hard-coded map, as the generation sometimes crashes
+        // workaround for sending the hard-coded map, as the generation sometimes
+        // crashes
         ObjectMapper mapper = new ObjectMapper();
         try {
             String levelJson = mapper.writeValueAsString(level);
@@ -160,6 +167,13 @@ public class GameController {
 
     @Scheduled(fixedRate = 33)
     public void gameLoop() {
+
+        for (int i = 0; i < commands.size(); i++) {
+            commands.get(i).execute();
+        }
+
+        commands.clear();
+
         updatePlayersLocations();
         updateBulletsLocations();
 
@@ -168,6 +182,7 @@ public class GameController {
 
         // Broadcast updated game state to clients
         broadcastGameState();
+
     }
 
     private void updatePlayersLocations() {
@@ -194,12 +209,28 @@ public class GameController {
         messagingTemplate.convertAndSend("/server/bullets", bullets);
     }
 
-    @MessageMapping("/update-player-movement")
-    public void updatePlayer(@Payload byte movementDirection, SimpMessageHeaderAccessor headerAccessor) {
+    @MessageMapping("/command")
+    public void processCommand(@Payload Map<String, Object> command, SimpMessageHeaderAccessor headerAccessor) {
         String sessionId = headerAccessor.getSessionId();
         Integer playerIndex = sessionIdToPlayerIndex.get(sessionId);
+
         if (playerIndex != null && playerIndex < players.size()) {
-            players.get(playerIndex).setMovementDirection(movementDirection);
+
+            String type = command.get("type").toString();
+
+            switch (type) {
+                case "MOVE":
+                    MoveCommand moveCommand = new MoveCommand(players.get(playerIndex),
+                            ((Integer) command.get("direction")).byteValue());
+
+                    if (!commands.contains(moveCommand)) {
+                        commands.add(moveCommand);
+                    }
+
+                default:
+                    break;
+            }
+
         } else {
             System.err.println("Invalid session ID or player index: " + sessionId);
         }

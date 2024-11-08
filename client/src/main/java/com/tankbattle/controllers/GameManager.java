@@ -1,6 +1,25 @@
 package com.tankbattle.controllers;
 
 import com.tankbattle.models.*;
+import java.awt.Color;
+import java.awt.Graphics2D;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
+
+import javax.swing.Timer;
+
+import com.tankbattle.commands.MoveCommand;
+import com.tankbattle.models.Collision;
+import com.tankbattle.models.CurrentPlayer;
+import com.tankbattle.models.Level;
+import com.tankbattle.models.Player;
 import com.tankbattle.models.tiles.Tile;
 import com.tankbattle.renderers.RenderFacade;
 import com.tankbattle.utils.Vector2;
@@ -138,13 +157,16 @@ public class GameManager {
 
     public void update() {
         GameWindow.getInstance().getGamePanel().repaint();
+
         byte movementDirection = currentPlayer.getMovementDirection();
         byte previousDirection = currentPlayer.getPreviousDirection();
 
+        MoveCommand moveCommand = new MoveCommand(movementDirection);
+
         if (movementDirection != 0) {
-            webSocketManager.sendMovementDirection(movementDirection);
-        } else if (previousDirection != 0) {
-            webSocketManager.sendMovementDirection(movementDirection);
+            webSocketManager.sendCommand(moveCommand);
+        } else if (previousDirection != 0 && movementDirection == 0) {
+            webSocketManager.sendCommand(moveCommand);
             currentPlayer.setPreviousDirection((byte) 0);
         }
     }
