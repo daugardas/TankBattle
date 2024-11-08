@@ -25,11 +25,6 @@ import com.tankbattle.renderers.RenderFacade;
 import com.tankbattle.utils.Vector2;
 import com.tankbattle.views.GameWindow;
 
-import javax.swing.Timer;
-import java.awt.*;
-import java.util.List;
-import java.util.*;
-
 public class GameManager {
 
     private final WebSocketManager webSocketManager;
@@ -80,7 +75,7 @@ public class GameManager {
         connectToServer(url, username);
         GameWindow.getInstance().initializeGameScreen();
 
-        Timer timer = new Timer(33, event -> this.update());
+        Timer timer = new Timer(16, event -> this.update());
         timer.start();
     }
 
