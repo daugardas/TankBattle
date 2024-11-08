@@ -17,7 +17,6 @@ public class MoveCommand implements ICommand {
     @Override
     public void execute() {
         player.setMovementDirection(direction);
-        player.updateLocation();
     }
 
     @Override
@@ -41,7 +40,6 @@ public class MoveCommand implements ICommand {
         }
 
         player.setMovementDirection(reverseDirection);
-        player.updateLocation();
     }
 
     public String toString() {
