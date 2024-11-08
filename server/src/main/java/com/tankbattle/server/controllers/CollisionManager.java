@@ -55,7 +55,7 @@ public class CollisionManager {
         }
     }
     
-
+    
     //updating may be done after update player, bullet, powerup
     public void detectCollisions(List<Player> players, List<Bullet> bullets, List<PowerUp> powerUps) {
         for (Player player : players) {
