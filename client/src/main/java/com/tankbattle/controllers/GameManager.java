@@ -15,6 +15,8 @@ import com.tankbattle.renderers.RenderFacade;
 import com.tankbattle.utils.Vector2;
 import com.tankbattle.views.GameWindow;
 
+import com.tankbattle.commands.*;
+
 public class GameManager {
 
     private final WebSocketManager webSocketManager;
@@ -131,13 +133,16 @@ public class GameManager {
 
     public void update() {
         GameWindow.getInstance().getGamePanel().repaint();
+
         byte movementDirection = currentPlayer.getMovementDirection();
         byte previousDirection = currentPlayer.getPreviousDirection();
 
+        MoveCommand moveCommand = new MoveCommand(movementDirection);
+
         if (movementDirection != 0) {
-            webSocketManager.sendMovementDirection(movementDirection);
+            webSocketManager.sendCommand(moveCommand);
         } else if (previousDirection != 0 && movementDirection == 0) {
-            webSocketManager.sendMovementDirection(movementDirection);
+            webSocketManager.sendCommand(moveCommand);
             currentPlayer.setPreviousDirection((byte) 0);
         }
     }
