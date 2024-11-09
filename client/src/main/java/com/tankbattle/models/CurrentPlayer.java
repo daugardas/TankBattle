@@ -4,6 +4,8 @@ import java.awt.Color;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 
+import com.tankbattle.commands.FireCommand;
+import com.tankbattle.controllers.GameManager;
 import com.tankbattle.utils.Vector2;
 import com.tankbattle.views.GameWindow;
 
@@ -58,6 +60,9 @@ public class CurrentPlayer extends Player implements KeyListener {
             case KeyEvent.VK_A, KeyEvent.VK_LEFT -> movementDirection |= DIRECTION_LEFT;
             case KeyEvent.VK_S, KeyEvent.VK_DOWN -> movementDirection |= DIRECTION_DOWN;
             case KeyEvent.VK_D, KeyEvent.VK_RIGHT -> movementDirection |= DIRECTION_RIGHT;
+
+            case KeyEvent.VK_SPACE -> GameManager.getInstance().addCommand(new FireCommand());
+
             default -> {
             }
         }
@@ -71,6 +76,7 @@ public class CurrentPlayer extends Player implements KeyListener {
             case KeyEvent.VK_A, KeyEvent.VK_LEFT -> movementDirection &= ~DIRECTION_LEFT;
             case KeyEvent.VK_S, KeyEvent.VK_DOWN -> movementDirection &= ~DIRECTION_DOWN;
             case KeyEvent.VK_D, KeyEvent.VK_RIGHT -> movementDirection &= ~DIRECTION_RIGHT;
+
             default -> {
             }
         }

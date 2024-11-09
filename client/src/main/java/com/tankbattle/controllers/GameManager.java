@@ -15,6 +15,7 @@ import java.util.UUID;
 
 import javax.swing.Timer;
 
+import com.tankbattle.commands.ICommand;
 import com.tankbattle.commands.MoveCommand;
 import com.tankbattle.models.Collision;
 import com.tankbattle.models.CurrentPlayer;
@@ -37,6 +38,8 @@ public class GameManager {
     private CurrentPlayer currentPlayer;
     public int playerCount = 0;
     private static final long COLLISION_LIFETIME = 1000; // 5 seconds
+
+    private List<ICommand> commands = new ArrayList<>();
 
     // FPS for server updates
     private long serverUpdateCount = 0;
@@ -153,15 +156,32 @@ public class GameManager {
     public void update() {
         GameWindow.getInstance().getGamePanel().repaint();
 
+        processMovement();
+
+        sendCommands();
+    }
+
+    public void addCommand(ICommand command) {
+        commands.add(command);
+    }
+
+    public void sendCommands() {
+        for (ICommand command : commands) {
+            webSocketManager.sendCommand(command);
+        }
+        commands.clear();
+    }
+
+    public void processMovement() {
         byte movementDirection = currentPlayer.getMovementDirection();
         byte previousDirection = currentPlayer.getPreviousDirection();
 
-        MoveCommand moveCommand = new MoveCommand(movementDirection);
-
         if (movementDirection != 0) {
-            webSocketManager.sendCommand(moveCommand);
+            MoveCommand moveCommand = new MoveCommand(movementDirection);
+            addCommand(moveCommand);
         } else if (previousDirection != 0 && movementDirection == 0) {
-            webSocketManager.sendCommand(moveCommand);
+            MoveCommand moveCommand = new MoveCommand(movementDirection);
+            addCommand(moveCommand);
             currentPlayer.setPreviousDirection((byte) 0);
         }
     }

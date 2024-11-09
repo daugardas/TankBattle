@@ -7,17 +7,23 @@ public class Bullet extends AbstractCollidableEntity implements GameEntity {
     private Vector2 location;
     private Vector2 size;
     @JsonIgnore
-    private int damage;
+    private Vector2 direction;
     @JsonIgnore
-    private Vector2 velocity;
+    private int speed = 75;
+    @JsonIgnore
+    private int damage = 5;
 
     @JsonIgnore
     private boolean markedForRemoval = false;
 
-    public Bullet(Vector2 location, Vector2 velocity, int damage) {
-        this.location = location;
-        this.velocity = velocity;
-        this.damage = damage;
+    public Bullet(Vector2 location, Vector2 direction) {
+        this.direction = new Vector2(direction.getX(), direction.getY());
+
+        Vector2 initialLocation = new Vector2(location.getX(), location.getY());
+        Vector2 offset = new Vector2(direction.getX(), direction.getY());
+        offset.multiply(800);
+        this.location = initialLocation.addVector(offset);
+
         this.size = new Vector2(100, 100);
     }
 
@@ -43,13 +49,13 @@ public class Bullet extends AbstractCollidableEntity implements GameEntity {
     }
 
     @JsonIgnore
-    public Vector2 getVelocity() {
-        return velocity;
+    public Vector2 getDirection() {
+        return direction;
     }
 
     @JsonIgnore
-    public void setVelocity(Vector2 velocity) {
-        this.velocity = velocity;
+    public void setDirection(Vector2 direction) {
+        this.direction = direction;
     }
 
     @JsonIgnore
@@ -64,7 +70,12 @@ public class Bullet extends AbstractCollidableEntity implements GameEntity {
 
     @JsonIgnore
     public void updatePosition() {
-        this.location.addToX(velocity.getX());
-        this.location.addToY(velocity.getY());
+        this.location.addToX(direction.getX() * speed);
+        this.location.addToY(direction.getY() * speed);
+    }
+
+    @JsonIgnore
+    public String toString() {
+        return String.format("%s %s", location, direction);
     }
 }
