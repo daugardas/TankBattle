@@ -5,6 +5,7 @@ import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import com.tankbattle.controllers.ResourceManager;
 import com.tankbattle.models.tiles.Tile;
@@ -21,7 +22,7 @@ public class TileRenderer implements EntityRenderer<Tile>, Scalable {
     // private static final int FRAME_COUNT = 2;
     // private static final int FRAME_DURATION = 60; // 60ms per frame
     private ResourceManager resourceManager;
-    private Map<String, BufferedImage> spriteSheetCache = new HashMap<>();
+    private Map<String, BufferedImage> spriteSheetCache = new ConcurrentHashMap<>();
 
     public TileRenderer(ResourceManager resourceManager) {
         this.resourceManager = resourceManager;

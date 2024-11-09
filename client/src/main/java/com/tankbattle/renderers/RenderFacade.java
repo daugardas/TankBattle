@@ -4,7 +4,7 @@ import java.awt.Graphics2D;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
+import java.util.concurrent.ConcurrentHashMap;
 
 import com.tankbattle.models.Bullet;
 import com.tankbattle.models.Player;
@@ -15,7 +15,7 @@ import com.tankbattle.utils.Vector2;
 import com.tankbattle.controllers.ResourceManager;
 
 public class RenderFacade {
-    private Map<Class<? extends Entity>, EntityRenderer<? extends Entity>> renderers = new HashMap<>();
+    private Map<Class<? extends Entity>, EntityRenderer<? extends Entity>> renderers = new ConcurrentHashMap<>();
     private double scaleFactor;
     private double worldLocationScaleFactor;
     private Vector2 worldOffset;

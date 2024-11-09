@@ -6,8 +6,11 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
+import java.awt.image.BufferedImage;
+import java.util.concurrent.CountDownLatch;
 
 import javax.swing.JPanel;
+import javax.swing.SwingWorker;
 import javax.swing.Timer;
 
 import com.tankbattle.controllers.GameManager;
@@ -69,17 +72,118 @@ public class GamePanel extends JPanel {
         // Calculate FPS
         frameCount++;
 
-        // clear the panel
+        // TODO: Rendering is done in one thread, fix it to use multiple threads
+        // we can optimize this by rendering images to buffers in seperate
+        // threads and then drawing them all at once, this way we can avoid the 
+        // overhead of drawing each image individually
+
+        BufferedImage clearedPanelImage = new BufferedImage(getWidth(), getHeight(), BufferedImage.TYPE_INT_ARGB);
+        BufferedImage entitiesBufferedImage = new BufferedImage(getWidth(), getHeight(), BufferedImage.TYPE_INT_ARGB);
+        BufferedImage worldBordersBufferedImage = new BufferedImage(getWidth(), getHeight(), BufferedImage.TYPE_INT_ARGB);
+        BufferedImage fpsBufferedImage = new BufferedImage(getWidth(), getHeight(), BufferedImage.TYPE_INT_ARGB);
+
+        CountDownLatch latch = new CountDownLatch(4);
+
+        SwingWorker<Void, Void> clearPanelWorker = new SwingWorker<Void,Void>() {
+            @Override
+            protected Void doInBackground() throws Exception {
+                try {
+                    clearPanel(clearedPanelImage.createGraphics());
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                latch.countDown();
+                return null;
+            }
+
+            @Override
+            protected void done() {
+            }
+        };
+
+        SwingWorker<Void, Void> renderEntitiesWorker = new SwingWorker<Void,Void>() {
+            @Override
+            protected Void doInBackground() throws Exception {
+                try {
+                    renderEntities(entitiesBufferedImage.createGraphics());
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                latch.countDown();
+                return null;
+            }
+
+            @Override
+            protected void done() {}
+        };
+
+        SwingWorker<Void, Void> drawWorldBordersWorker = new SwingWorker<Void,Void>() {
+            @Override
+            protected Void doInBackground() throws Exception {
+                try {
+                    drawWorldBorders(worldBordersBufferedImage.createGraphics());
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                latch.countDown();
+                return null;
+            }
+
+            @Override
+            protected void done() {
+            }
+        };
+
+        SwingWorker<Void, Void> drawFPSWorker = new SwingWorker<Void,Void>() {
+            @Override
+            protected Void doInBackground() throws Exception {
+                try {
+                    var g = fpsBufferedImage.createGraphics();
+                    drawClientFPS(g);
+                    drawServerFPS(g);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                latch.countDown();
+                return null;
+            }
+
+            @Override
+            protected void done() {
+            }
+        };
+
+        clearPanelWorker.execute();
+        renderEntitiesWorker.execute();
+        drawWorldBordersWorker.execute();
+        drawFPSWorker.execute();
+
+        // Wait for all workers to finish
+        try {
+            latch.await();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        g2d.drawImage(clearedPanelImage, 0, 0, null);
+        g2d.drawImage(entitiesBufferedImage, 0, 0, null);
+        g2d.drawImage(worldBordersBufferedImage, 0, 0, null);
+        g2d.drawImage(fpsBufferedImage, 0, 0, null);
+    }
+
+    private void clearPanel(Graphics2D g2d) {
         g2d.setColor(Color.WHITE);
-        g2d.fillRect(offsetX, offsetY, panelWorldWidth,
-                panelWorldHeight);
+        g2d.fillRect(offsetX, offsetY, panelWorldWidth, panelWorldHeight);
+    }
 
-        // render all entities
+    private void renderEntities(Graphics2D g2d) {
         GameManager.getInstance().renderAll(g2d);
+    }
 
-        // draw world borders (this is drawn around the world,
+    private void drawWorldBorders(Graphics2D g2d) {
+        // this is drawn around the world,
         // because parts of the tank would be drawn outside the
-        // world border on the background)
+        // world border on the background
         g2d.setColor(Color.DARK_GRAY);
         // for when the window width > height
         g2d.fillRect(0, 0, offsetX - 1, getHeight());
@@ -87,9 +191,6 @@ public class GamePanel extends JPanel {
         // for when the window height > width
         g2d.fillRect(0, worldToPanelY(WORLD_HEIGHT) + 1, getWidth(), getHeight());
         g2d.fillRect(0, 0, getWidth(), offsetY - 1);
-
-        this.drawClientFPS(g2d);
-        this.drawServerFPS(g2d);
     }
 
     private void drawClientFPS(Graphics2D g2d) {
@@ -108,14 +209,12 @@ public class GamePanel extends JPanel {
         int serverFpsStringWidth = g2d.getFontMetrics().stringWidth(serverFpsText);
         int serverFpsXPosition = getWidth() - serverFpsStringWidth - 20;
         int serverFpsYPosition = 80;
-        g2d.drawString(serverFpsText, serverFpsXPosition, serverFpsYPosition)
+        g2d.drawString(serverFpsText, serverFpsXPosition, serverFpsYPosition);
     }
 
     private void updateOffsets() {
         offsetX = Math.round(((float) getWidth() - (float) panelWorldWidth) / 2.0f);
         offsetY = Math.round(((float) getHeight() - (float) panelWorldHeight) / 2.0f);
-
-        System.out.println("offsetX: " + offsetX + " offsetY: " + offsetY);
 
         GameManager.getInstance().setWorldOffset(new Vector2(offsetX, offsetY));
     }

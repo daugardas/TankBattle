@@ -3,6 +3,7 @@ package com.tankbattle.controllers;
 import com.tankbattle.models.*;
 import java.awt.Color;
 import java.awt.Graphics2D;
+import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -12,6 +13,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.Callable;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Future;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
 
 import javax.swing.Timer;
 
@@ -195,32 +202,55 @@ public class GameManager {
     }
 
     public void renderAll(Graphics2D g2d) {
-        // Render level tiles
+        this.renderTiles(g2d);
+
+        this.renderPlayers(g2d);
+
+        this.renderBullets(g2d);
+    }
+
+    private void renderTiles(Graphics2D g2d) {
         Tile[][] tileGrid = level.getGrid();
         if (tileGrid != null) {
-            for (Tile[] row : tileGrid) {
-                renderFacade.drawEntities(g2d, Arrays.asList(row));
+            int panelWidth = GameWindow.getInstance().getGamePanel().getWidth();
+            int panelHeight = GameWindow.getInstance().getGamePanel().getHeight();
+
+            int numThreads = Runtime.getRuntime().availableProcessors();
+            ExecutorService executor = java.util.concurrent.Executors.newFixedThreadPool(numThreads);
+            List<CompletableFuture<BufferedImage>> futures = Arrays.stream(tileGrid).map(row -> CompletableFuture.supplyAsync(() -> {
+                BufferedImage rowImage = new BufferedImage(panelWidth, panelHeight, BufferedImage.TYPE_INT_ARGB);
+                Graphics2D rowGraphics = rowImage.createGraphics();
+                renderFacade.drawEntities(rowGraphics, Arrays.asList(row));
+                rowGraphics.dispose();
+                return rowImage;
+            }, executor)).collect(Collectors.toList());
+
+            CompletableFuture<Void> allOf = CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]));
+            allOf.join(); // wait for all futures to complete
+
+            // combine row images to form the final tiles image in g2d context
+            for(var future : futures){
+                try {
+                    BufferedImage rowImage = future.get();
+                    g2d.drawImage(rowImage, 0, 0, null);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
             }
+
+            executor.shutdown();
         }
+    }
 
-        // Render all players
-        renderFacade.drawEntities(g2d, getAllPlayers());
-
-        // Render collisions with lifetime check
-        long currentTime = System.currentTimeMillis();
-        Iterator<Collision> iterator = collisions.iterator();
-        while (iterator.hasNext()) {
-            Collision collision = iterator.next();
-            if (currentTime - collision.getTimestamp() > COLLISION_LIFETIME) {
-                activeCollisionLocations.remove(collision.getLocation());
-                iterator.remove();
-            } else {
-                renderFacade.drawEntity(g2d, collision);
-            }
+    private void renderPlayers(Graphics2D g2d) {
+        for (Player player : players.values()) {
+            renderFacade.drawEntity(g2d, player);
         }
+        renderFacade.drawEntity(g2d, currentPlayer);
+    }
 
-        // Render bullets
-        renderFacade.drawEntities(g2d, this.bullets);
+    private void renderBullets(Graphics2D g2d) {
+        renderFacade.drawEntities(g2d, bullets);
     }
 
     public void incrementServerUpdateCount() {
