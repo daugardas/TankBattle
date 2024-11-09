@@ -88,7 +88,11 @@ public class GamePanel extends JPanel {
         g2d.fillRect(0, worldToPanelY(WORLD_HEIGHT) + 1, getWidth(), getHeight());
         g2d.fillRect(0, 0, getWidth(), offsetY - 1);
 
-        // Draw FPS
+        this.drawClientFPS(g2d);
+        this.drawServerFPS(g2d);
+    }
+
+    private void drawClientFPS(Graphics2D g2d) {
         g2d.setFont(new Font("Arial", Font.BOLD, 36));
         g2d.setColor(Color.RED);
         String fpsText = String.format("FPS: %.2f", fps);
@@ -96,14 +100,15 @@ public class GamePanel extends JPanel {
         int xPosition = getWidth() - stringWidth - 20;
         int yPosition = 40;
         g2d.drawString(fpsText, xPosition, yPosition);
+    }
 
-        // Draw server update FPS
+    private void drawServerFPS(Graphics2D g2d) {
         float serverFps = GameManager.getInstance().getServerFps();
         String serverFpsText = String.format("Server: %.2f", serverFps);
         int serverFpsStringWidth = g2d.getFontMetrics().stringWidth(serverFpsText);
         int serverFpsXPosition = getWidth() - serverFpsStringWidth - 20;
         int serverFpsYPosition = 80;
-        g2d.drawString(serverFpsText, serverFpsXPosition, serverFpsYPosition);
+        g2d.drawString(serverFpsText, serverFpsXPosition, serverFpsYPosition)
     }
 
     private void updateOffsets() {
