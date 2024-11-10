@@ -10,14 +10,13 @@ import org.springframework.messaging.simp.stomp.*;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 public class GameSessionHandler extends StompSessionHandlerAdapter {
     public StompSession stompSession;
 
     @Override
     public void handleTransportError(StompSession session, Throwable exception) {
-        System.out.println("transport error: " + exception);
+        // System.out.println("transport error: " + exception);
     }
 
     @Override
@@ -74,23 +73,21 @@ public class GameSessionHandler extends StompSessionHandlerAdapter {
 
         session.subscribe("/server/collisions", new StompFrameHandler() {
 
-        @Override
-        public Type getPayloadType(StompHeaders headers) {
-            return Vector2.class; // Expecting a Map with "x" and "y"
-        }
+            @Override
+            public Type getPayloadType(StompHeaders headers) {
+                return Vector2.class; // Expecting a Map with "x" and "y"
+            }
 
-        @Override
-        public void handleFrame(StompHeaders stompHeaders, Object payload) {
-            CollisionManager.getInstance().addCollision((Vector2) payload);
-        }
-    });
-}
-
+            @Override
+            public void handleFrame(StompHeaders stompHeaders, Object payload) {
+                CollisionManager.getInstance().addCollision((Vector2) payload);
+            }
+        });
+    }
 
 
     @Override
-    public void handleException(StompSession session, StompCommand command, StompHeaders headers, byte[] payload,
-            Throwable exception) {
-        System.out.println(exception);
+    public void handleException(StompSession session, StompCommand command, StompHeaders headers, byte[] payload, Throwable exception) {
+        // System.out.println(exception);
     }
 }

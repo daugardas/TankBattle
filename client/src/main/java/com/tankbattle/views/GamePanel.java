@@ -1,22 +1,16 @@
 package com.tankbattle.views;
 
-import java.awt.Color;
-import java.awt.Font;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.awt.event.ComponentAdapter;
-import java.awt.event.ComponentEvent;
-import java.awt.image.BufferedImage;
-import java.util.concurrent.CountDownLatch;
-
-import javax.swing.JPanel;
-import javax.swing.SwingWorker;
-import javax.swing.Timer;
-
 import com.tankbattle.controllers.GameManager;
 import com.tankbattle.utils.ClientFPSCounter;
 import com.tankbattle.utils.ServerFPSCounter;
 import com.tankbattle.utils.Vector2;
+
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
+import java.awt.image.BufferedImage;
+import java.util.concurrent.CountDownLatch;
 
 public class GamePanel extends JPanel {
     private int WORLD_WIDTH = 10000; // default world size
@@ -72,7 +66,7 @@ public class GamePanel extends JPanel {
 
         CountDownLatch latch = new CountDownLatch(4);
 
-        SwingWorker<Void, Void> clearPanelWorker = new SwingWorker<Void,Void>() {
+        SwingWorker<Void, Void> clearPanelWorker = new SwingWorker<Void, Void>() {
             @Override
             protected Void doInBackground() throws Exception {
                 try {
@@ -89,7 +83,7 @@ public class GamePanel extends JPanel {
             }
         };
 
-        SwingWorker<Void, Void> renderEntitiesWorker = new SwingWorker<Void,Void>() {
+        SwingWorker<Void, Void> renderEntitiesWorker = new SwingWorker<Void, Void>() {
             @Override
             protected Void doInBackground() throws Exception {
                 try {
@@ -102,10 +96,11 @@ public class GamePanel extends JPanel {
             }
 
             @Override
-            protected void done() {}
+            protected void done() {
+            }
         };
 
-        SwingWorker<Void, Void> drawWorldBordersWorker = new SwingWorker<Void,Void>() {
+        SwingWorker<Void, Void> drawWorldBordersWorker = new SwingWorker<Void, Void>() {
             @Override
             protected Void doInBackground() throws Exception {
                 try {
@@ -122,7 +117,7 @@ public class GamePanel extends JPanel {
             }
         };
 
-        SwingWorker<Void, Void> drawFPSWorker = new SwingWorker<Void,Void>() {
+        SwingWorker<Void, Void> drawFPSWorker = new SwingWorker<Void, Void>() {
             @Override
             protected Void doInBackground() throws Exception {
                 try {

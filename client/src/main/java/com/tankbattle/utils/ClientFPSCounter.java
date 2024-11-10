@@ -29,10 +29,10 @@ public class ClientFPSCounter {
     }
 
     public void updateFps() {
-            long currentTime = System.currentTimeMillis();
-            fps = (frameCount * 1000.0f) / (currentTime - fpsTimerStart);
-            fpsTimerStart = currentTime;
-            frameCount = 0;
+        long currentTime = System.currentTimeMillis();
+        fps = (frameCount * 1000.0f) / (currentTime - fpsTimerStart);
+        fpsTimerStart = currentTime;
+        frameCount = 0;
     }
 
     public synchronized float getFps() {

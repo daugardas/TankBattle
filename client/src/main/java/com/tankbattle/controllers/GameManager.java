@@ -1,40 +1,35 @@
 package com.tankbattle.controllers;
 
-import com.tankbattle.models.*;
-import java.awt.Color;
-import java.awt.Graphics2D;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-
-import javax.swing.SwingUtilities;
-import javax.swing.Timer;
-
 import com.tankbattle.commands.MoveCommand;
+import com.tankbattle.models.Bullet;
+import com.tankbattle.models.CurrentPlayer;
+import com.tankbattle.models.Level;
+import com.tankbattle.models.Player;
 import com.tankbattle.models.tiles.Tile;
 import com.tankbattle.renderers.RenderFacade;
 import com.tankbattle.utils.Vector2;
 import com.tankbattle.views.GameWindow;
 
+import javax.swing.Timer;
+import javax.swing.*;
+import java.awt.*;
+import java.util.List;
+import java.util.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
 public class GameManager {
+    private static final GameManager INSTANCE = new GameManager();
     private final ExecutorService movementCommandExecutorService = Executors.newSingleThreadExecutor();
     private final WebSocketManager webSocketManager;
     private final RenderFacade renderFacade;
     private final ResourceManager resourceManager;
-
     private final Thread drawRequestThread;
-
-    private Level level;
     private final HashMap<String, Player> players;
     private final ArrayList<Bullet> bullets;
-    private CurrentPlayer currentPlayer;
     public int playerCount = 0;
+    private Level level;
+    private CurrentPlayer currentPlayer;
 
     private GameManager() {
         webSocketManager = new WebSocketManager();
@@ -45,9 +40,9 @@ public class GameManager {
         bullets = new ArrayList<>();
         level = new Level();
 
-        // use another thread to request redraws continuously, 
+        // use another thread to request redraws continuously,
         // and swing will redraw the screen as soon as it can.
-        // This should increase the fps, 
+        // This should increase the fps,
         // as there would be no need for a fixed timer.
         this.drawRequestThread = new Thread(() -> {
             while (true) {
@@ -66,15 +61,13 @@ public class GameManager {
         });
     }
 
-    private static final GameManager INSTANCE = new GameManager();
-
     public static GameManager getInstance() {
         return INSTANCE;
     }
 
     public ArrayList<Player> getAllPlayers() {
         ArrayList<Player> allPlayers = new ArrayList<>(this.players.values());
-        allPlayers.add(currentPlayer);
+        if (currentPlayer != null) allPlayers.add(currentPlayer);
         return allPlayers;
     }
 
@@ -82,32 +75,31 @@ public class GameManager {
         GameWindow.getInstance().setVisible(true);
     }
 
-    public void startGame(String url, String username) {
-        connectToServer(url, username);
+    public boolean connectToServer(String url, String username) {
+        return webSocketManager.connect(url, username);
+    }
+
+    public void setUsername(String username) {
+        this.currentPlayer = new CurrentPlayer(username, new Vector2(0, 0), new Vector2(10, 10), Color.BLACK, Color.RED);
+    }
+
+    public void startGame() {
         GameWindow.getInstance().initializeGameScreen();
 
         drawRequestThread.start();
 
         Timer timer = new Timer(16, event -> this.update());
         timer.start();
+
     }
 
-    private void connectToServer(String hostname, String username) {
-        if (username.isEmpty()) {
-            username = "Guest#" + UUID.randomUUID().toString().substring(0, 4);
-        }
-
-        webSocketManager.connect(hostname, username);
-        currentPlayer = new CurrentPlayer(username, new Vector2(0, 0), new Vector2(10, 10), Color.BLACK, Color.RED);
+    public Level getLevel() {
+        return level;
     }
 
     public void setLevel(Level level) {
         this.level = level;
         GameWindow.getInstance().setGamePanelWorldSize(level.getWidth() * 1000, level.getHeight() * 1000);
-    }
-
-    public Level getLevel() {
-        return level;
     }
 
     public void addPlayers(List<Player> incomingPlayers) {
@@ -117,29 +109,28 @@ public class GameManager {
         // This was confirmed with testing.
         Set<String> incomingUsernames = new HashSet<>();
 
-            for (Player player : incomingPlayers) {
-                incomingUsernames.add(player.getUsername());
+        for (Player player : incomingPlayers) {
+            incomingUsernames.add(player.getUsername());
 
-                // checking if player is current client player
-                if (currentPlayer.getUsername().equals(player.getUsername())){
-                    this.currentPlayer.setLocation(player.getLocation());
-                    this.currentPlayer.setSize(player.getSize());
-                    this.currentPlayer.setRotationAngle(player.getRotationAngle());
-                }
-                else {
-                    Player existingPlayer = this.players.get(player.getUsername());
-                    if (existingPlayer != null) {
-                        existingPlayer.setLocation(player.getLocation());
-                        existingPlayer.setSize(player.getSize());
-                        existingPlayer.setRotationAngle(player.getRotationAngle());
-                    } else {
+            // checking if player is current client player
+            if (this.currentPlayer.getUsername().equals(player.getUsername())) {
+                this.currentPlayer.setLocation(player.getLocation());
+                this.currentPlayer.setSize(player.getSize());
+                this.currentPlayer.setRotationAngle(player.getRotationAngle());
+            } else {
+                Player existingPlayer = this.players.get(player.getUsername());
+                if (existingPlayer != null) {
+                    existingPlayer.setLocation(player.getLocation());
+                    existingPlayer.setSize(player.getSize());
+                    existingPlayer.setRotationAngle(player.getRotationAngle());
+                } else {
                     this.players.put(player.getUsername(), player);
-                    }
                 }
             }
+        }
 
-            if (this.players.size() + 1 != incomingPlayers.size())
-                this.players.keySet().removeIf(username -> !incomingUsernames.contains(username));
+        if (this.players.size() + 1 != incomingPlayers.size())
+            this.players.keySet().removeIf(username -> !incomingUsernames.contains(username));
     }
 
     public void updateBullets(ArrayList<Bullet> bullets) {
@@ -151,11 +142,11 @@ public class GameManager {
         this.bullets.clear();
     }
 
-    public void update() {      
+    public void update() {
         movementCommandExecutorService.execute(() -> {
             this.updatePlayerMovement();
         });
-        
+
     }
 
     private void updatePlayerMovement() {
@@ -203,7 +194,9 @@ public class GameManager {
         for (Player player : players.values()) {
             renderFacade.drawEntity(g2d, player);
         }
+
         renderFacade.drawEntity(g2d, currentPlayer);
+
     }
 
     private void renderBullets(Graphics2D g2d) {

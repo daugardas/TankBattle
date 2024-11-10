@@ -1,14 +1,15 @@
 package com.tankbattle.renderers;
 
-import java.awt.Graphics2D;
+import com.tankbattle.controllers.GameManager;
+import com.tankbattle.controllers.ResourceManager;
+import com.tankbattle.models.tiles.Tile;
+import com.tankbattle.utils.Vector2;
+
+import java.awt.*;
 import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-
-import com.tankbattle.controllers.ResourceManager;
-import com.tankbattle.models.tiles.Tile;
-import com.tankbattle.utils.Vector2;
 
 public class TileRenderer implements EntityRenderer<Tile>, Scalable {
     private int spriteWidth;
@@ -16,8 +17,8 @@ public class TileRenderer implements EntityRenderer<Tile>, Scalable {
     private double scaleFactor;
     private double worldLocationScaleFactor;
     private Vector2 worldOffset;
-    private ResourceManager resourceManager;
-    private Map<String, BufferedImage> spriteSheetCache = new ConcurrentHashMap<>();
+    private final ResourceManager resourceManager;
+    private final Map<String, BufferedImage> spriteSheetCache = new ConcurrentHashMap<>();
 
     public TileRenderer(ResourceManager resourceManager) {
         this.resourceManager = resourceManager;
@@ -48,14 +49,13 @@ public class TileRenderer implements EntityRenderer<Tile>, Scalable {
             spriteWidth = spriteSheet.getWidth();
             spriteHeight = spriteSheet.getHeight();
         }
-        
+
         BufferedImage sprite = getCurrentFrame(spriteSheet);
 
-        double x = Math.floor(tile.getWorldX() * worldLocationScaleFactor + worldOffset.getX()); //helped a bit but still not fixed
-        double y = Math.floor(tile.getWorldY() * worldLocationScaleFactor + worldOffset.getY());
+        double x = tile.getWorldX() * worldLocationScaleFactor + worldOffset.getX();
+        double y = tile.getWorldY() * worldLocationScaleFactor + worldOffset.getY();
 
         AffineTransform oldTransform = g2d.getTransform();
-
         AffineTransform transform = new AffineTransform();
 
         transform.translate(x, y);
