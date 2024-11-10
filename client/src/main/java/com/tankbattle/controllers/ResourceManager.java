@@ -13,7 +13,6 @@ public class ResourceManager {
 
     public BufferedImage loadImage(String fileName) throws RuntimeException {
         if (!images.containsKey(fileName)) {
-            System.out.println("Loading image: " + fileName);
             URL resource = this.getClass().getClassLoader().getResource(fileName);
             if (resource == null) {
                 throw new RuntimeException("Resource not found: " + fileName);
@@ -25,7 +24,6 @@ public class ResourceManager {
                     throw new RuntimeException("Cannot read image: " + fileName);
                 }
 
-                System.out.println("Loaded image: " + fileName);
                 images.put(fileName, image);
             } catch (IOException e)  {
                 e.printStackTrace();

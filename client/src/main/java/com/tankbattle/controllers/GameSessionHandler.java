@@ -2,6 +2,8 @@ package com.tankbattle.controllers;
 
 import com.tankbattle.models.Bullet;
 import com.tankbattle.models.Level;
+import com.tankbattle.models.Player;
+import com.tankbattle.utils.ServerFPSCounter;
 import com.tankbattle.utils.Vector2;
 import org.springframework.messaging.simp.stomp.*;
 
@@ -22,17 +24,19 @@ public class GameSessionHandler extends StompSessionHandlerAdapter {
     public void afterConnected(StompSession session, StompHeaders connectedHeaders) {
         stompSession = session;
 
+        ServerFPSCounter.getInstance().start();
+
         session.subscribe("/server/players", new StompFrameHandler() {
 
             @Override
             public Type getPayloadType(StompHeaders headers) {
-                return Object[].class;
+                return Player[].class;
             }
 
             @Override
             public void handleFrame(StompHeaders stompHeaders, Object o) {
-                GameManager.getInstance().addPlayers((Object[]) o);
-                GameManager.getInstance().incrementServerUpdateCount();
+                GameManager.getInstance().addPlayers(new ArrayList<>(List.of((Player[]) o)));
+                ServerFPSCounter.getInstance().incrementServerUpdateCount();
             }
         });
 
@@ -72,21 +76,12 @@ public class GameSessionHandler extends StompSessionHandlerAdapter {
 
         @Override
         public Type getPayloadType(StompHeaders headers) {
-            return Map.class; // Expecting a Map with "x" and "y"
+            return Vector2.class; // Expecting a Map with "x" and "y"
         }
 
         @Override
         public void handleFrame(StompHeaders stompHeaders, Object payload) {
-            if (payload instanceof Map) {
-                Map<String, Object> collisionData = (Map<String, Object>) payload;
-                Integer x = (Integer) collisionData.get("x");
-                Integer y = (Integer) collisionData.get("y");
-                System.out.println("Collision detected at location: x=" + x + ", y=" + y);
-                Vector2 collisionLocation = new Vector2(x, y);
-                GameManager.getInstance().addCollision(collisionLocation);
-            } else {
-                System.out.println("Received unexpected collision data: " + payload);
-            }
+            CollisionManager.getInstance().addCollision((Vector2) payload);
         }
     });
 }

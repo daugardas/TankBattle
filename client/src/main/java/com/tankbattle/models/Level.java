@@ -70,7 +70,6 @@ public class Level {
     }
 
     public void setTiles(String[] tiles) {
-        System.out.println("Setting tiles");
         Tile[][] grid = new Tile[width][height];
 
         TileFactory tileFactory = new TileFactory();

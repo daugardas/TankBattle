@@ -3,23 +3,17 @@ package com.tankbattle.controllers;
 import com.tankbattle.models.*;
 import java.awt.Color;
 import java.awt.Graphics2D;
-import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
-import java.util.concurrent.Callable;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Future;
-import java.util.stream.Collector;
-import java.util.stream.Collectors;
+import java.util.concurrent.Executors;
 
+import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 
 import com.tankbattle.commands.MoveCommand;
@@ -29,33 +23,47 @@ import com.tankbattle.utils.Vector2;
 import com.tankbattle.views.GameWindow;
 
 public class GameManager {
-
+    private final ExecutorService movementCommandExecutorService = Executors.newSingleThreadExecutor();
     private final WebSocketManager webSocketManager;
     private final RenderFacade renderFacade;
     private final ResourceManager resourceManager;
+
+    private final Thread drawRequestThread;
 
     private Level level;
     private final HashMap<String, Player> players;
     private final ArrayList<Bullet> bullets;
     private CurrentPlayer currentPlayer;
     public int playerCount = 0;
-    private static final long COLLISION_LIFETIME = 1000; // 5 seconds
-
-    // FPS for server updates
-    private long serverUpdateCount = 0;
-    private float serverFps = 0;
-    private long serverFpsTimerStart = System.currentTimeMillis();
 
     private GameManager() {
         webSocketManager = new WebSocketManager();
         resourceManager = new ResourceManager();
         renderFacade = new RenderFacade(resourceManager);
+
         players = new HashMap<>();
         bullets = new ArrayList<>();
         level = new Level();
 
-        Timer serverFpsTimer = new Timer(1000, e -> updateServerFps());
-        serverFpsTimer.start();
+        // use another thread to request redraws continuously, 
+        // and swing will redraw the screen as soon as it can.
+        // This should increase the fps, 
+        // as there would be no need for a fixed timer.
+        this.drawRequestThread = new Thread(() -> {
+            while (true) {
+                // asks game panel to repaint only when swing is ready
+                SwingUtilities.invokeLater(() -> {
+                    GameWindow.getInstance().getGamePanel().repaint();
+                });
+
+                try {
+                    Thread.sleep(1); // sleep to avoid high cpu usage
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    e.printStackTrace();
+                }
+            }
+        });
     }
 
     private static final GameManager INSTANCE = new GameManager();
@@ -78,6 +86,8 @@ public class GameManager {
         connectToServer(url, username);
         GameWindow.getInstance().initializeGameScreen();
 
+        drawRequestThread.start();
+
         Timer timer = new Timer(16, event -> this.update());
         timer.start();
     }
@@ -92,7 +102,6 @@ public class GameManager {
     }
 
     public void setLevel(Level level) {
-        System.out.println("Received level update: " + level);
         this.level = level;
         GameWindow.getInstance().setGamePanelWorldSize(level.getWidth() * 1000, level.getHeight() * 1000);
     }
@@ -101,47 +110,36 @@ public class GameManager {
         return level;
     }
 
-    public void addPlayers(Object[] o) {
+    public void addPlayers(List<Player> incomingPlayers) {
+        // no need to offload the players update to another thread as the 
+        // amount of players is so small that creating a new thread would be
+        // more expensive than just updating the players in the main thread.
+        // This was confirmed with testing.
         Set<String> incomingUsernames = new HashSet<>();
 
-        Arrays.stream(o)
-                .forEach(player -> {
-                    Map<String, Object> playerData = (Map<String, Object>) player;
+            for (Player player : incomingPlayers) {
+                incomingUsernames.add(player.getUsername());
 
-                    String username = (String) playerData.get("username");
-
-                    Map<String, Number> locationMap = (Map<String, Number>) playerData.get("location");
-                    Map<String, Number> sizeMap = (Map<String, Number>) playerData.get("size");
-
-                    Vector2 location = new Vector2(
-                            locationMap.get("x").intValue(),
-                            locationMap.get("y").intValue());
-                    Vector2 size = new Vector2(
-                            sizeMap.get("x").intValue(),
-                            sizeMap.get("y").intValue());
-
-                    double rotationAngle = ((Number) playerData.get("rotationAngle")).doubleValue();
-
-                    incomingUsernames.add(username);
-
-                    if (currentPlayer.getUsername().equals(username)) {
-                        currentPlayer.setLocation(location);
-                        currentPlayer.setSize(size);
-                        currentPlayer.setRotationAngle(rotationAngle);
-                    } else if (this.players.containsKey(username)) {
-                        Player otherPlayer = this.players.get(username);
-                        otherPlayer.setLocation(location);
-                        otherPlayer.setSize(size);
-                        otherPlayer.setRotationAngle(rotationAngle);
+                // checking if player is current client player
+                if (currentPlayer.getUsername().equals(player.getUsername())){
+                    this.currentPlayer.setLocation(player.getLocation());
+                    this.currentPlayer.setSize(player.getSize());
+                    this.currentPlayer.setRotationAngle(player.getRotationAngle());
+                }
+                else {
+                    Player existingPlayer = this.players.get(player.getUsername());
+                    if (existingPlayer != null) {
+                        existingPlayer.setLocation(player.getLocation());
+                        existingPlayer.setSize(player.getSize());
+                        existingPlayer.setRotationAngle(player.getRotationAngle());
                     } else {
-                        Player newPlayer = new Player(username, location, size, Color.BLACK, Color.GREEN);
-                        newPlayer.setRotationAngle(rotationAngle);
-                        this.players.put(username, newPlayer);
+                    this.players.put(player.getUsername(), player);
                     }
-                });
+                }
+            }
 
-        if (players.size() + 1 != o.length)
-            players.keySet().removeIf(username -> !incomingUsernames.contains(username));
+            if (this.players.size() + 1 != incomingPlayers.size())
+                this.players.keySet().removeIf(username -> !incomingUsernames.contains(username));
     }
 
     public void updateBullets(ArrayList<Bullet> bullets) {
@@ -153,9 +151,14 @@ public class GameManager {
         this.bullets.clear();
     }
 
-    public void update() {
-        GameWindow.getInstance().getGamePanel().repaint();
+    public void update() {      
+        movementCommandExecutorService.execute(() -> {
+            this.updatePlayerMovement();
+        });
+        
+    }
 
+    private void updatePlayerMovement() {
         byte movementDirection = currentPlayer.getMovementDirection();
         byte previousDirection = currentPlayer.getPreviousDirection();
 
@@ -181,27 +184,9 @@ public class GameManager {
         renderFacade.setWorldOffset(worldOffset);
     }
 
-    private final Set<Vector2> activeCollisionLocations = new HashSet<>();
-    private final List<Collision> collisions = new ArrayList<>();
-
-    public void addCollision(Vector2 location) {
-        Vector2 collisionLocation = new Vector2(location.getX(), location.getY());
-        if (activeCollisionLocations.contains(collisionLocation)) {
-            return;
-        }
-        activeCollisionLocations.add(collisionLocation);
-        collisions.add(new Collision(collisionLocation));
-    }
-
-    public List<Collision> getCollisions() {
-        return new ArrayList<>(collisions);
-    }
-
     public void renderAll(Graphics2D g2d) {
         this.renderTiles(g2d);
-
         this.renderPlayers(g2d);
-
         this.renderBullets(g2d);
     }
 
@@ -225,18 +210,8 @@ public class GameManager {
         renderFacade.drawEntities(g2d, bullets);
     }
 
-    public void incrementServerUpdateCount() {
-        serverUpdateCount++;
-    }
-
-    private void updateServerFps() {
-        long currentTime = System.currentTimeMillis();
-        serverFps = (serverUpdateCount * 1000.0f) / (currentTime - serverFpsTimerStart);
-        serverFpsTimerStart = currentTime;
-        serverUpdateCount = 0;
-    }
-
-    public float getServerFps() {
-        return serverFps;
+    public void shutdown() {
+        movementCommandExecutorService.shutdown();
+        webSocketManager.close();
     }
 }

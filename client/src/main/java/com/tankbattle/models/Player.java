@@ -13,6 +13,9 @@ public class Player extends Entity {
     protected Color fillColor;
     protected double rotationAngle = 0;
 
+    public Player() {
+    }
+
     public Player(String username, Vector2 location, Vector2 size, Color outlineColor,
                   Color fillColor) {
         this.username = username;

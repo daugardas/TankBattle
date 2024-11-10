@@ -14,6 +14,8 @@ import javax.swing.SwingWorker;
 import javax.swing.Timer;
 
 import com.tankbattle.controllers.GameManager;
+import com.tankbattle.utils.ClientFPSCounter;
+import com.tankbattle.utils.ServerFPSCounter;
 import com.tankbattle.utils.Vector2;
 
 public class GamePanel extends JPanel {
@@ -31,11 +33,6 @@ public class GamePanel extends JPanel {
     // Do not use this to scale sprites or other graphics
     private float worldToPanelScaleFactor = 1;
 
-    // FPS calculation, running independently
-    private float fps = 0;
-    private long frameCount = 0;
-    private long fpsTimerStart = System.currentTimeMillis();
-
     public GamePanel() {
 
         setLayout(null);
@@ -44,8 +41,7 @@ public class GamePanel extends JPanel {
         updateScaleFactor();
         updateOffsets();
 
-        Timer fpsTimer = new Timer(1000, e -> updateFps());
-        fpsTimer.start();
+        ClientFPSCounter.getInstance().start();
 
         addComponentListener(new ComponentAdapter() {
             @Override
@@ -57,20 +53,12 @@ public class GamePanel extends JPanel {
         });
     }
 
-    private void updateFps() {
-        long currentTime = System.currentTimeMillis();
-        fps = (frameCount * 1000.0f) / (currentTime - fpsTimerStart); // FPS based on elapsed time
-        fpsTimerStart = currentTime;
-        frameCount = 0; // Reset frame count for the next second
-    }
-
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
         Graphics2D g2d = (Graphics2D) g;
 
-        // Calculate FPS
-        frameCount++;
+        ClientFPSCounter.getInstance().incrementFrameCount();
 
         // TODO: Rendering is done in one thread, fix it to use multiple threads
         // we can optimize this by rendering images to buffers in seperate
@@ -196,7 +184,7 @@ public class GamePanel extends JPanel {
     private void drawClientFPS(Graphics2D g2d) {
         g2d.setFont(new Font("Arial", Font.BOLD, 36));
         g2d.setColor(Color.RED);
-        String fpsText = String.format("FPS: %.2f", fps);
+        String fpsText = String.format("FPS: %.2f", ClientFPSCounter.getInstance().getFps());
         int stringWidth = g2d.getFontMetrics().stringWidth(fpsText);
         int xPosition = getWidth() - stringWidth - 20;
         int yPosition = 40;
@@ -204,7 +192,7 @@ public class GamePanel extends JPanel {
     }
 
     private void drawServerFPS(Graphics2D g2d) {
-        float serverFps = GameManager.getInstance().getServerFps();
+        float serverFps = ServerFPSCounter.getInstance().getServerFps();
         String serverFpsText = String.format("Server: %.2f", serverFps);
         int serverFpsStringWidth = g2d.getFontMetrics().stringWidth(serverFpsText);
         int serverFpsXPosition = getWidth() - serverFpsStringWidth - 20;

@@ -40,4 +40,8 @@ public class WebSocketManager {
 
         sessionHandler.stompSession.send("/client/command", command);
     }
+
+    public void close() {
+        sessionHandler.stompSession.disconnect();
+    }
 }

@@ -162,8 +162,6 @@ public class SpatialGrid {
             String nodeKey = node.xIndex + "," + node.yIndex;
     
             if (cellsToRemove.contains(nodeKey)) {
-                System.out.println("Removing player from grid cell: " + node.xIndex + "," + node.yIndex);
-    
                 if (node.prev != null) {
                     node.prev.next = node.next;
                 } else {
