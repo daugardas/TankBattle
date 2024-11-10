@@ -21,14 +21,14 @@ public class SpatialGrid {
         GridNode prev;
         int xIndex;
         int yIndex;
-    
+
         GridNode(AbstractCollidableEntity entity, int xIndex, int yIndex) {
             this.entity = entity;
             this.xIndex = xIndex;
             this.yIndex = yIndex;
         }
     }
-    
+
     public SpatialGrid(int cellSize, int worldWidth, int worldHeight) {
         this.cellSize = cellSize;
         this.totalCellsX = (int) Math.ceil((double) worldWidth / cellSize);
@@ -39,49 +39,50 @@ public class SpatialGrid {
     public void addEntity(AbstractCollidableEntity entity, boolean isStatic) {
         int[] cellIndicesMin = getCellIndices(entity, true);
         int[] cellIndicesMax = getCellIndices(entity, false);
-    
+
         Set<String> cellsToAdd = new HashSet<>();
         for (int x = cellIndicesMin[0]; x <= cellIndicesMax[0]; x++) {
             for (int y = cellIndicesMin[1]; y <= cellIndicesMax[1]; y++) {
                 cellsToAdd.add(x + "," + y);
             }
         }
-    
+
         insertEntityInCells(entity, cellsToAdd);
-    
+
         entity.setOccupiedCells(cellsToAdd);
         entity.setCellIndices(cellIndicesMin, cellIndicesMax);
         entity.setStaticEntity(isStatic);
     }
 
     public void updateEntity(AbstractCollidableEntity entity) {
-        if (entity.isStaticEntity()) return;
-    
+        if (entity.isStaticEntity())
+            return;
+
         Set<String> oldCells = entity.getOccupiedCellKeys(); // Returns set of "x,y" strings for occupied cells
-    
+
         int[] newCellIndicesMin = getCellIndices(entity, true);
         int[] newCellIndicesMax = getCellIndices(entity, false);
-    
+
         Set<String> newCells = new HashSet<>();
         for (int x = newCellIndicesMin[0]; x <= newCellIndicesMax[0]; x++) {
             for (int y = newCellIndicesMin[1]; y <= newCellIndicesMax[1]; y++) {
                 newCells.add(x + "," + y);
             }
         }
-    
+
         if (oldCells.equals(newCells)) {
             return; // Entity hasn't moved to new cells
         }
-    
+
         Set<String> cellsToRemove = new HashSet<>(oldCells);
         cellsToRemove.removeAll(newCells);
-    
+
         Set<String> cellsToAdd = new HashSet<>(newCells);
         cellsToAdd.removeAll(oldCells);
-    
+
         removeEntityFromCells(entity, cellsToRemove);
         insertEntityInCells(entity, cellsToAdd);
-    
+
         entity.setOccupiedCells(newCells); // Update the entity's occupied cells
         entity.setCellIndices(newCellIndicesMin, newCellIndicesMax);
     }
@@ -133,7 +134,7 @@ public class SpatialGrid {
         cellX = Math.max(0, Math.min(totalCellsX - 1, cellX));
         cellY = Math.max(0, Math.min(totalCellsY - 1, cellY));
 
-        return new int[]{cellX, cellY};
+        return new int[] { cellX, cellY };
     }
 
     private void insertEntityInCells(AbstractCollidableEntity entity, Set<String> cellsToAdd) {
@@ -142,15 +143,15 @@ public class SpatialGrid {
             int x = Integer.parseInt(indices[0]);
             int y = Integer.parseInt(indices[1]);
 
-//            System.out.println("Inserting player into grid cell: " + x + "," + y);
-    
+            // System.out.println("Inserting player into grid cell: " + x + "," + y);
+
             GridNode newNode = new GridNode(entity, x, y);
             newNode.next = grid[x][y];
             if (grid[x][y] != null) {
                 grid[x][y].prev = newNode;
             }
             grid[x][y] = newNode;
-    
+
             entity.addGridNode(newNode);
         }
     }
@@ -160,7 +161,7 @@ public class SpatialGrid {
         while (iterator.hasNext()) {
             GridNode node = iterator.next();
             String nodeKey = node.xIndex + "," + node.yIndex;
-    
+
             if (cellsToRemove.contains(nodeKey)) {
                 if (node.prev != null) {
                     node.prev.next = node.next;
@@ -174,14 +175,14 @@ public class SpatialGrid {
             }
         }
     }
-    
+
     public void removeEntity(AbstractCollidableEntity entity) {
         Set<String> cellsToRemove = entity.getOccupiedCellKeys();
-    
+
         if (cellsToRemove != null && !cellsToRemove.isEmpty()) {
             removeEntityFromCells(entity, cellsToRemove);
         }
-    
+
         entity.setOccupiedCells(null);
         entity.setCellIndices(null, null);
         entity.clearGridNodes();

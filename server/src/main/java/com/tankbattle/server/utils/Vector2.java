@@ -29,20 +29,40 @@ public class Vector2 {
         }
     }
 
-    public void setX(float x){
+    public void setX(float x) {
         this.x = x;
     }
 
-    public void setY(float y){
+    public void setY(float y) {
         this.y = y;
     }
 
-    public void addToX(float x){
+    public Vector2 addVector(Vector2 other) {
+        x += other.getX();
+        y += other.getY();
+        return new Vector2(x, y);
+    }
+
+    public Vector2 addFloat(float number) {
+        x += number;
+        y += number;
+
+        return new Vector2(x, y);
+    }
+
+    public void addToX(float x) {
         this.x += x;
     }
 
-    public void addToY(float y){
+    public void addToY(float y) {
         this.y += y;
+    }
+
+    public Vector2 multiply(float other) {
+        this.x *= other;
+        this.y *= other;
+
+        return new Vector2(x, y);
     }
 
     public float manhattanDistance(Vector2 other) {
@@ -51,6 +71,28 @@ public class Vector2 {
 
     public double distanceTo(Vector2 other) {
         return Math.sqrt(Math.pow(this.x - other.x, 2) + Math.pow(this.y - other.y, 2));
+    }
+
+    public static Vector2 convertByteToVector2(byte data) {
+        Vector2 result = new Vector2();
+
+        if ((data >> 3 << 3 & Constants.DIRECTION_UP) != 0) {
+            result.setY(-1);
+        }
+
+        if ((data >> 1 << 3 >> 2 & Constants.DIRECTION_DOWN) != 0) {
+            result.setY(1);
+        }
+
+        if ((data << 1 >> 3 << 2 & Constants.DIRECTION_LEFT) != 0) {
+            result.setX(-1);
+        }
+
+        if ((data << 3 >> 3 & Constants.DIRECTION_RIGHT) != 0) {
+            result.setX(1);
+        }
+
+        return result;
     }
 
     public boolean equals(Vector2 other) {

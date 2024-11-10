@@ -1,5 +1,7 @@
 package com.tankbattle.controllers;
 
+import com.tankbattle.models.*;
+import com.tankbattle.commands.ICommand;
 import com.tankbattle.commands.MoveCommand;
 import com.tankbattle.models.Bullet;
 import com.tankbattle.models.CurrentPlayer;
@@ -10,10 +12,8 @@ import com.tankbattle.renderers.RenderFacade;
 import com.tankbattle.utils.Vector2;
 import com.tankbattle.views.GameWindow;
 
-import javax.swing.Timer;
 import javax.swing.*;
 import java.awt.*;
-import java.util.List;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -30,6 +30,8 @@ public class GameManager {
     public int playerCount = 0;
     private Level level;
     private CurrentPlayer currentPlayer;
+
+    private List<ICommand> commands = new ArrayList<>();
 
     private GameManager() {
         webSocketManager = new WebSocketManager();
@@ -150,15 +152,32 @@ public class GameManager {
     }
 
     private void updatePlayerMovement() {
+        processMovement();
+
+        sendCommands();
+    }
+
+    public void addCommand(ICommand command) {
+        commands.add(command);
+    }
+
+    public void sendCommands() {
+        for (ICommand command : commands) {
+            webSocketManager.sendCommand(command);
+        }
+        commands.clear();
+    }
+
+    public void processMovement() {
         byte movementDirection = currentPlayer.getMovementDirection();
         byte previousDirection = currentPlayer.getPreviousDirection();
 
-        MoveCommand moveCommand = new MoveCommand(movementDirection);
-
         if (movementDirection != 0) {
-            webSocketManager.sendCommand(moveCommand);
+            MoveCommand moveCommand = new MoveCommand(movementDirection);
+            addCommand(moveCommand);
         } else if (previousDirection != 0 && movementDirection == 0) {
-            webSocketManager.sendCommand(moveCommand);
+            MoveCommand moveCommand = new MoveCommand(movementDirection);
+            addCommand(moveCommand);
             currentPlayer.setPreviousDirection((byte) 0);
         }
     }

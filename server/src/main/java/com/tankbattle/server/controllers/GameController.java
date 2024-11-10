@@ -3,6 +3,7 @@ package com.tankbattle.server.controllers;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.tankbattle.server.builders.BasicLevelBuilder;
+import com.tankbattle.server.commands.FireCommand;
 import com.tankbattle.server.commands.ICommand;
 import com.tankbattle.server.commands.MoveCommand;
 import com.tankbattle.server.components.WebSocketSessionManager;
@@ -165,7 +166,7 @@ public class GameController {
         }
 
         commands.clear();
-        
+
         updatePlayersLocations();
         updateBulletsLocations();
 
@@ -182,6 +183,10 @@ public class GameController {
             player.updateLocation();
             collisionManager.spatialGrid.updateEntity(player);
         }
+    }
+
+    public void addBullet(Bullet bullet) {
+        bullets.add(bullet);
     }
 
     public void removeCollidedBullet(Bullet bullet) {
@@ -218,6 +223,13 @@ public class GameController {
                     if (!commands.contains(moveCommand)) {
                         commands.add(moveCommand);
                     }
+                    break;
+                case "FIRE":
+                    FireCommand fireCommand = new FireCommand(this, players.get(playerIndex));
+                    if (!commands.contains(fireCommand)) {
+                        commands.add(fireCommand);
+                    }
+                    break;
 
                 default:
                     break;
