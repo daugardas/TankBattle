@@ -223,7 +223,7 @@ public class GameController {
                     }
                     break;
                 case "FIRE":
-                    FireCommand fireCommand = new FireCommand(this, players.get(playerIndex));
+                    FireCommand fireCommand = new FireCommand(players.get(playerIndex));
                     if (!commands.contains(fireCommand)) {
                         commands.add(fireCommand);
                     }

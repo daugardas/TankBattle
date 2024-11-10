@@ -3,9 +3,12 @@ package com.tankbattle.server.models;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.tankbattle.server.utils.Vector2;
 
-public class Bullet extends AbstractCollidableEntity implements GameEntity {
+public class Bullet extends AbstractCollidableEntity {
     private Vector2 location;
     private Vector2 size;
+
+    @JsonIgnore
+    private Player owner;
     @JsonIgnore
     private Vector2 direction;
     @JsonIgnore
@@ -16,10 +19,10 @@ public class Bullet extends AbstractCollidableEntity implements GameEntity {
     @JsonIgnore
     private boolean markedForRemoval = false;
 
-    public Bullet(Vector2 location, Vector2 direction) {
-        this.direction = new Vector2(direction.getX(), direction.getY());
+    public Bullet(Player owner) {
+        this.owner = owner;
+        Vector2 initialLocation = location;
 
-        Vector2 initialLocation = new Vector2(location.getX(), location.getY());
         Vector2 offset = new Vector2(direction.getX(), direction.getY());
         offset.multiply(800);
         this.location = initialLocation.addVector(offset);

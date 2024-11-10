@@ -74,7 +74,7 @@ public class TankRenderer implements EntityRenderer<Player>, Scalable {
 
         double x = player.getLocation().getX() * worldLocationScaleFactor + worldOffset.getX();
         double y = player.getLocation().getY() * worldLocationScaleFactor + worldOffset.getY();
-        double rotationAngle = player.getRotationAngle();
+        Vector2 lookDirection = player.getLookDirection();
 
         double centerX = sprite.getWidth() / 2.0;
         double centerY = sprite.getHeight() / 2.0;
@@ -84,7 +84,7 @@ public class TankRenderer implements EntityRenderer<Player>, Scalable {
         AffineTransform transform = new AffineTransform();
 
         transform.translate(x, y);
-        transform.rotate(Math.toRadians(rotationAngle));
+        transform.rotate(Math.atan2(lookDirection.getY(), lookDirection.getX()) + Math.PI / 2);
         transform.scale(scaleFactor, scaleFactor);
         transform.translate(-centerX, -centerY);
 

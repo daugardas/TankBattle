@@ -37,6 +37,11 @@ public class Vector2 {
         this.y = y;
     }
 
+    public void set(float x, float y) {
+        this.x = x;
+        this.y = y;
+    }
+
     public Vector2 addVector(Vector2 other) {
         x += other.getX();
         y += other.getY();

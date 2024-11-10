@@ -7,7 +7,7 @@ import com.tankbattle.server.components.SpringContext;
 import com.tankbattle.server.controllers.GameController;
 import com.tankbattle.server.utils.Vector2;
 
-public class Player extends AbstractCollidableEntity implements GameEntity {
+public class Player extends AbstractCollidableEntity {
     @JsonIgnore
     private GameController gameController;
 
@@ -20,7 +20,7 @@ public class Player extends AbstractCollidableEntity implements GameEntity {
     private Vector2 size;
     private byte movementDirection;
     private float speed = 40;
-    private double rotationAngle = 0;
+    private Vector2 lookDirection;
 
     @JsonIgnore
     private int health = 20;
@@ -36,30 +36,37 @@ public class Player extends AbstractCollidableEntity implements GameEntity {
     public Player() {
         location = new Vector2(0, 0);
         previousLocation = new Vector2(0, 0);
+        lookDirection = new Vector2(0, 0);
         movementDirection = 0;
         size = new Vector2(800, 800);
 
-        // Assuming SpringContext is a utility to get Spring beans
         this.gameController = SpringContext.getBean(GameController.class);
     }
 
     public Player(String sessionId, String username) {
         this.sessionId = sessionId;
         this.username = username;
+
         location = new Vector2(0, 0);
         previousLocation = new Vector2(0, 0);
-        size = new Vector2(800, 800);
+        lookDirection = new Vector2(0, 0);
         movementDirection = 0;
+        size = new Vector2(800, 800);
+
         this.gameController = SpringContext.getBean(GameController.class);
     }
 
     public Player(String sessionId, String username, int x, int y) {
         this.sessionId = sessionId;
         this.username = username;
+
         location = new Vector2(x, y);
         previousLocation = new Vector2(x, y);
-        size = new Vector2(800, 800);
+        lookDirection = new Vector2(0, 0);
         movementDirection = 0;
+
+        size = new Vector2(800, 800);
+
         this.gameController = SpringContext.getBean(GameController.class);
     }
 
@@ -113,12 +120,12 @@ public class Player extends AbstractCollidableEntity implements GameEntity {
         this.username = username;
     }
 
-    public double getRotationAngle() {
-        return rotationAngle;
+    public Vector2 getLookDirection() {
+        return lookDirection;
     }
 
     @JsonIgnore
-    public int getHealth(){
+    public int getHealth() {
         return health;
     }
 
@@ -131,31 +138,31 @@ public class Player extends AbstractCollidableEntity implements GameEntity {
         health -= damage;
     }
 
-    private void updateRotationAngle() {
+    private void updateLookDirection() {
         switch (movementDirection) {
             case DIRECTION_UP:
-                rotationAngle = 0;
+                lookDirection.set(0, -1);
                 break;
             case DIRECTION_LEFT:
-                rotationAngle = 270;
+                lookDirection.set(-1, 0);
                 break;
             case DIRECTION_DOWN:
-                rotationAngle = 180;
+                lookDirection.set(0, 1);
                 break;
             case DIRECTION_RIGHT:
-                rotationAngle = 90;
+                lookDirection.set(1, 0);
                 break;
             case DIRECTION_UP | DIRECTION_RIGHT:
-                rotationAngle = 45;
+                lookDirection.set(1, -1);
                 break;
             case DIRECTION_UP | DIRECTION_LEFT:
-                rotationAngle = 315;
+                lookDirection.set(-1, -1);
                 break;
             case DIRECTION_DOWN | DIRECTION_LEFT:
-                rotationAngle = 225;
+                lookDirection.set(-1, 1);
                 break;
             case DIRECTION_DOWN | DIRECTION_RIGHT:
-                rotationAngle = 135;
+                lookDirection.set(1, 1);
                 break;
             default:
                 break;
@@ -163,50 +170,50 @@ public class Player extends AbstractCollidableEntity implements GameEntity {
     }
 
     public void updateLocation() {
-       // Calculate intended movement
-       float diagonalSpeed = speed / (float) Math.sqrt(2);
-       float deltaY = 0;
-       float deltaX = 0;
+        // Calculate intended movement
+        float diagonalSpeed = speed / (float) Math.sqrt(2);
+        float deltaY = 0;
+        float deltaX = 0;
 
-       boolean movingVertically = false;
-       boolean movingHorizontally = false;
+        boolean movingVertically = false;
+        boolean movingHorizontally = false;
 
-       if ((movementDirection & DIRECTION_UP) != 0) {
-           movingVertically = true;
-           deltaY -= (movementDirection & (DIRECTION_LEFT | DIRECTION_RIGHT)) != 0 ? diagonalSpeed : speed;
-       }
+        if ((movementDirection & DIRECTION_UP) != 0) {
+            movingVertically = true;
+            deltaY -= (movementDirection & (DIRECTION_LEFT | DIRECTION_RIGHT)) != 0 ? diagonalSpeed : speed;
+        }
 
-       if ((movementDirection & DIRECTION_DOWN) != 0) {
-           movingVertically = true;
-           deltaY += (movementDirection & (DIRECTION_LEFT | DIRECTION_RIGHT)) != 0 ? diagonalSpeed : speed;
-       }
+        if ((movementDirection & DIRECTION_DOWN) != 0) {
+            movingVertically = true;
+            deltaY += (movementDirection & (DIRECTION_LEFT | DIRECTION_RIGHT)) != 0 ? diagonalSpeed : speed;
+        }
 
-       if ((movementDirection & DIRECTION_LEFT) != 0) {
-           movingHorizontally = true;
-           deltaX -= (movementDirection & (DIRECTION_UP | DIRECTION_DOWN)) != 0 ? diagonalSpeed : speed;
-       }
+        if ((movementDirection & DIRECTION_LEFT) != 0) {
+            movingHorizontally = true;
+            deltaX -= (movementDirection & (DIRECTION_UP | DIRECTION_DOWN)) != 0 ? diagonalSpeed : speed;
+        }
 
-       if ((movementDirection & DIRECTION_RIGHT) != 0) {
-           movingHorizontally = true;
-           deltaX += (movementDirection & (DIRECTION_UP | DIRECTION_DOWN)) != 0 ? diagonalSpeed : speed;
-       }
+        if ((movementDirection & DIRECTION_RIGHT) != 0) {
+            movingHorizontally = true;
+            deltaX += (movementDirection & (DIRECTION_UP | DIRECTION_DOWN)) != 0 ? diagonalSpeed : speed;
+        }
 
-       // Calculate intended new position
-       float newX = location.getX() + deltaX;
-       float newY = location.getY() + deltaY;
-       Vector2 newPosition = new Vector2(newX, newY);
+        // Calculate intended new position
+        float newX = location.getX() + deltaX;
+        float newY = location.getY() + deltaY;
+        Vector2 newPosition = new Vector2(newX, newY);
 
-       // Check for world border constraints
-       if (checkWorldBorderConstraints(newX, newY)) {
-           // Prevent movement beyond world boundaries
-           return;
-       }
-       previousLocation = new Vector2(location.getX(), location.getY());
-       location.setX(newX);
-       location.setY(newY);
+        // Check for world border constraints
+        if (checkWorldBorderConstraints(newX, newY)) {
+            // Prevent movement beyond world boundaries
+            return;
+        }
+        previousLocation = new Vector2(location.getX(), location.getY());
+        location.setX(newX);
+        location.setY(newY);
 
-       updateRotationAngle();
-   }
+        updateLookDirection();
+    }
 
     private boolean checkWorldBorderConstraints(float newX, float newY) {
         float leftCornerX = newX - size.getX() / 2;
@@ -215,9 +222,9 @@ public class Player extends AbstractCollidableEntity implements GameEntity {
         float bottomCornerY = newY + size.getY() / 2;
 
         return leftCornerX < 0 ||
-               rightCornerX > gameController.getLevelCoordinateWidth() ||
-               topCornerY < 0 ||
-               bottomCornerY > gameController.getLevelCoordinateHeight();
+                rightCornerX > gameController.getLevelCoordinateWidth() ||
+                topCornerY < 0 ||
+                bottomCornerY > gameController.getLevelCoordinateHeight();
     }
 
     public void revertToPreviousPosition() {
@@ -231,8 +238,10 @@ public class Player extends AbstractCollidableEntity implements GameEntity {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
 
         Player player = (Player) o;
         return username.equals(player.username);

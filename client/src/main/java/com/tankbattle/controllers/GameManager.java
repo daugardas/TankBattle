@@ -1,7 +1,11 @@
 package com.tankbattle.controllers;
 
+import com.tankbattle.commands.FireCommand;
 import com.tankbattle.commands.ICommand;
 import com.tankbattle.commands.MoveCommand;
+import com.tankbattle.input.GamepadInput;
+import com.tankbattle.input.InputData;
+import com.tankbattle.input.KeyboardInput;
 import com.tankbattle.models.Bullet;
 import com.tankbattle.models.CurrentPlayer;
 import com.tankbattle.models.Level;
@@ -19,7 +23,8 @@ import java.util.concurrent.*;
 
 public class GameManager {
     private static final GameManager INSTANCE = new GameManager();
-    private final ScheduledExecutorService movementCommandExecutorService = Executors.newSingleThreadScheduledExecutor();
+    private final ScheduledExecutorService movementCommandExecutorService = Executors
+            .newSingleThreadScheduledExecutor();
     private final WebSocketManager webSocketManager;
     private final RenderFacade renderFacade;
     private final ResourceManager resourceManager;
@@ -75,7 +80,8 @@ public class GameManager {
     }
 
     public void setUsername(String username) {
-        this.currentPlayer = new CurrentPlayer(username, new Vector2(0, 0), new Vector2(10, 10), Color.BLACK, Color.RED);
+        this.currentPlayer = new CurrentPlayer(username, new Vector2(0, 0), new Vector2(10, 10), Color.BLACK,
+                Color.RED);
     }
 
     public void startGame() {
@@ -83,7 +89,7 @@ public class GameManager {
 
         drawRequestThread.start();
 
-        movementCommandExecutorService.scheduleAtFixedRate(this::updatePlayerMovement, 0, 16, TimeUnit.MILLISECONDS);
+        movementCommandExecutorService.scheduleAtFixedRate(this::updateInput, 0, 16, TimeUnit.MILLISECONDS);
     }
 
     public void setLevel(Level level) {
@@ -92,7 +98,7 @@ public class GameManager {
     }
 
     public void addPlayers(List<Player> incomingPlayers) {
-        // no need to offload the players update to another thread as the 
+        // no need to offload the players update to another thread as the
         // amount of players is so small that creating a new thread would be
         // more expensive than just updating the players in the main thread.
         // This was confirmed with testing.
@@ -105,13 +111,13 @@ public class GameManager {
             if (this.currentPlayer.getUsername().equals(player.getUsername())) {
                 this.currentPlayer.setLocation(player.getLocation());
                 this.currentPlayer.setSize(player.getSize());
-                this.currentPlayer.setRotationAngle(player.getRotationAngle());
+                this.currentPlayer.setLookDirection(player.getLookDirection());
             } else {
                 Player existingPlayer = this.players.get(player.getUsername());
                 if (existingPlayer != null) {
                     existingPlayer.setLocation(player.getLocation());
                     existingPlayer.setSize(player.getSize());
-                    existingPlayer.setRotationAngle(player.getRotationAngle());
+                    existingPlayer.setLookDirection(player.getLookDirection());
                 } else {
                     this.players.put(player.getUsername(), player);
                 }
@@ -131,25 +137,19 @@ public class GameManager {
         this.bullets.clear();
     }
 
-    private void updatePlayerMovement() {
-        processMovement();
+    private void updateInput() {
+        InputData inputData = currentPlayer.getInputData();
+
+        processMovement(inputData);
+        processActions(inputData);
         sendCommands();
     }
 
-    public void addCommand(ICommand command) {
-        commands.add(command);
-    }
-
-    public void sendCommands() {
-        for (ICommand command : commands) {
-            webSocketManager.sendCommand(command);
-        }
-        commands.clear();
-    }
-
-    public void processMovement() {
-        byte movementDirection = currentPlayer.getMovementDirection();
+    private void processMovement(InputData inputData) {
+        currentPlayer.setPreviousDirection(currentPlayer.getMovementDirection());
         byte previousDirection = currentPlayer.getPreviousDirection();
+        byte movementDirection = inputData.getMovementDirection();
+        currentPlayer.setMovementDirection(movementDirection);
 
         if (movementDirection != 0) {
             MoveCommand moveCommand = new MoveCommand(movementDirection);
@@ -159,6 +159,23 @@ public class GameManager {
             addCommand(moveCommand);
             currentPlayer.setPreviousDirection((byte) 0);
         }
+    }
+
+    private void processActions(InputData inputData) {
+        if (inputData.getActions().containsKey("FIRE")) {
+            addCommand(new FireCommand());
+        }
+    }
+
+    public void sendCommands() {
+        for (ICommand command : commands) {
+            webSocketManager.sendCommand(command);
+        }
+        commands.clear();
+    }
+
+    public void addCommand(ICommand command) {
+        commands.add(command);
     }
 
     public void setRenderingScaleFactor(float scaleFactor) {

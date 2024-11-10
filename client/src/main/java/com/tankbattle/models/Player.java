@@ -11,18 +11,19 @@ public class Player extends Entity {
     protected Vector2 size;
     protected Color outlineColor;
     protected Color fillColor;
-    protected double rotationAngle = 0;
+    protected Vector2 lookDirection;
 
     public Player() {
     }
 
     public Player(String username, Vector2 location, Vector2 size, Color outlineColor,
-                  Color fillColor) {
+            Color fillColor) {
         this.username = username;
         this.location = location;
         this.size = size;
         this.outlineColor = outlineColor;
         this.fillColor = fillColor;
+        lookDirection = new Vector2(0, 0);
     }
 
     public Vector2 getLocation() {
@@ -50,9 +51,12 @@ public class Player extends Entity {
     }
 
     public String toString() {
-        return String.format("{ username: '%s', location: { x: %d, y: %d } }", this.username,
-                (int) this.location.getX(),
-                (int) this.location.getY());
+        return String.format("{ username: '%s', location: { x: %d, y: %d }, lookDirection: { x: %d, y: %d } }",
+                this.username,
+                this.location.getX(),
+                this.location.getY(),
+                this.lookDirection.getX(),
+                this.lookDirection.getY());
     }
 
     public Color getOutlineColor() {
@@ -71,18 +75,18 @@ public class Player extends Entity {
         this.fillColor = fillColor;
     }
 
-    public double getRotationAngle() {
-        return rotationAngle;
+    public Vector2 getLookDirection() {
+        return lookDirection;
     }
 
-    public void setRotationAngle(double rotationAngle) {
-        this.rotationAngle = rotationAngle;
+    public void setLookDirection(Vector2 lookDirection) {
+        this.lookDirection = lookDirection;
     }
 
     @Override
     public boolean equals(Object o) {
         if (this == o)
-        return true;
+            return true;
         if (o == null || getClass() != o.getClass())
             return false;
 
