@@ -23,10 +23,6 @@ import java.util.stream.Collectors;
 import javax.swing.Timer;
 
 import com.tankbattle.commands.MoveCommand;
-import com.tankbattle.models.Collision;
-import com.tankbattle.models.CurrentPlayer;
-import com.tankbattle.models.Level;
-import com.tankbattle.models.Player;
 import com.tankbattle.models.tiles.Tile;
 import com.tankbattle.renderers.RenderFacade;
 import com.tankbattle.utils.Vector2;
@@ -212,33 +208,9 @@ public class GameManager {
     private void renderTiles(Graphics2D g2d) {
         Tile[][] tileGrid = level.getGrid();
         if (tileGrid != null) {
-            int panelWidth = GameWindow.getInstance().getGamePanel().getWidth();
-            int panelHeight = GameWindow.getInstance().getGamePanel().getHeight();
-
-            int numThreads = Runtime.getRuntime().availableProcessors();
-            ExecutorService executor = java.util.concurrent.Executors.newFixedThreadPool(numThreads);
-            List<CompletableFuture<BufferedImage>> futures = Arrays.stream(tileGrid).map(row -> CompletableFuture.supplyAsync(() -> {
-                BufferedImage rowImage = new BufferedImage(panelWidth, panelHeight, BufferedImage.TYPE_INT_ARGB);
-                Graphics2D rowGraphics = rowImage.createGraphics();
-                renderFacade.drawEntities(rowGraphics, Arrays.asList(row));
-                rowGraphics.dispose();
-                return rowImage;
-            }, executor)).collect(Collectors.toList());
-
-            CompletableFuture<Void> allOf = CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]));
-            allOf.join(); // wait for all futures to complete
-
-            // combine row images to form the final tiles image in g2d context
-            for(var future : futures){
-                try {
-                    BufferedImage rowImage = future.get();
-                    g2d.drawImage(rowImage, 0, 0, null);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
+            for (Tile[] row : tileGrid) {
+                renderFacade.drawEntities(g2d, Arrays.asList(row));
             }
-
-            executor.shutdown();
         }
     }
 
