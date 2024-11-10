@@ -65,8 +65,6 @@ public class GameController {
     private List<ICommand> commands = new ArrayList<>();
     private List<ICommand> commandLog = new ArrayList<>();
 
-    boolean something = true;
-
     private Level level;
 
     public Level getLevel() {

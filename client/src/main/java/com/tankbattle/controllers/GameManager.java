@@ -1,6 +1,5 @@
 package com.tankbattle.controllers;
 
-import com.tankbattle.models.*;
 import com.tankbattle.commands.ICommand;
 import com.tankbattle.commands.MoveCommand;
 import com.tankbattle.models.Bullet;
@@ -13,21 +12,24 @@ import com.tankbattle.utils.Vector2;
 import com.tankbattle.views.GameWindow;
 
 import javax.swing.*;
+
 import java.awt.*;
 import java.util.List;
 import java.util.*;
-import java.util.concurrent.ExecutorService;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 public class GameManager {
     private static final GameManager INSTANCE = new GameManager();
-    private final ExecutorService movementCommandExecutorService = Executors.newSingleThreadExecutor();
+    private final ScheduledExecutorService movementCommandExecutorService = Executors.newSingleThreadScheduledExecutor();
     private final WebSocketManager webSocketManager;
     private final RenderFacade renderFacade;
     private final ResourceManager resourceManager;
     private final Thread drawRequestThread;
     private final HashMap<String, Player> players;
-    private final ArrayList<Bullet> bullets;
+    private final CopyOnWriteArrayList<Bullet> bullets;
     public int playerCount = 0;
     private Level level;
     private CurrentPlayer currentPlayer;
@@ -40,7 +42,7 @@ public class GameManager {
         renderFacade = new RenderFacade(resourceManager);
 
         players = new HashMap<>();
-        bullets = new ArrayList<>();
+        bullets = new CopyOnWriteArrayList<>();
         level = new Level();
 
         // use another thread to request redraws continuously,
@@ -68,12 +70,6 @@ public class GameManager {
         return INSTANCE;
     }
 
-    public ArrayList<Player> getAllPlayers() {
-        ArrayList<Player> allPlayers = new ArrayList<>(this.players.values());
-        if (currentPlayer != null) allPlayers.add(currentPlayer);
-        return allPlayers;
-    }
-
     public void initialize() {
         GameWindow.getInstance().setVisible(true);
     }
@@ -91,13 +87,7 @@ public class GameManager {
 
         drawRequestThread.start();
 
-        Timer timer = new Timer(16, event -> this.update());
-        timer.start();
-
-    }
-
-    public Level getLevel() {
-        return level;
+        movementCommandExecutorService.scheduleAtFixedRate(this::updatePlayerMovement, 0, 16, TimeUnit.MILLISECONDS);
     }
 
     public void setLevel(Level level) {
@@ -145,16 +135,8 @@ public class GameManager {
         this.bullets.clear();
     }
 
-    public void update() {
-        movementCommandExecutorService.execute(() -> {
-            this.updatePlayerMovement();
-        });
-
-    }
-
     private void updatePlayerMovement() {
         processMovement();
-
         sendCommands();
     }
 
@@ -176,7 +158,7 @@ public class GameManager {
         if (movementDirection != 0) {
             MoveCommand moveCommand = new MoveCommand(movementDirection);
             addCommand(moveCommand);
-        } else if (previousDirection != 0 && movementDirection == 0) {
+        } else if (previousDirection != 0) {
             MoveCommand moveCommand = new MoveCommand(movementDirection);
             addCommand(moveCommand);
             currentPlayer.setPreviousDirection((byte) 0);

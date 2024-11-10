@@ -18,8 +18,6 @@ public class CollisionManager {
     private final Set<Vector2> activeCollisionLocations = new HashSet<>();
     private final List<Collision> collisions = new ArrayList<>();
 
-    private static final long COLLISION_LIFETIME = 1000; // 5 seconds
-
     private CollisionManager() {
     }
 
