@@ -19,6 +19,6 @@ public class PlayerMapCollisionListener implements CollisionListener {
 
         Player player = event.getPlayer();
         player.revertToPreviousPosition();
-        logger.info("Player {} collided with the map. Reverting position.", player.getUsername());
+        logger.debug("Player {} collided with the map. Reverting position.", player.getUsername());
     }
 }

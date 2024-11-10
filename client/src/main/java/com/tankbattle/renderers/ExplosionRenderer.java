@@ -1,24 +1,22 @@
 package com.tankbattle.renderers;
 
-import java.awt.Graphics2D;
-import java.awt.image.BufferedImage;
-
 import com.tankbattle.controllers.ResourceManager;
 import com.tankbattle.models.Collision;
 import com.tankbattle.utils.Vector2;
 
-public class ExplosionRenderer implements EntityRenderer<Collision>, Scalable {
-    private double scaleFactor = 1.0;
-    private double worldLocationScaleFactor = 1.0;
-    private Vector2 worldOffset = new Vector2(0, 0);
+import java.awt.*;
+import java.awt.image.BufferedImage;
 
-    private BufferedImage[] explosionFrames;
+public class ExplosionRenderer implements EntityRenderer<Collision>, Scalable {
     private static final int FRAME_WIDTH = 32;
     private static final int FRAME_HEIGHT = 32;
     private static final int FRAME_COUNT = 5;
     private static final int FRAME_DURATION = 100;
-
     private final ResourceManager resourceManager;
+    private double scaleFactor = 1.0;
+    private double worldLocationScaleFactor = 1.0;
+    private Vector2 worldOffset = new Vector2(0, 0);
+    private BufferedImage[] explosionFrames;
 
     public ExplosionRenderer(ResourceManager resourceManager) {
         this.resourceManager = resourceManager;
@@ -59,8 +57,7 @@ public class ExplosionRenderer implements EntityRenderer<Collision>, Scalable {
         Vector2 location = collision.getLocation();
         double x = location.getX() * worldLocationScaleFactor + worldOffset.getX();
         double y = location.getY() * worldLocationScaleFactor + worldOffset.getY();
-        g2d.drawImage(currentSprite, (int) (x - FRAME_WIDTH * scaleFactor / 2), (int) (y - FRAME_HEIGHT * scaleFactor / 2),
-                (int) (FRAME_WIDTH * scaleFactor), (int) (FRAME_HEIGHT * scaleFactor), null);
+        g2d.drawImage(currentSprite, (int) (x - FRAME_WIDTH * scaleFactor / 2), (int) (y - FRAME_HEIGHT * scaleFactor / 2), (int) (FRAME_WIDTH * scaleFactor), (int) (FRAME_HEIGHT * scaleFactor), null);
     }
 
     @Override

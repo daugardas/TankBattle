@@ -3,17 +3,16 @@ package com.tankbattle.controllers;
 import java.awt.image.BufferedImage;
 import java.io.*;
 import java.net.URL;
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import javax.imageio.ImageIO;
 
 public class ResourceManager {
-    private Map<String, BufferedImage> images = new HashMap<>();
+    private Map<String, BufferedImage> images = new ConcurrentHashMap<>();
 
     public BufferedImage loadImage(String fileName) throws RuntimeException {
         if (!images.containsKey(fileName)) {
-            System.out.println("Loading image: " + fileName);
             URL resource = this.getClass().getClassLoader().getResource(fileName);
             if (resource == null) {
                 throw new RuntimeException("Resource not found: " + fileName);
@@ -25,7 +24,6 @@ public class ResourceManager {
                     throw new RuntimeException("Cannot read image: " + fileName);
                 }
 
-                System.out.println("Loaded image: " + fileName);
                 images.put(fileName, image);
             } catch (IOException e)  {
                 e.printStackTrace();

@@ -1,29 +1,20 @@
 package com.tankbattle.views;
 
-import java.awt.Color;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.RenderingHints;
+import com.tankbattle.controllers.GameManager;
+
+import javax.imageio.ImageIO;
+import javax.swing.*;
+import javax.swing.text.AbstractDocument;
+import javax.swing.text.AttributeSet;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.DocumentFilter;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.net.URL;
-
-import javax.imageio.ImageIO;
-import javax.swing.BoxLayout;
-import javax.swing.JButton;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JTextField;
-import javax.swing.text.AbstractDocument;
-import javax.swing.text.BadLocationException;
-import javax.swing.text.DocumentFilter;
-import javax.swing.text.AttributeSet;
-
-import com.tankbattle.controllers.GameManager;
+import java.util.UUID;
 
 public class MenuPanel extends JPanel {
     private BufferedImage backgroundImage;
@@ -69,23 +60,23 @@ public class MenuPanel extends JPanel {
         ((AbstractDocument) usernameTextField.getDocument()).setDocumentFilter(new DocumentFilter() {
             private static final int MAX_CHARACTERS = 15;
             private static final String VALID_CHARACTERS_REGEX = "^[a-zA-Z0-9]*$";
+
             @Override
-            public void insertString(FilterBypass fb, int offset, String string, AttributeSet attr)
-                    throws BadLocationException {
+            public void insertString(FilterBypass fb, int offset, String string, AttributeSet attr) throws BadLocationException {
                 if (isValidInput(fb, string)) {
                     super.insertString(fb, offset, string, attr);
                 }
             }
+
             @Override
-            public void replace(FilterBypass fb, int offset, int length, String text, AttributeSet attrs)
-                    throws BadLocationException {
+            public void replace(FilterBypass fb, int offset, int length, String text, AttributeSet attrs) throws BadLocationException {
                 if (isValidInput(fb, text)) {
                     super.replace(fb, offset, length, text, attrs);
                 }
             }
+
             private boolean isValidInput(FilterBypass fb, String text) {
-                return (fb.getDocument().getLength() + text.length() <= MAX_CHARACTERS)
-                        && text.matches(VALID_CHARACTERS_REGEX);
+                return (fb.getDocument().getLength() + text.length() <= MAX_CHARACTERS) && text.matches(VALID_CHARACTERS_REGEX);
             }
         });
 
@@ -100,8 +91,25 @@ public class MenuPanel extends JPanel {
             @Override
             public void actionPerformed(ActionEvent arg0) {
                 String url = hostnameTextField.getText();
-                String username = usernameTextField.getText();
-                GameManager.getInstance().startGame(url, username);
+                String username = usernameTextField.getText().isEmpty() ? "Guest#" + UUID.randomUUID().toString().substring(0, 4) : usernameTextField.getText();
+
+                connectButton.setText("Connecting...");
+                connectButton.setEnabled(false);
+
+                GameManager.getInstance().setUsername(username);
+
+                // connect to server on another thread, so it does not block the UI
+                new Thread(() -> {
+                    boolean connected = GameManager.getInstance().connectToServer(url, username);
+                    SwingUtilities.invokeLater(() -> {
+                        if (connected) {
+                            GameManager.getInstance().startGame();
+                        } else {
+                            connectButton.setText("Connect again");
+                            connectButton.setEnabled(true);
+                        }
+                    });
+                }).start();
             }
         });
 

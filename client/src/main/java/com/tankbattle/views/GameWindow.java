@@ -1,14 +1,15 @@
 package com.tankbattle.views;
 
+import javax.swing.*;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
-
-import javax.swing.JFrame;
-import javax.swing.JPanel;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 
 public class GameWindow extends JFrame {
-    private JPanel mainMenuPanel;
-    private GamePanel gamePanel;
+    private static final GameWindow INSTANCE = new GameWindow();
+    private final JPanel mainMenuPanel;
+    private final GamePanel gamePanel;
 
     private GameWindow() {
         super("Tank Battle");
@@ -27,10 +28,15 @@ public class GameWindow extends JFrame {
             }
         });
 
+        addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowClosing(WindowEvent windowEvent) {
+                System.exit(0);
+            }
+        });
+
         setVisible(true);
     }
-
-    private static final GameWindow INSTANCE = new GameWindow();
 
     public static GameWindow getInstance() {
         return INSTANCE;
@@ -50,7 +56,7 @@ public class GameWindow extends JFrame {
         return gamePanel;
     }
 
-    private void onResize(){
+    private void onResize() {
         // do something in the future?
     }
 

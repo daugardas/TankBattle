@@ -38,29 +38,13 @@ public abstract class Tile extends Entity {
         this.size = size;
     }
 
-    public int getWorldX() {
-        return Math.round(location.getX() * 1000);
+    public float getWorldX() {
+        return location.getX() * 1000;
     }
 
-    public int getWorldY() {
-        return Math.round(location.getY() * 1000);
+    public float getWorldY() {
+        return location.getY() * 1000;
     }
-
-    // public int getPanelX() {
-    // return panelX;
-    // }
-
-    // public void setPanelX(int panelX) {
-    // this.panelX = panelX;
-    // }
-
-    // public int getPanelY() {
-    // return panelY;
-    // }
-
-    // public void setPanelY(int panelY) {
-    // this.panelY = panelY;
-    // }
 
     public String toString() {
         return this.getClass().getSimpleName();

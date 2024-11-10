@@ -1,17 +1,16 @@
 package com.tankbattle.views;
 
-import java.awt.Color;
-import java.awt.Font;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
+import com.tankbattle.controllers.GameManager;
+import com.tankbattle.utils.ClientFPSCounter;
+import com.tankbattle.utils.ServerFPSCounter;
+import com.tankbattle.utils.Vector2;
+
+import javax.swing.*;
+import java.awt.*;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
-
-import javax.swing.JPanel;
-import javax.swing.Timer;
-
-import com.tankbattle.controllers.GameManager;
-import com.tankbattle.utils.Vector2;
+import java.awt.image.BufferedImage;
+import java.util.concurrent.CountDownLatch;
 
 public class GamePanel extends JPanel {
     private int WORLD_WIDTH = 10000; // default world size
@@ -28,11 +27,6 @@ public class GamePanel extends JPanel {
     // Do not use this to scale sprites or other graphics
     private float worldToPanelScaleFactor = 1;
 
-    // FPS calculation, running independently
-    private float fps = 0;
-    private long frameCount = 0;
-    private long fpsTimerStart = System.currentTimeMillis();
-
     public GamePanel() {
 
         setLayout(null);
@@ -41,8 +35,7 @@ public class GamePanel extends JPanel {
         updateScaleFactor();
         updateOffsets();
 
-        Timer fpsTimer = new Timer(1000, e -> updateFps());
-        fpsTimer.start();
+        ClientFPSCounter.getInstance().start();
 
         addComponentListener(new ComponentAdapter() {
             @Override
@@ -54,32 +47,126 @@ public class GamePanel extends JPanel {
         });
     }
 
-    private void updateFps() {
-        long currentTime = System.currentTimeMillis();
-        fps = (frameCount * 1000.0f) / (currentTime - fpsTimerStart); // FPS based on elapsed time
-        fpsTimerStart = currentTime;
-        frameCount = 0; // Reset frame count for the next second
-    }
-
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
         Graphics2D g2d = (Graphics2D) g;
 
-        // Calculate FPS
-        frameCount++;
+        ClientFPSCounter.getInstance().incrementFrameCount();
 
-        // clear the panel
+        // TODO: Rendering is done in one thread, fix it to use multiple threads
+        // we can optimize this by rendering images to buffers in seperate
+        // threads and then drawing them all at once, this way we can avoid the 
+        // overhead of drawing each image individually
+
+        BufferedImage clearedPanelImage = new BufferedImage(getWidth(), getHeight(), BufferedImage.TYPE_INT_ARGB);
+        BufferedImage entitiesBufferedImage = new BufferedImage(getWidth(), getHeight(), BufferedImage.TYPE_INT_ARGB);
+        BufferedImage worldBordersBufferedImage = new BufferedImage(getWidth(), getHeight(), BufferedImage.TYPE_INT_ARGB);
+        BufferedImage fpsBufferedImage = new BufferedImage(getWidth(), getHeight(), BufferedImage.TYPE_INT_ARGB);
+
+        CountDownLatch latch = new CountDownLatch(4);
+
+        SwingWorker<Void, Void> clearPanelWorker = new SwingWorker<Void, Void>() {
+            @Override
+            protected Void doInBackground() throws Exception {
+                try {
+                    clearPanel(clearedPanelImage.createGraphics());
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                latch.countDown();
+                return null;
+            }
+
+            @Override
+            protected void done() {
+            }
+        };
+
+        SwingWorker<Void, Void> renderEntitiesWorker = new SwingWorker<Void, Void>() {
+            @Override
+            protected Void doInBackground() throws Exception {
+                try {
+                    renderEntities(entitiesBufferedImage.createGraphics());
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                latch.countDown();
+                return null;
+            }
+
+            @Override
+            protected void done() {
+            }
+        };
+
+        SwingWorker<Void, Void> drawWorldBordersWorker = new SwingWorker<Void, Void>() {
+            @Override
+            protected Void doInBackground() throws Exception {
+                try {
+                    drawWorldBorders(worldBordersBufferedImage.createGraphics());
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                latch.countDown();
+                return null;
+            }
+
+            @Override
+            protected void done() {
+            }
+        };
+
+        SwingWorker<Void, Void> drawFPSWorker = new SwingWorker<Void, Void>() {
+            @Override
+            protected Void doInBackground() throws Exception {
+                try {
+                    var g = fpsBufferedImage.createGraphics();
+                    drawClientFPS(g);
+                    drawServerFPS(g);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                latch.countDown();
+                return null;
+            }
+
+            @Override
+            protected void done() {
+            }
+        };
+
+        clearPanelWorker.execute();
+        renderEntitiesWorker.execute();
+        drawWorldBordersWorker.execute();
+        drawFPSWorker.execute();
+
+        // Wait for all workers to finish
+        try {
+            latch.await();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        g2d.drawImage(clearedPanelImage, 0, 0, null);
+        g2d.drawImage(entitiesBufferedImage, 0, 0, null);
+        g2d.drawImage(worldBordersBufferedImage, 0, 0, null);
+        g2d.drawImage(fpsBufferedImage, 0, 0, null);
+    }
+
+    private void clearPanel(Graphics2D g2d) {
         g2d.setColor(Color.WHITE);
-        g2d.fillRect(offsetX, offsetY, panelWorldWidth,
-                panelWorldHeight);
+        g2d.fillRect(offsetX, offsetY, panelWorldWidth, panelWorldHeight);
+    }
 
-        // render all entities
+    private void renderEntities(Graphics2D g2d) {
         GameManager.getInstance().renderAll(g2d);
+    }
 
-        // draw world borders (this is drawn around the world,
+    private void drawWorldBorders(Graphics2D g2d) {
+        // this is drawn around the world,
         // because parts of the tank would be drawn outside the
-        // world border on the background)
+        // world border on the background
         g2d.setColor(Color.DARK_GRAY);
         // for when the window width > height
         g2d.fillRect(0, 0, offsetX - 1, getHeight());
@@ -87,18 +174,20 @@ public class GamePanel extends JPanel {
         // for when the window height > width
         g2d.fillRect(0, worldToPanelY(WORLD_HEIGHT) + 1, getWidth(), getHeight());
         g2d.fillRect(0, 0, getWidth(), offsetY - 1);
+    }
 
-        // Draw FPS
+    private void drawClientFPS(Graphics2D g2d) {
         g2d.setFont(new Font("Arial", Font.BOLD, 36));
         g2d.setColor(Color.RED);
-        String fpsText = String.format("FPS: %.2f", fps);
+        String fpsText = String.format("FPS: %.2f", ClientFPSCounter.getInstance().getFps());
         int stringWidth = g2d.getFontMetrics().stringWidth(fpsText);
         int xPosition = getWidth() - stringWidth - 20;
         int yPosition = 40;
         g2d.drawString(fpsText, xPosition, yPosition);
+    }
 
-        // Draw server update FPS
-        float serverFps = GameManager.getInstance().getServerFps();
+    private void drawServerFPS(Graphics2D g2d) {
+        float serverFps = ServerFPSCounter.getInstance().getServerFps();
         String serverFpsText = String.format("Server: %.2f", serverFps);
         int serverFpsStringWidth = g2d.getFontMetrics().stringWidth(serverFpsText);
         int serverFpsXPosition = getWidth() - serverFpsStringWidth - 20;
@@ -109,8 +198,6 @@ public class GamePanel extends JPanel {
     private void updateOffsets() {
         offsetX = Math.round(((float) getWidth() - (float) panelWorldWidth) / 2.0f);
         offsetY = Math.round(((float) getHeight() - (float) panelWorldHeight) / 2.0f);
-
-        System.out.println("offsetX: " + offsetX + " offsetY: " + offsetY);
 
         GameManager.getInstance().setWorldOffset(new Vector2(offsetX, offsetY));
     }

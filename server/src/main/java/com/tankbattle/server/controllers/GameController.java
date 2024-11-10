@@ -65,8 +65,6 @@ public class GameController {
     private List<ICommand> commands = new ArrayList<>();
     private List<ICommand> commandLog = new ArrayList<>();
 
-    boolean something = true;
-
     private Level level;
 
     public Level getLevel() {
@@ -127,10 +125,6 @@ public class GameController {
         }
 
         if (playerToRemove != null) {
-            // Remove the player from the spatial grid
-            System.out.println("Removing player from grid cells. MinIndices: " +
-                    Arrays.toString(playerToRemove.getCellIndicesMin()) +
-                    ", MaxIndices: " + Arrays.toString(playerToRemove.getCellIndicesMax()));
             collisionManager.spatialGrid.removeEntity(playerToRemove);
         }
 
@@ -249,12 +243,8 @@ public class GameController {
     }
 
     public void sendCollisionLocation(int x, int y) {
-        Map<String, Integer> collisionLocation = new HashMap<>();
-        collisionLocation.put("x", x);
-        collisionLocation.put("y", y);
+        Vector2 collisionLocation = new Vector2(x, y);
 
         messagingTemplate.convertAndSend("/server/collisions", collisionLocation);
-
-        System.out.println("Sent collision location: x=" + x + ", y=" + y);
     }
 }

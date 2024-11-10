@@ -1,19 +1,19 @@
 package com.tankbattle.renderers;
 
-import java.awt.Color;
-import java.awt.FontMetrics;
-import java.awt.Graphics2D;
-import java.awt.geom.AffineTransform;
-import java.awt.image.BufferedImage;
-import java.util.HashMap;
-import java.util.Map;
-
 import com.tankbattle.controllers.ResourceManager;
 import com.tankbattle.models.CurrentPlayer;
 import com.tankbattle.models.Player;
 import com.tankbattle.utils.Vector2;
 
+import java.awt.*;
+import java.awt.geom.AffineTransform;
+import java.awt.image.BufferedImage;
+import java.util.HashMap;
+import java.util.Map;
+
 public class TankRenderer implements EntityRenderer<Player>, Scalable {
+    private static final int FRAME_COUNT = 2;
+    private static final int FRAME_DURATION = 60; // 60ms per frame
     private int spriteWidth;
     private int spriteHeight;
     private double scaleFactor;
@@ -21,10 +21,8 @@ public class TankRenderer implements EntityRenderer<Player>, Scalable {
     private Vector2 worldOffset;
     private long lastFrameTime;
     private int currentFrame;
-    private static final int FRAME_COUNT = 2;
-    private static final int FRAME_DURATION = 60; // 60ms per frame
-    private ResourceManager resourceManager;
-    private Map<String, BufferedImage> spriteSheetCache = new HashMap<>();
+    private final ResourceManager resourceManager;
+    private final Map<String, BufferedImage> spriteSheetCache = new HashMap<>();
 
     public TankRenderer(ResourceManager resourceManager) {
         this.resourceManager = resourceManager;
