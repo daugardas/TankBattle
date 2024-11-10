@@ -12,14 +12,10 @@ import com.tankbattle.utils.Vector2;
 import com.tankbattle.views.GameWindow;
 
 import javax.swing.*;
-
 import java.awt.*;
 import java.util.List;
 import java.util.*;
-import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 
 public class GameManager {
     private static final GameManager INSTANCE = new GameManager();
@@ -28,20 +24,20 @@ public class GameManager {
     private final RenderFacade renderFacade;
     private final ResourceManager resourceManager;
     private final Thread drawRequestThread;
-    private final HashMap<String, Player> players;
+    private final ConcurrentHashMap<String, Player> players;
     private final CopyOnWriteArrayList<Bullet> bullets;
     public int playerCount = 0;
     private Level level;
     private CurrentPlayer currentPlayer;
 
-    private List<ICommand> commands = new ArrayList<>();
+    private final List<ICommand> commands = new ArrayList<>();
 
     private GameManager() {
         webSocketManager = new WebSocketManager();
         resourceManager = new ResourceManager();
         renderFacade = new RenderFacade(resourceManager);
 
-        players = new HashMap<>();
+        players = new ConcurrentHashMap<>();
         bullets = new CopyOnWriteArrayList<>();
         level = new Level();
 
