@@ -1,20 +1,11 @@
 package com.tankbattle.server.controllers;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.tankbattle.server.builders.BasicLevelBuilder;
-import com.tankbattle.server.commands.FireCommand;
-import com.tankbattle.server.commands.ICommand;
-import com.tankbattle.server.commands.MoveCommand;
-import com.tankbattle.server.components.WebSocketSessionManager;
-import com.tankbattle.server.factories.LevelGeneratorFactory;
-import com.tankbattle.server.models.Bullet;
-import com.tankbattle.server.models.Level;
-import com.tankbattle.server.models.Player;
-import com.tankbattle.server.models.PowerUp;
-import com.tankbattle.server.strategies.Level.LevelGenerator;
-import com.tankbattle.server.utils.Vector2;
-import jakarta.annotation.PostConstruct;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
@@ -24,7 +15,23 @@ import org.springframework.messaging.simp.annotation.SubscribeMapping;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Controller;
 
-import java.util.*;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.tankbattle.server.builders.BasicLevelBuilder;
+import com.tankbattle.server.commands.FireCommand;
+import com.tankbattle.server.commands.ICommand;
+import com.tankbattle.server.commands.MoveCommand;
+import com.tankbattle.server.components.WebSocketSessionManager;
+import com.tankbattle.server.factories.LevelGeneratorFactory;
+import com.tankbattle.server.models.Bullet;
+import com.tankbattle.server.models.IPlayer;
+import com.tankbattle.server.models.Level;
+import com.tankbattle.server.models.Player;
+import com.tankbattle.server.models.PowerUp;
+import com.tankbattle.server.strategies.Level.LevelGenerator;
+import com.tankbattle.server.utils.Vector2;
+
+import jakarta.annotation.PostConstruct;
 
 @Controller
 public class GameController {
@@ -57,7 +64,7 @@ public class GameController {
     @Autowired
     private CollisionManager collisionManager;
 
-    private List<Player> players = new ArrayList<>();
+    private List<IPlayer> players = new ArrayList<>();
     private final ArrayList<Bullet> bullets = new ArrayList<>();
     private List<PowerUp> powerUps = new ArrayList<>();
     private HashMap<String, Integer> sessionIdToPlayerIndex = new HashMap<>();
@@ -114,11 +121,11 @@ public class GameController {
 
     public void removePlayerBySessionId(String sessionId) {
         Player playerToRemove = null;
-        Iterator<Player> iterator = players.iterator();
+        Iterator<IPlayer> iterator = players.iterator();
         while (iterator.hasNext()) {
-            Player player = iterator.next();
+            IPlayer player = iterator.next();
             if (player.getSessionId().equals(sessionId)) {
-                playerToRemove = player;
+                playerToRemove = (Player) player;
                 iterator.remove();
                 break;
             }
@@ -177,9 +184,9 @@ public class GameController {
     }
 
     private void updatePlayersLocations() {
-        for (Player player : players) {
+        for (IPlayer player : players) {
             player.updateLocation();
-            collisionManager.spatialGrid.updateEntity(player);
+            collisionManager.spatialGrid.updateEntity((Player)player);
         }
     }
 
@@ -215,7 +222,7 @@ public class GameController {
 
             switch (type) {
                 case "MOVE":
-                    MoveCommand moveCommand = new MoveCommand(players.get(playerIndex),
+                    MoveCommand moveCommand = new MoveCommand((Player) players.get(playerIndex),
                             ((Integer) command.get("direction")).byteValue());
 
                     if (!commands.contains(moveCommand)) {
@@ -223,7 +230,7 @@ public class GameController {
                     }
                     break;
                 case "FIRE":
-                    FireCommand fireCommand = new FireCommand(this, players.get(playerIndex));
+                    FireCommand fireCommand = new FireCommand(this, (Player) players.get(playerIndex));
                     if (!commands.contains(fireCommand)) {
                         commands.add(fireCommand);
                     }

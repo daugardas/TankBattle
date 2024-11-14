@@ -12,6 +12,7 @@ import com.tankbattle.server.listeners.CollisionListener;
 import com.tankbattle.server.models.AbstractCollidableEntity;
 import com.tankbattle.server.models.Bullet;
 import com.tankbattle.server.models.GameEntity;
+import com.tankbattle.server.models.IPlayer;
 import com.tankbattle.server.models.Level;
 import com.tankbattle.server.models.Player;
 import com.tankbattle.server.models.PowerUp;
@@ -57,7 +58,7 @@ public class CollisionManager {
     
     
     //updating may be done after update player, bullet, powerup
-    public void detectCollisions(List<Player> players, List<Bullet> bullets, List<PowerUp> powerUps) {
+    public void detectCollisions(List<IPlayer> players, List<Bullet> bullets, List<PowerUp> powerUps) {
         for (PowerUp powerUp : powerUps) {
             spatialGrid.updateEntity(powerUp);
         }
@@ -65,7 +66,7 @@ public class CollisionManager {
         detectEntityCollisions(players, bullets, powerUps);
     }
 
-    private void detectEntityCollisions(List<Player> players, List<Bullet> bullets, List<PowerUp> powerUps) {
+    private void detectEntityCollisions(List<IPlayer> players, List<Bullet> bullets, List<PowerUp> powerUps) {
         Set<String> processedPairs = new HashSet<>();
 
         for(Bullet bullet : bullets) {
@@ -85,15 +86,15 @@ public class CollisionManager {
         // If it is marked, we just not send the collision event.
         // After checking every bullet for collisions, we can remove collided bullets
 
-        for (Player player : players) {
-            List<AbstractCollidableEntity> nearbyEntities = spatialGrid.getNearbyEntities(player);
+        for (IPlayer player : players) {
+            List<AbstractCollidableEntity> nearbyEntities = spatialGrid.getNearbyEntities((Player)player);
 
             for (AbstractCollidableEntity entity : nearbyEntities) {
                 if (entity == player) continue;
 
                 //switch
                 if (entity instanceof Player otherPlayer) {
-                    String pairKey = generatePairKey(player, otherPlayer);
+                    String pairKey = generatePairKey((Player)player, otherPlayer);
                     if (!processedPairs.contains(pairKey) && isColliding(player, otherPlayer)) {
                         notifyListeners(new CollisionEvent(CollisionEvent.CollisionType.PLAYER_PLAYER, player, otherPlayer));
                         processedPairs.add(pairKey);

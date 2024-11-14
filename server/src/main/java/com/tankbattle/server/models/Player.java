@@ -7,7 +7,7 @@ import com.tankbattle.server.components.SpringContext;
 import com.tankbattle.server.controllers.GameController;
 import com.tankbattle.server.utils.Vector2;
 
-public class Player extends AbstractCollidableEntity implements GameEntity {
+public class Player extends AbstractCollidableEntity implements IPlayer {
     @JsonIgnore
     private GameController gameController;
 
@@ -64,16 +64,19 @@ public class Player extends AbstractCollidableEntity implements GameEntity {
     }
 
     @JsonIgnore
+    @Override
     public byte getMovementDirection() {
         return movementDirection;
     }
 
     @JsonIgnore
+    @Override
     public void setMovementDirection(byte movementDirection) {
         this.movementDirection = movementDirection;
     }
 
     @JsonIgnore
+    @Override
     public String getSessionId() {
         return this.sessionId;
     }
@@ -83,10 +86,12 @@ public class Player extends AbstractCollidableEntity implements GameEntity {
         this.sessionId = sessionId;
     }
 
+    @Override
     public Vector2 getLocation() {
         return this.location;
     }
 
+    @Override
     public void setLocation(Vector2 location) {
         this.location = location;
     }
@@ -97,14 +102,25 @@ public class Player extends AbstractCollidableEntity implements GameEntity {
         this.setLocation(newLocation);
     }
 
+    @Override
     public Vector2 getSize() {
         return this.size;
     }
 
+    public float getSpeed() {
+        return speed;
+    }
+
+    public void setSpeed(float speed) {
+        this.speed = speed;
+    }
+
+    @Override
     public void setSize(Vector2 size) {
         this.size = size;
     }
 
+    @Override
     public String getUsername() {
         return username;
     }
@@ -113,25 +129,30 @@ public class Player extends AbstractCollidableEntity implements GameEntity {
         this.username = username;
     }
 
+    @Override
     public double getRotationAngle() {
         return rotationAngle;
     }
 
     @JsonIgnore
+    @Override
     public int getHealth(){
         return health;
     }
 
     @JsonIgnore
+    @Override
     public void setHealth(int health) {
         this.health = health;
     }
 
+    @Override
     public void takeDamage(int damage) {
         health -= damage;
     }
 
-    private void updateRotationAngle() {
+    @Override
+    public void updateRotationAngle() {
         switch (movementDirection) {
             case DIRECTION_UP:
                 rotationAngle = 0;
@@ -162,39 +183,32 @@ public class Player extends AbstractCollidableEntity implements GameEntity {
         }
     }
 
+    @Override
     public void updateLocation() {
        // Calculate intended movement
        float diagonalSpeed = speed / (float) Math.sqrt(2);
        float deltaY = 0;
        float deltaX = 0;
 
-       boolean movingVertically = false;
-       boolean movingHorizontally = false;
-
        if ((movementDirection & DIRECTION_UP) != 0) {
-           movingVertically = true;
            deltaY -= (movementDirection & (DIRECTION_LEFT | DIRECTION_RIGHT)) != 0 ? diagonalSpeed : speed;
        }
 
        if ((movementDirection & DIRECTION_DOWN) != 0) {
-           movingVertically = true;
            deltaY += (movementDirection & (DIRECTION_LEFT | DIRECTION_RIGHT)) != 0 ? diagonalSpeed : speed;
        }
 
        if ((movementDirection & DIRECTION_LEFT) != 0) {
-           movingHorizontally = true;
            deltaX -= (movementDirection & (DIRECTION_UP | DIRECTION_DOWN)) != 0 ? diagonalSpeed : speed;
        }
 
        if ((movementDirection & DIRECTION_RIGHT) != 0) {
-           movingHorizontally = true;
            deltaX += (movementDirection & (DIRECTION_UP | DIRECTION_DOWN)) != 0 ? diagonalSpeed : speed;
        }
 
        // Calculate intended new position
        float newX = location.getX() + deltaX;
        float newY = location.getY() + deltaY;
-       Vector2 newPosition = new Vector2(newX, newY);
 
        // Check for world border constraints
        if (checkWorldBorderConstraints(newX, newY)) {
@@ -220,10 +234,12 @@ public class Player extends AbstractCollidableEntity implements GameEntity {
                bottomCornerY > gameController.getLevelCoordinateHeight();
     }
 
+    @Override
     public void revertToPreviousPosition() {
         this.location = new Vector2(previousLocation.getX(), previousLocation.getY());
     }
 
+    @Override
     public String toString() {
         return String.format("{ sessionId: '%s', username: '%s', location: { x: %d, y: %d }}", this.sessionId,
                 this.username, this.location.getX(), this.location.getY());
