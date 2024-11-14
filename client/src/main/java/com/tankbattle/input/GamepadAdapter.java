@@ -3,7 +3,7 @@ package com.tankbattle.input;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.sun.org.apache.xpath.internal.operations.Bool;
+
 import com.tankbattle.utils.Constants;
 
 public class GamepadAdapter implements InputHandler {

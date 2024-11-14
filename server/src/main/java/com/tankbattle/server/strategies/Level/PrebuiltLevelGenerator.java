@@ -71,27 +71,33 @@ public class PrebuiltLevelGenerator implements LevelGenerator {
         String[] lines = levelString.split("\n");
         Level level = new Level(width, height);
 
+        Tile liquid = liquidFactory.createTile();
+        Tile indestructible = indestructibleFactory.createTile();
+        Tile destructible = destructibleFactory.createTile();
+        Tile ground = groundFactory.createTile();
+
         for (int y = 0; y < height; y++) {
             String[] tiles = lines[height - y - 1].split(" ");
             for (int x = 0; x < width; x++) {
                 String tileSymbol = tiles[x];
                 Tile tile;
 
+                // Create tile based on symbol, and clone to ensure unique instances
                 switch (tileSymbol) {
                     case "L":
-                        tile = liquidFactory.createTile();
+                        tile = liquid.copyShallow(); // Ensure liquid tile creation and cloning
                         break;
                     case "I":
-                        tile = indestructibleFactory.createTile();
+                        tile = indestructible.copyShallow(); // Ensure indestructible tile creation and cloning
                         break;
                     case "D":
-                        tile = destructibleFactory.createTile();
+                        tile = destructible.copyShallow(); // Ensure destructible tile creation and cloning
                         break;
                     default:
-                        tile = groundFactory.createTile();
+                        tile = ground.copyShallow(); // Default to ground tile creation and cloning
                         break;
                 }
-                level.setTile(x, y, tile);
+                level.setTile(x, y, tile); // Set tile in level grid
             }
         }
 
