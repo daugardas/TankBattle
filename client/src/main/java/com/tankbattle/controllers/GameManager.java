@@ -191,12 +191,14 @@ public class GameManager {
     }
 
     public void renderAll(Graphics2D g2d) {
+        //System.out.println("Rendering all game entities through RenderFacade.");
         this.renderTiles(g2d);
         this.renderPlayers(g2d);
         this.renderBullets(g2d);
     }
 
     private void renderTiles(Graphics2D g2d) {
+        //System.out.println("Rendering tiles through RenderFacade.");
         Tile[][] tileGrid = level.getGrid();
         if (tileGrid != null) {
             for (Tile[] row : tileGrid) {
@@ -206,6 +208,7 @@ public class GameManager {
     }
 
     private void renderPlayers(Graphics2D g2d) {
+        //System.out.println("Rendering players through RenderFacade.");
         for (Player player : players.values()) {
             renderFacade.drawEntity(g2d, player);
         }
@@ -215,6 +218,7 @@ public class GameManager {
     }
 
     private void renderBullets(Graphics2D g2d) {
+        //System.out.println("Rendering bullets through RenderFacade.");
         renderFacade.drawEntities(g2d, bullets);
     }
 

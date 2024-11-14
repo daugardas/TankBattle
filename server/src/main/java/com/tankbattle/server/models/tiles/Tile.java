@@ -5,7 +5,7 @@ import com.tankbattle.server.strategies.Destructibility.DestructibilityBehavior;
 import com.tankbattle.server.strategies.Passability.PassabilityBehavior;
 import com.tankbattle.server.strategies.ProjectilePassability.ProjectilePassabilityBehaviour;
 
-public abstract class Tile {
+public abstract class Tile implements Cloneable {
     private PassabilityBehavior passabilityBehavior;
     private ProjectilePassabilityBehaviour projectilePassabilityBehaviour;
     private DestructibilityBehavior destructibilityBehavior;
@@ -41,6 +41,22 @@ public abstract class Tile {
             health -= damage;
     }
 
+    public Tile copyShallow( )
+    {
+        try {
+            return (Tile)this.clone();
+        } catch (CloneNotSupportedException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+    public Tile copyDeep() {
+        Tile deepCopy = new DestructibleTile();
+        deepCopy.setHealth(this.getHealth());
+        return deepCopy;
+    }
+
+
     @JsonIgnore
     public void setPassabilityBehavior(PassabilityBehavior behavior) {
         passabilityBehavior = behavior;
@@ -65,4 +81,13 @@ public abstract class Tile {
     public String getType(){
         return this.getClass().getSimpleName();
     };
+    public int getHealth()
+    {
+        return this.health;
+    }
+    public void setHealth(int health)
+    {
+        this.health = health;
+    }
+
 }

@@ -10,6 +10,8 @@ import com.tankbattle.server.components.WebSocketSessionManager;
 import com.tankbattle.server.factories.LevelGeneratorFactory;
 import com.tankbattle.server.models.Bullet;
 import com.tankbattle.server.models.Level;
+import com.tankbattle.server.models.tiles.IceTile;
+import com.tankbattle.server.models.tiles.Tile;
 import com.tankbattle.server.models.Player;
 import com.tankbattle.server.models.PowerUp;
 import com.tankbattle.server.strategies.Level.LevelGenerator;
@@ -96,6 +98,24 @@ public class GameController {
 
         System.out.println("Level initialized. Level:");
         System.out.println(level.toString());
+
+        //-----------------------------------------Prototype------------------------------------------------------
+        /*
+
+        Tile tile = new IceTile();
+        Tile copy = (IceTile) tile.copyShallow();
+
+        System.out.println("New element hash code(shallowCopy):" + System.identityHashCode(tile.getHealth()));
+        System.out.println("Old element hash code(shallowCopy):" + System.identityHashCode(copy.getHealth()));
+
+        Tile tileOG = new IceTile();
+        Tile tileCopy = tile.copyDeep();
+
+        System.out.println("New element hash code(deepCopy):" + System.identityHashCode(tileOG));
+        System.out.println("Old element hash code(deepCopy):" + System.identityHashCode(tileCopy));
+
+        */
+        //-----------------------------------------Prototype------------------------------------------------------
 
         collisionManager.initializeStaticEntities(level);
     }

@@ -76,6 +76,7 @@ public class PrebuiltLevelGenerator implements LevelGenerator {
             for (int x = 0; x < width; x++) {
                 String tileSymbol = tiles[x];
                 Tile tile;
+
                 switch (tileSymbol) {
                     case "L":
                         tile = liquidFactory.createTile();
@@ -96,7 +97,6 @@ public class PrebuiltLevelGenerator implements LevelGenerator {
 
         return level;
     }
-
     /**
      * @param groundFactory
      * @param destructibleFactory
