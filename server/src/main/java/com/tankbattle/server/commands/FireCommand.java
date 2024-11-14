@@ -4,14 +4,14 @@ import java.util.Objects;
 
 import com.tankbattle.server.controllers.GameController;
 import com.tankbattle.server.models.Bullet;
-import com.tankbattle.server.models.Player;
+import com.tankbattle.server.models.IPlayer;
 import com.tankbattle.server.utils.Vector2;
 
 public class FireCommand implements ICommand {
-    private Player player;
+    private IPlayer player;
     private GameController gameController;
 
-    public FireCommand(GameController gameController, Player player) {
+    public FireCommand(GameController gameController, IPlayer player) {
         this.gameController = gameController;
         this.player = player;
     }

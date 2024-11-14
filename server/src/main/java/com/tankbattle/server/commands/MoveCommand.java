@@ -2,14 +2,14 @@ package com.tankbattle.server.commands;
 
 import java.util.Objects;
 
-import com.tankbattle.server.models.Player;
+import com.tankbattle.server.models.IPlayer;
 import com.tankbattle.server.utils.Constants;
 
 public class MoveCommand implements ICommand {
-    private Player player;
+    private IPlayer player;
     private byte direction;
 
-    public MoveCommand(Player player, byte direction) {
+    public MoveCommand(IPlayer player, byte direction) {
         this.player = player;
         this.direction = direction;
     }

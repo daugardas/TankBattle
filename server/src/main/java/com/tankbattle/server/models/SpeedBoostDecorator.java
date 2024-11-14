@@ -97,5 +97,10 @@ public class SpeedBoostDecorator extends PlayerDecorator {
     public Vector2 getSize() {
         return decoratedPlayer.getSize();
     }
+
+    @Override
+    public Player getPlayer() {
+        return decoratedPlayer.getPlayer();
+    }
 }
 

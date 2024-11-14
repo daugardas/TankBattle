@@ -2,7 +2,7 @@ package com.tankbattle.server.models;
 
 import com.tankbattle.server.utils.Vector2;
 
-public interface IPlayer extends GameEntity {
+public interface IPlayer extends CollidableEntity {
     // Movement methods
     public void updateLocation();
     public void setMovementDirection(byte movementDirection);
@@ -23,4 +23,6 @@ public interface IPlayer extends GameEntity {
     public String getSessionId();
     public String getUsername();
     public void revertToPreviousPosition();
+
+    public Player getPlayer();
 }

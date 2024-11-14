@@ -5,7 +5,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import com.tankbattle.server.events.CollisionEvent;
-import com.tankbattle.server.models.Player;
+import com.tankbattle.server.models.IPlayer;
 
 @Component
 public class PlayerMapCollisionListener implements CollisionListener {
@@ -17,7 +17,7 @@ public class PlayerMapCollisionListener implements CollisionListener {
             return;
         }
 
-        Player player = event.getPlayer();
+        IPlayer player = event.getPlayer();
         player.revertToPreviousPosition();
         logger.debug("Player {} collided with the map. Reverting position.", player.getUsername());
     }

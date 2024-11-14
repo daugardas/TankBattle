@@ -1,6 +1,6 @@
 package com.tankbattle.server.events;
 
-import com.tankbattle.server.models.Player;
+import com.tankbattle.server.models.IPlayer;
 
 public class CollisionEvent {
     private final Object firstEntity;
@@ -21,8 +21,8 @@ public class CollisionEvent {
         return type;
     }
 
-    public Player getPlayer() {
-        return (Player) firstEntity;
+    public IPlayer getPlayer() {
+        return (IPlayer) firstEntity;
     }
 
     public enum CollisionType {

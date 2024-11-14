@@ -123,12 +123,12 @@ public class GameController {
     }
 
     public void removePlayerBySessionId(String sessionId) {
-        Player playerToRemove = null;
+        IPlayer playerToRemove = null;
         Iterator<IPlayer> iterator = players.iterator();
         while (iterator.hasNext()) {
             IPlayer player = iterator.next();
             if (player.getSessionId().equals(sessionId)) {
-                playerToRemove = (Player) player;
+                playerToRemove = player;
                 iterator.remove();
                 break;
             }
@@ -189,7 +189,7 @@ public class GameController {
     private void updatePlayersLocations() {
         for (IPlayer player : players) {
             player.updateLocation();
-            collisionManager.spatialGrid.updateEntity((Player)player);
+            collisionManager.spatialGrid.updateEntity(player);
         }
     }
 
@@ -210,7 +210,8 @@ public class GameController {
     }
 
     private void broadcastGameState() {
-        messagingTemplate.convertAndSend("/server/players", players);
+
+        messagingTemplate.convertAndSend("/server/players", getPlayers());
         messagingTemplate.convertAndSend("/server/bullets", bullets);
     }
 
@@ -225,7 +226,7 @@ public class GameController {
 
             switch (type) {
                 case "MOVE":
-                    MoveCommand moveCommand = new MoveCommand((Player) players.get(playerIndex),
+                    MoveCommand moveCommand = new MoveCommand( players.get(playerIndex),
                             ((Integer) command.get("direction")).byteValue());
 
                     if (!commands.contains(moveCommand)) {
@@ -233,7 +234,7 @@ public class GameController {
                     }
                     break;
                 case "FIRE":
-                    FireCommand fireCommand = new FireCommand(this, (Player) players.get(playerIndex));
+                    FireCommand fireCommand = new FireCommand(this, players.get(playerIndex));
                     if (!commands.contains(fireCommand)) {
                         commands.add(fireCommand);
                     }
@@ -269,5 +270,21 @@ public class GameController {
     
         messagingTemplate.convertAndSend("/server/powerups", powerUps);
     }
+
+    public void replacePlayer(IPlayer oldPlayer, IPlayer newPlayer) {
+        int index = players.indexOf(oldPlayer);
+        if (index != -1) {
+            players.set(index, newPlayer);
+        }
+    }
+    
+    public List<Player> getPlayers() {
+        List<Player> playerList = new ArrayList<>();
+        for (IPlayer player : players) {
+            playerList.add(player.getPlayer());
+        }
+        return playerList;
+    }
+
     
 }

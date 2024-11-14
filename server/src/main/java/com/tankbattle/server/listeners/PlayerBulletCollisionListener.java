@@ -1,15 +1,15 @@
 package com.tankbattle.server.listeners;
 
-import com.tankbattle.server.components.SpringContext;
-import com.tankbattle.server.controllers.GameController;
-import com.tankbattle.server.events.CollisionEvent;
-import com.tankbattle.server.models.Bullet;
-import com.tankbattle.server.models.Player;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
+
+import com.tankbattle.server.controllers.GameController;
+import com.tankbattle.server.events.CollisionEvent;
+import com.tankbattle.server.models.Bullet;
+import com.tankbattle.server.models.IPlayer;
 
 @Component
 public class PlayerBulletCollisionListener implements CollisionListener {
@@ -28,7 +28,7 @@ public class PlayerBulletCollisionListener implements CollisionListener {
             return;
         }
 
-        Player player = event.getPlayer();
+        IPlayer player = event.getPlayer();
         Bullet bullet = (Bullet) event.getOtherEntity();
 
         bullet.markForRemoval();

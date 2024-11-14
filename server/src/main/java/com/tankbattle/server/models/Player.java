@@ -262,4 +262,10 @@ public class Player extends AbstractCollidableEntity implements IPlayer {
     public GameController getGameController() {
         return this.gameController;
     }
+
+    @JsonIgnore
+    @Override
+    public Player getPlayer() {
+        return this;
+    }
 }

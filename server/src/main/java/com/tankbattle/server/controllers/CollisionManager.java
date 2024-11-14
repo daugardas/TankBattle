@@ -9,12 +9,11 @@ import org.springframework.stereotype.Component;
 
 import com.tankbattle.server.events.CollisionEvent;
 import com.tankbattle.server.listeners.CollisionListener;
-import com.tankbattle.server.models.AbstractCollidableEntity;
 import com.tankbattle.server.models.Bullet;
+import com.tankbattle.server.models.CollidableEntity;
 import com.tankbattle.server.models.GameEntity;
 import com.tankbattle.server.models.IPlayer;
 import com.tankbattle.server.models.Level;
-import com.tankbattle.server.models.Player;
 import com.tankbattle.server.models.PowerUp;
 import com.tankbattle.server.models.TileEntity;
 import com.tankbattle.server.models.tiles.Tile;
@@ -70,9 +69,9 @@ public class CollisionManager {
         Set<String> processedPairs = new HashSet<>();
 
         for(Bullet bullet : bullets) {
-            List<AbstractCollidableEntity> nearbyEntities = spatialGrid.getNearbyEntities(bullet);
+            List<CollidableEntity> nearbyEntities = spatialGrid.getNearbyEntities(bullet);
 
-            for (AbstractCollidableEntity gameEntity : nearbyEntities) {
+            for (CollidableEntity gameEntity : nearbyEntities) {
                 if (gameEntity instanceof TileEntity tileEntity){
                     if (!tileEntity.canProjectilePass() && isColliding(bullet, tileEntity)) {
                         notifyListeners(new CollisionEvent(CollisionEvent.CollisionType.BULLET_MAP, bullet, tileEntity));
@@ -87,14 +86,14 @@ public class CollisionManager {
         // After checking every bullet for collisions, we can remove collided bullets
 
         for (IPlayer player : players) {
-            List<AbstractCollidableEntity> nearbyEntities = spatialGrid.getNearbyEntities((Player)player);
+            List<CollidableEntity> nearbyEntities = spatialGrid.getNearbyEntities(player);
 
-            for (AbstractCollidableEntity entity : nearbyEntities) {
-                if (entity == player) continue;
+            for (CollidableEntity entity : nearbyEntities) {
+                if (entity.equals(player)) continue;
 
                 //switch
-                if (entity instanceof Player otherPlayer) {
-                    String pairKey = generatePairKey((Player)player, otherPlayer);
+                if (entity instanceof IPlayer otherPlayer) {
+                    String pairKey = generatePairKey(player, otherPlayer);
                     if (!processedPairs.contains(pairKey) && isColliding(player, otherPlayer)) {
                         notifyListeners(new CollisionEvent(CollisionEvent.CollisionType.PLAYER_PLAYER, player, otherPlayer));
                         processedPairs.add(pairKey);
@@ -117,7 +116,7 @@ public class CollisionManager {
     }
 
     //not ideal
-    private String generatePairKey(Player p1, Player p2) {
+    private String generatePairKey(IPlayer p1, IPlayer p2) {
         return p1.getSessionId().compareTo(p2.getSessionId()) < 0
             ? p1.getSessionId() + "-" + p2.getSessionId()
             : p2.getSessionId() + "-" + p1.getSessionId();
