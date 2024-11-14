@@ -23,7 +23,7 @@ public class FireCommand implements ICommand {
 
     @Override
     public void execute() {
-        Bullet bullet = new Bullet(player.getLocation());
+        Bullet bullet = new Bullet(player);
         gameController.addBullet(bullet);
     }
 

@@ -21,11 +21,15 @@ public class Bullet extends AbstractCollidableEntity {
 
     public Bullet(Player owner) {
         this.owner = owner;
-        Vector2 initialLocation = location;
+        Vector2 ownerLocation = owner.getLocation();
 
-        Vector2 offset = new Vector2(direction.getX(), direction.getY());
-        offset.multiply(800);
-        this.location = initialLocation.addVector(offset);
+        Vector2 initialBulletLocation = new Vector2(ownerLocation.getX(), ownerLocation.getY());
+        Vector2 lookDirection = owner.getLookDirection();
+
+        direction = new Vector2(lookDirection.getX(), lookDirection.getY());
+        location = initialBulletLocation;
+        location.setX(location.getX() + 500 * direction.getX());
+        location.setY(location.getY() + 500 * direction.getY());
 
         this.size = new Vector2(100, 100);
     }
