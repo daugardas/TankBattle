@@ -3,6 +3,7 @@ package com.tankbattle.input;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.sun.org.apache.xpath.internal.operations.Bool;
 import com.tankbattle.utils.Constants;
 
 public class GamepadAdapter implements InputHandler {
@@ -13,31 +14,32 @@ public class GamepadAdapter implements InputHandler {
         gamepad = new GamepadInput();
     }
 
-    public GamepadInput getGamepad() {
-        return gamepad;
+    public void startInputPolling() {
+        gamepad.pollInputs();
     }
 
     public boolean isInitialized() {
         return gamepad.isInitialized();
     }
 
-    @Override
-    public InputData handleInput() {
-        Map<String, Float> inputBuffer = gamepad.getInputBuffer();
-
-        byte movementDirection = 0;
+    private Map<String, Boolean> processActions(Map<String, Float> inputBuffer) {
         Map<String, Boolean> actions = new HashMap<String, Boolean>();
 
         if (inputBuffer.get("A") == 1f) {
             actions.put("FIRE", true);
         }
 
+        return actions;
+    }
+
+    private byte processMovement(Map<String, Float> inputBuffer) {
+        byte movementDirection = 0;
+
         float x = inputBuffer.get("x");
         float y = inputBuffer.get("y");
 
         if (Math.abs(x) > DEADZONE_THRESHOLD || Math.abs(y) > DEADZONE_THRESHOLD) {
             Double angleDeg = Math.toDegrees(Math.atan2(y, x));
-
 
             if (angleDeg >= -157.5 && angleDeg < -112.5) {
                 movementDirection = (Constants.DIRECTION_LEFT | Constants.DIRECTION_UP);
@@ -58,6 +60,17 @@ public class GamepadAdapter implements InputHandler {
             }
         }
 
+        return movementDirection;
+    }
+
+    @Override
+    public InputData handleInput() {
+        Map<String, Float> inputBuffer = gamepad.getInputBuffer();
+
+        byte movementDirection = processMovement(inputBuffer);
+        Map<String, Boolean> actions = processActions(inputBuffer);
+
         return new InputData(movementDirection, actions);
     }
+
 }

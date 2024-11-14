@@ -35,5 +35,4 @@ public class KeyboardAdapter implements InputHandler {
 
         return new InputData(movementDirection, actions);
     }
-
 }

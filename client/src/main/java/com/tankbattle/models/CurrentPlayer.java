@@ -45,7 +45,7 @@ public class CurrentPlayer extends Player {
             System.out.println("Gamepad found, enabling gamepad controls");
 
             this.gamepadInputPollThread = new Thread(() -> {
-                gamepad.getGamepad().pollInputs();
+                gamepad.startInputPolling();
             });
 
             gamepadInputPollThread.start();
