@@ -14,7 +14,7 @@ public class PowerUp extends AbstractCollidableEntity implements GameEntity {
     public PowerUp(Vector2 location, PowerUpType type) {
         this.location = location;
         this.type = type;
-        this.size = new Vector2(100, 100); // Example size
+        this.size = new Vector2(500, 500); // Example size
     }
 
     public Vector2 getLocation() {

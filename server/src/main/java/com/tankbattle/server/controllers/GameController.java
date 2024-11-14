@@ -28,6 +28,7 @@ import com.tankbattle.server.models.IPlayer;
 import com.tankbattle.server.models.Level;
 import com.tankbattle.server.models.Player;
 import com.tankbattle.server.models.PowerUp;
+import com.tankbattle.server.models.PowerUpType;
 import com.tankbattle.server.strategies.Level.LevelGenerator;
 import com.tankbattle.server.utils.Vector2;
 
@@ -105,6 +106,8 @@ public class GameController {
         System.out.println(level.toString());
 
         collisionManager.initializeStaticEntities(level);
+
+        spawnPowerUp(4, 4, PowerUpType.SPEED_BOOST); 
     }
 
     public void addPlayer(Player player) {
@@ -254,4 +257,17 @@ public class GameController {
 
         messagingTemplate.convertAndSend("/server/collisions", collisionLocation);
     }
+
+    public void spawnPowerUp(int tileX, int tileY, PowerUpType type) {
+        int worldX = tileX * TILE_WIDTH;
+        int worldY = tileY * TILE_HEIGHT;
+        Vector2 location = new Vector2(worldX, worldY);
+    
+        PowerUp powerUp = new PowerUp(location, type);
+        powerUps.add(powerUp);
+        collisionManager.spatialGrid.addEntity(powerUp, true);
+    
+        messagingTemplate.convertAndSend("/server/powerups", powerUps);
+    }
+    
 }
