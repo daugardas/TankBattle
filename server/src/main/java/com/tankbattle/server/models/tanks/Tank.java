@@ -1,13 +1,12 @@
 package com.tankbattle.server.models.tanks;
 
-import com.tankbattle.server.utils.Constants;
-import com.tankbattle.server.utils.Vector2;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.tankbattle.server.components.SpringContext;
 import com.tankbattle.server.controllers.GameController;
 import com.tankbattle.server.models.AbstractCollidableEntity;
 import com.tankbattle.server.models.tanks.weaponsystems.WeaponSystem;
-import com.tankbattle.server.models.tanks.weaponsystems.Cannon;
+import com.tankbattle.server.utils.Constants;
+import com.tankbattle.server.utils.Vector2;
 
 public abstract class Tank extends AbstractCollidableEntity {
     @JsonIgnore

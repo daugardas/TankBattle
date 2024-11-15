@@ -1,7 +1,5 @@
-package com.tankbattle.server.models.powerups;
+package com.tankbattle.server.models.items;
 
-import com.tankbattle.server.models.items.PowerDown;
-import com.tankbattle.server.models.items.PowerDownType;
 import com.tankbattle.server.models.items.advanced.AdvancedDamagePowerDown;
 import com.tankbattle.server.models.items.advanced.AdvancedDamagePowerUp;
 import com.tankbattle.server.models.items.advanced.AdvancedHealthPowerDown;

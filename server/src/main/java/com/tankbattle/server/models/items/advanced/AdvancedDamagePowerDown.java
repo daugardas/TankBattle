@@ -1,6 +1,5 @@
 package com.tankbattle.server.models.items.advanced;
 
-import com.tankbattle.server.models.Player;
 import com.tankbattle.server.models.items.PowerDown;
 import com.tankbattle.server.models.items.PowerDownType;
 import com.tankbattle.server.models.tanks.Tank;

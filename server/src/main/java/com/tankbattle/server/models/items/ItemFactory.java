@@ -1,6 +1,5 @@
-package com.tankbattle.server.models.powerups;
+package com.tankbattle.server.models.items;
 
-import com.tankbattle.server.models.items.PowerDown;
 import com.tankbattle.server.utils.Vector2;
 
 public interface ItemFactory {

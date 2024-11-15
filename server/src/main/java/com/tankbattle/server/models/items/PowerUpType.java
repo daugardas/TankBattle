@@ -1,4 +1,4 @@
-package com.tankbattle.server.models.powerups;
+package com.tankbattle.server.models.items;
 
 public enum PowerUpType {
     HEALTH,

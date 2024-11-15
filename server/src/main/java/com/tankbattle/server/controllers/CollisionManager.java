@@ -16,7 +16,7 @@ import com.tankbattle.server.models.Level;
 import com.tankbattle.server.models.Player;
 import com.tankbattle.server.models.TileEntity;
 import com.tankbattle.server.models.items.PowerDown;
-import com.tankbattle.server.models.powerups.PowerUp;
+import com.tankbattle.server.models.items.PowerUp;
 import com.tankbattle.server.models.tanks.Tank;
 import com.tankbattle.server.models.tiles.Tile;
 import com.tankbattle.server.utils.SpatialGrid;

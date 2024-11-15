@@ -5,7 +5,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import com.tankbattle.server.events.CollisionEvent;
-import com.tankbattle.server.models.powerups.PowerUp;
+import com.tankbattle.server.models.items.PowerUp;
 import com.tankbattle.server.models.tanks.Tank;
 
 @Component

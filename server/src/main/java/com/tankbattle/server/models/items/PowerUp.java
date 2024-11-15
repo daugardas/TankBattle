@@ -1,7 +1,6 @@
-package com.tankbattle.server.models.powerups;
+package com.tankbattle.server.models.items;
 
 import com.tankbattle.server.models.AbstractCollidableEntity;
-import com.tankbattle.server.models.Player;
 import com.tankbattle.server.models.tanks.Tank;
 import com.tankbattle.server.utils.Vector2;
 
