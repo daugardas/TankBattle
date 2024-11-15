@@ -192,8 +192,6 @@ public abstract class Tank extends AbstractCollidableEntity implements ITank {
 
 
         updateLookDirection();
-        //current health
-        System.out.println("Current health: " + health);
     }
 
     private boolean checkWorldBorderConstraints(float newX, float newY) {

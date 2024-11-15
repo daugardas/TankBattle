@@ -12,7 +12,6 @@ public class AdvancedSpeedPowerUp extends PowerUp {
 
     @Override
     public void applyEffect(ITank tank) {
-        //player.increaseSpeed(25); // Advanced speed boost
         System.out.println("Advanced speed power up applied");
     }
 }

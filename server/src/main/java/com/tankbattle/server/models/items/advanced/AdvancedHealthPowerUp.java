@@ -12,7 +12,6 @@ public class AdvancedHealthPowerUp extends PowerUp {
 
     @Override
     public void applyEffect(ITank tank) {
-        //player.increaseHealth(50); // Advanced health boost
         System.out.println("Advanced health power up applied");
     }
 }

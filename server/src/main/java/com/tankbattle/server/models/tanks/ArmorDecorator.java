@@ -20,7 +20,6 @@ public class ArmorDecorator extends TankDecorator {
     @Override
     public void takeDamage(int damage) {
         if (!isExpired()) {
-            // Reduce damage by damageReduction, ensuring it doesn't go below zero
             damage = Math.max(0, damage - damageReduction);
         }
         super.takeDamage(damage);

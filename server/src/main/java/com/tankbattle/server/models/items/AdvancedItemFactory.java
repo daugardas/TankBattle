@@ -1,7 +1,7 @@
 package com.tankbattle.server.models.items;
 
-import com.tankbattle.server.models.items.advanced.AdvancedDamagePowerDown;
-import com.tankbattle.server.models.items.advanced.AdvancedDamagePowerUp;
+import com.tankbattle.server.models.items.advanced.AdvancedArmorPowerDown;
+import com.tankbattle.server.models.items.advanced.AdvancedArmorPowerUp;
 import com.tankbattle.server.models.items.advanced.AdvancedHealthPowerDown;
 import com.tankbattle.server.models.items.advanced.AdvancedHealthPowerUp;
 import com.tankbattle.server.models.items.advanced.AdvancedSpeedPowerDown;
@@ -20,8 +20,8 @@ public class AdvancedItemFactory implements ItemFactory {
     }
 
     @Override
-    public PowerUp createDamagePowerUp(Vector2 location) {
-        return new AdvancedDamagePowerUp(location, PowerUpType.DAMAGE);
+    public PowerUp createArmorPowerUp(Vector2 location) {
+        return new AdvancedArmorPowerUp(location, PowerUpType.ARMOR);
     }
 
     @Override
@@ -35,7 +35,7 @@ public class AdvancedItemFactory implements ItemFactory {
     }
 
     @Override
-    public PowerDown createDamagePowerDown(Vector2 location) {
-        return new AdvancedDamagePowerDown(location, PowerDownType.DAMAGE);
+    public PowerDown createArmorPowerDown(Vector2 location) {
+        return new AdvancedArmorPowerDown(location, PowerDownType.ARMOR);
     }
 }
