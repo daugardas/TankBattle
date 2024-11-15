@@ -15,6 +15,7 @@ import com.tankbattle.server.models.GameEntity;
 import com.tankbattle.server.models.Level;
 import com.tankbattle.server.models.Player;
 import com.tankbattle.server.models.TileEntity;
+import com.tankbattle.server.models.items.PowerDown;
 import com.tankbattle.server.models.powerups.PowerUp;
 import com.tankbattle.server.models.tiles.Tile;
 import com.tankbattle.server.utils.SpatialGrid;
@@ -57,15 +58,20 @@ public class CollisionManager {
     
     
     //updating may be done after update player, bullet, powerup
-    public void detectCollisions(List<Player> players, List<Bullet> bullets, List<PowerUp> powerUps) {
+    public void detectCollisions(List<Player> players, List<Bullet> bullets, List<PowerUp> powerUps, List<PowerDown> powerDowns) {
         for (PowerUp powerUp : powerUps) {
             spatialGrid.updateEntity(powerUp);
         }
 
-        detectEntityCollisions(players, bullets, powerUps);
+
+        for (PowerDown powerDown : powerDowns) {
+            spatialGrid.updateEntity(powerDown);
+        }
+
+        detectEntityCollisions(players, bullets, powerUps, powerDowns);
     }
 
-    private void detectEntityCollisions(List<Player> players, List<Bullet> bullets, List<PowerUp> powerUps) {
+    private void detectEntityCollisions(List<Player> players, List<Bullet> bullets, List<PowerUp> powerUps, List<PowerDown> powerDowns) {
         Set<String> processedPairs = new HashSet<>();
 
         for(Bullet bullet : bullets) {
@@ -91,7 +97,6 @@ public class CollisionManager {
             for (AbstractCollidableEntity entity : nearbyEntities) {
                 if (entity == player) continue;
 
-                //switch
                 if (entity instanceof Player otherPlayer) {
                     String pairKey = generatePairKey(player, otherPlayer);
                     if (!processedPairs.contains(pairKey) && isColliding(player, otherPlayer)) {
@@ -105,6 +110,10 @@ public class CollisionManager {
                 } else if (entity instanceof PowerUp powerUp) {
                     if (isColliding(player, powerUp)) {
                         notifyListeners(new CollisionEvent(CollisionEvent.CollisionType.PLAYER_POWERUP, player, powerUp));
+                    }
+                } else if (entity instanceof PowerDown powerDown) {
+                    if (isColliding(player, powerDown)) {
+                        notifyListeners(new CollisionEvent(CollisionEvent.CollisionType.PLAYER_POWERDOWN, player, powerDown));
                     }
                 } else if (entity instanceof TileEntity tileEntity) {
                     if (!tileEntity.canPass() && isColliding(player, tileEntity)) {

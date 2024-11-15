@@ -27,9 +27,10 @@ import com.tankbattle.server.factories.LevelGeneratorFactory;
 import com.tankbattle.server.models.Bullet;
 import com.tankbattle.server.models.Level;
 import com.tankbattle.server.models.Player;
-import com.tankbattle.server.models.powerups.BasicPowerUpFactory;
+import com.tankbattle.server.models.items.PowerDown;
+import com.tankbattle.server.models.powerups.BasicItemFactory;
+import com.tankbattle.server.models.powerups.ItemFactory;
 import com.tankbattle.server.models.powerups.PowerUp;
-import com.tankbattle.server.models.powerups.PowerUpFactory;
 import com.tankbattle.server.strategies.Level.LevelGenerator;
 import com.tankbattle.server.utils.Vector2;
 
@@ -68,7 +69,11 @@ public class GameController {
 
     private List<Player> players = new ArrayList<>();
     private final ArrayList<Bullet> bullets = new ArrayList<>();
+
     private List<PowerUp> powerUps = new ArrayList<>();
+    private List<PowerDown> powerDowns = new ArrayList<>();
+    private ItemFactory itemFactory = new BasicItemFactory();
+
     private HashMap<String, Integer> sessionIdToPlayerIndex = new HashMap<>();
 
     private List<ICommand> commands = new ArrayList<>();
@@ -106,7 +111,7 @@ public class GameController {
         System.out.println("Level initialized. Level:");
         System.out.println(level.toString());
 
-        spawnPowerUpsAtLocations();
+        spawnItemsAtLocations();
 
         //-----------------------------------------Prototype------------------------------------------------------
         /*
@@ -198,7 +203,7 @@ public class GameController {
         updateBulletsLocations();
 
         // Detect and handle collisions
-        collisionManager.detectCollisions(players, bullets, powerUps);
+        collisionManager.detectCollisions(players, bullets, powerUps, powerDowns);
 
         // Broadcast updated game state to clients
         broadcastGameState();
@@ -277,39 +282,64 @@ public class GameController {
         messagingTemplate.convertAndSend("/server/collisions", collisionLocation);
     }
 
-    public void spawnPowerUpsAtLocations() {
-        PowerUpFactory powerUpFactory = new BasicPowerUpFactory();
-
+    public void spawnItemsAtLocations() {
         List<Vector2> locations = Arrays.asList(
-            new Vector2(2000, 0),
-            new Vector2(2000, 9000),
-            new Vector2(9000, 2000)
+                new Vector2(2000, 0),
+                new Vector2(2000, 9000),
+                new Vector2(9000, 2000),
+                new Vector2(0, 2000)
         );
 
         for (int i = 0; i < locations.size(); i++) {
             Vector2 location = locations.get(i);
-            PowerUp powerUp;
 
-            switch (i % 3) {
-                case 0:
-                    powerUp = powerUpFactory.createHealthPowerUp(location);
-                    break;
-                case 1:
-                    powerUp = powerUpFactory.createSpeedPowerUp(location);
-                    break;
-                case 2:
-                    powerUp = powerUpFactory.createDamagePowerUp(location);
-                    break;
-                default:
-                    powerUp = powerUpFactory.createHealthPowerUp(location);
+            // Alternate between spawning PowerUps and PowerDowns
+            if (i % 2 == 0) {
+                // Spawn PowerUp
+                PowerUp powerUp;
+                switch (i % 3) {
+                    case 0:
+                        powerUp = itemFactory.createHealthPowerUp(location);
+                        break;
+                    case 1:
+                        powerUp = itemFactory.createSpeedPowerUp(location);
+                        break;
+                    case 2:
+                        powerUp = itemFactory.createDamagePowerUp(location);
+                        break;
+                    default:
+                        powerUp = itemFactory.createHealthPowerUp(location);
                 }
-            addPowerUp(powerUp);
+                addPowerUp(powerUp);
+            } else {
+                // Spawn PowerDown
+                PowerDown powerDown;
+                switch (i % 3) {
+                    case 0:
+                        powerDown = itemFactory.createHealthPowerDown(location);
+                        break;
+                    case 1:
+                        powerDown = itemFactory.createSpeedPowerDown(location);
+                        break;
+                    case 2:
+                        powerDown = itemFactory.createDamagePowerDown(location);
+                        break;
+                    default:
+                        powerDown = itemFactory.createHealthPowerDown(location);
+                }
+                addPowerDown(powerDown);
+            }
         }
     }
 
     public void addPowerUp(PowerUp powerUp) {
         powerUps.add(powerUp);
         collisionManager.spatialGrid.addEntity(powerUp, false);
+    }
+
+    public void addPowerDown(PowerDown powerDown) {
+        powerDowns.add(powerDown);
+        collisionManager.spatialGrid.addEntity(powerDown, false);
     }
 
 

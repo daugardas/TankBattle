@@ -1,18 +1,18 @@
-package com.tankbattle.server.models.powerups.basic;
+package com.tankbattle.server.models.items.advanced;
 
 import com.tankbattle.server.models.Player;
 import com.tankbattle.server.models.powerups.PowerUp;
 import com.tankbattle.server.models.powerups.PowerUpType;
 import com.tankbattle.server.utils.Vector2;
 
-public class SpeedPowerUp extends PowerUp {
-    public SpeedPowerUp(Vector2 location, PowerUpType type) {
+public class AdvancedSpeedPowerUp extends PowerUp {
+    public AdvancedSpeedPowerUp(Vector2 location, PowerUpType type) {
         super(location, type);
     }
 
     @Override
     public void applyEffect(Player player) {
-        //player.increaseSpeed(10); // Basic speed boost
-        System.out.println("Basic speed power up applied");
+        //player.increaseSpeed(25); // Advanced speed boost
+        System.out.println("Advanced speed power up applied");
     }
 }

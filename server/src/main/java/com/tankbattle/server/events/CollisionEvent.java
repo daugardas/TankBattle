@@ -28,6 +28,7 @@ public class CollisionEvent {
     public enum CollisionType {
         PLAYER_MAP,
         PLAYER_PLAYER,
+        PLAYER_POWERDOWN,
         PLAYER_BULLET, PLAYER_POWERUP, BULLET_MAP
     }
 
