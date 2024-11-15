@@ -6,7 +6,7 @@ import com.tankbattle.server.models.Bullet;
 import com.tankbattle.server.utils.Vector2;
 
 public class Cannon extends WeaponSystem {
-    public final static int COOLDOWN_TIME = 1000;
+    private final static int COOLDOWN_TIME = 1000;
 
     public Cannon() {
         super(COOLDOWN_TIME, 0);
