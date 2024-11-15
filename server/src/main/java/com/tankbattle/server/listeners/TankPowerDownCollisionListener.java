@@ -5,12 +5,12 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import com.tankbattle.server.events.CollisionEvent;
-import com.tankbattle.server.models.Player;
 import com.tankbattle.server.models.items.PowerDown;
+import com.tankbattle.server.models.tanks.Tank;
 
 @Component
-public class PlayerPowerDownCollisionListener implements CollisionListener {
-    private static final Logger logger = LoggerFactory.getLogger(PlayerPowerDownCollisionListener.class);
+public class TankPowerDownCollisionListener implements CollisionListener {
+    private static final Logger logger = LoggerFactory.getLogger(TankPowerDownCollisionListener.class);
 
     @Override
     public void onCollision(CollisionEvent event) {
@@ -18,11 +18,11 @@ public class PlayerPowerDownCollisionListener implements CollisionListener {
             return;
         }
 
-        Player player = event.getPlayer();
+        Tank tank = event.getTank();
         PowerDown powerDown = (PowerDown) event.getOtherEntity();
 
-        powerDown.applyEffect(player);
+        powerDown.applyEffect(tank);
 
-        logger.info("Player {} collected a power-down.", player.getUsername());
+        logger.info("Player collected a power-down.");
     }
 }

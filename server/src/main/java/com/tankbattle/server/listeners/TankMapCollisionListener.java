@@ -6,10 +6,11 @@ import org.springframework.stereotype.Component;
 
 import com.tankbattle.server.events.CollisionEvent;
 import com.tankbattle.server.models.Player;
+import com.tankbattle.server.models.tanks.Tank;
 
 @Component
-public class PlayerMapCollisionListener implements CollisionListener {
-    private static final Logger logger = LoggerFactory.getLogger(PlayerMapCollisionListener.class);
+public class TankMapCollisionListener implements CollisionListener {
+    private static final Logger logger = LoggerFactory.getLogger(TankMapCollisionListener.class);
 
     @Override
     public void onCollision(CollisionEvent event) {
@@ -17,8 +18,8 @@ public class PlayerMapCollisionListener implements CollisionListener {
             return;
         }
 
-        Player player = event.getPlayer();
-        player.revertToPreviousPosition();
-        logger.debug("Player {} collided with the map. Reverting position.", player.getUsername());
+        Tank tank = event.getTank();
+        tank.revertToPreviousPosition();
+        // logger.debug("Player {} collided with the map. Reverting position.", player.getUsername());
     }
 }

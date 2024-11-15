@@ -17,6 +17,7 @@ import com.tankbattle.server.models.Player;
 import com.tankbattle.server.models.TileEntity;
 import com.tankbattle.server.models.items.PowerDown;
 import com.tankbattle.server.models.powerups.PowerUp;
+import com.tankbattle.server.models.tanks.Tank;
 import com.tankbattle.server.models.tiles.Tile;
 import com.tankbattle.server.utils.SpatialGrid;
 import com.tankbattle.server.utils.Vector2;
@@ -36,10 +37,9 @@ public class CollisionManager {
     public CollisionManager(List<CollisionListener> listeners) {
         this.listeners = listeners;
         this.spatialGrid = new SpatialGrid(
-            CELL_SIZE,
-            GameController.WORLD_WIDTH * TILE_WIDTH,
-            GameController.WORLD_HEIGHT * TILE_HEIGHT
-        );
+                CELL_SIZE,
+                GameController.WORLD_WIDTH * TILE_WIDTH,
+                GameController.WORLD_HEIGHT * TILE_HEIGHT);
     }
 
     public void initializeStaticEntities(Level level) {
@@ -55,10 +55,9 @@ public class CollisionManager {
             }
         }
     }
-    
-    
+
     //updating may be done after update player, bullet, powerup
-    public void detectCollisions(List<Player> players, List<Bullet> bullets, List<PowerUp> powerUps, List<PowerDown> powerDowns) {
+    public void detectCollisions(List<Tank> tanks, List<Bullet> bullets, List<PowerUp> powerUps, List<PowerDown> powerDowns) {
         for (PowerUp powerUp : powerUps) {
             spatialGrid.updateEntity(powerUp);
         }
@@ -68,19 +67,20 @@ public class CollisionManager {
             spatialGrid.updateEntity(powerDown);
         }
 
-        detectEntityCollisions(players, bullets, powerUps, powerDowns);
+        detectEntityCollisions(tanks, bullets, powerUps, powerDowns);
     }
 
-    private void detectEntityCollisions(List<Player> players, List<Bullet> bullets, List<PowerUp> powerUps, List<PowerDown> powerDowns) {
+    private void detectEntityCollisions(List<Tank> tanks, List<Bullet> bullets, List<PowerUp> powerUps, List<PowerDown> powerDowns) {
         Set<String> processedPairs = new HashSet<>();
 
-        for(Bullet bullet : bullets) {
+        for (Bullet bullet : bullets) {
             List<AbstractCollidableEntity> nearbyEntities = spatialGrid.getNearbyEntities(bullet);
 
             for (AbstractCollidableEntity gameEntity : nearbyEntities) {
-                if (gameEntity instanceof TileEntity tileEntity){
+                if (gameEntity instanceof TileEntity tileEntity) {
                     if (!tileEntity.canProjectilePass() && isColliding(bullet, tileEntity)) {
-                        notifyListeners(new CollisionEvent(CollisionEvent.CollisionType.BULLET_MAP, bullet, tileEntity));
+                        notifyListeners(
+                                new CollisionEvent(CollisionEvent.CollisionType.BULLET_MAP, bullet, tileEntity));
                     }
                 }
             }
@@ -91,44 +91,45 @@ public class CollisionManager {
         // If it is marked, we just not send the collision event.
         // After checking every bullet for collisions, we can remove collided bullets
 
-        for (Player player : players) {
-            List<AbstractCollidableEntity> nearbyEntities = spatialGrid.getNearbyEntities(player);
+        for (Tank tank : tanks) {
+            List<AbstractCollidableEntity> nearbyEntities = spatialGrid.getNearbyEntities(tank);
 
             for (AbstractCollidableEntity entity : nearbyEntities) {
-                if (entity == player) continue;
+                if (entity == tank)
+                    continue;
 
-                if (entity instanceof Player otherPlayer) {
-                    String pairKey = generatePairKey(player, otherPlayer);
-                    if (!processedPairs.contains(pairKey) && isColliding(player, otherPlayer)) {
-                        notifyListeners(new CollisionEvent(CollisionEvent.CollisionType.PLAYER_PLAYER, player, otherPlayer));
-                        processedPairs.add(pairKey);
-                    }
+                // switch
+                if (entity instanceof Tank otherTank) {
+                    notifyListeners(new CollisionEvent(CollisionEvent.CollisionType.PLAYER_PLAYER, tank, otherTank));
                 } else if (entity instanceof Bullet bullet) {
-                    if (isColliding(player, bullet)) {
-                        notifyListeners(new CollisionEvent(CollisionEvent.CollisionType.PLAYER_BULLET, player, bullet));
+                    if (isColliding(tank, bullet)) {
+                        notifyListeners(new CollisionEvent(CollisionEvent.CollisionType.PLAYER_BULLET, tank, bullet));
                     }
                 } else if (entity instanceof PowerUp powerUp) {
-                    if (isColliding(player, powerUp)) {
-                        notifyListeners(new CollisionEvent(CollisionEvent.CollisionType.PLAYER_POWERUP, player, powerUp));
+                    if (isColliding(tank, powerUp)) {
+                        notifyListeners(
+                                new CollisionEvent(CollisionEvent.CollisionType.PLAYER_POWERUP, tank, powerUp));
                     }
                 } else if (entity instanceof PowerDown powerDown) {
-                    if (isColliding(player, powerDown)) {
-                        notifyListeners(new CollisionEvent(CollisionEvent.CollisionType.PLAYER_POWERDOWN, player, powerDown));
+                    if (isColliding(tank, powerDown)) {
+                        notifyListeners(new CollisionEvent(CollisionEvent.CollisionType.PLAYER_POWERDOWN, tank, powerDown));
                     }
                 } else if (entity instanceof TileEntity tileEntity) {
-                    if (!tileEntity.canPass() && isColliding(player, tileEntity)) {
-                        notifyListeners(new CollisionEvent(CollisionEvent.CollisionType.PLAYER_MAP, player, tileEntity));
+                    if (!tileEntity.canPass() && isColliding(tank, tileEntity)) {
+                        notifyListeners(
+                                new CollisionEvent(CollisionEvent.CollisionType.PLAYER_MAP, tank, tileEntity));
                     }
                 }
             }
         }
+
     }
 
-    //not ideal
+    // not ideal
     private String generatePairKey(Player p1, Player p2) {
         return p1.getSessionId().compareTo(p2.getSessionId()) < 0
-            ? p1.getSessionId() + "-" + p2.getSessionId()
-            : p2.getSessionId() + "-" + p1.getSessionId();
+                ? p1.getSessionId() + "-" + p2.getSessionId()
+                : p2.getSessionId() + "-" + p1.getSessionId();
     }
 
     private void notifyListeners(CollisionEvent event) {
@@ -144,6 +145,6 @@ public class CollisionManager {
         Vector2 size2 = e2.getSize();
 
         return Math.abs(pos1.getX() - pos2.getX()) * 2 < (size1.getX() + size2.getX()) &&
-               Math.abs(pos1.getY() - pos2.getY()) * 2 < (size1.getY() + size2.getY());
+                Math.abs(pos1.getY() - pos2.getY()) * 2 < (size1.getY() + size2.getY());
     }
 }

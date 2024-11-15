@@ -33,9 +33,8 @@ public class CurrentPlayer extends Player {
     private KeyboardAdapter keyboard;
     private GamepadAdapter gamepad;
 
-    public CurrentPlayer(String username, Vector2 location, Vector2 size, Color outlineColor,
-            Color fillColor) {
-        super(username, location, size, outlineColor, fillColor);
+    public CurrentPlayer(String username) {
+        super(username);
 
         this.movementDirection = 0;
         keyboard = new KeyboardAdapter();
@@ -98,42 +97,4 @@ public class CurrentPlayer extends Player {
     public PlayerType getPlayerType() {
         return PlayerType.CURRENT_PLAYER;
     }
-
-    // @Override
-    // public void keyPressed(KeyEvent key) {
-    // previousDirection = movementDirection;
-    // switch (key.getKeyCode()) {
-    // case KeyEvent.VK_W, KeyEvent.VK_UP -> movementDirection |= DIRECTION_UP;
-    // case KeyEvent.VK_A, KeyEvent.VK_LEFT -> movementDirection |= DIRECTION_LEFT;
-    // case KeyEvent.VK_S, KeyEvent.VK_DOWN -> movementDirection |= DIRECTION_DOWN;
-    // case KeyEvent.VK_D, KeyEvent.VK_RIGHT -> movementDirection |=
-    // DIRECTION_RIGHT;
-
-    // case KeyEvent.VK_SPACE -> GameManager.getInstance().addCommand(new
-    // FireCommand());
-
-    // default -> {
-    // }
-    // }
-    // }
-
-    // @Override
-    // public void keyReleased(KeyEvent key) {
-    // previousDirection = movementDirection;
-    // switch (key.getKeyCode()) {
-    // case KeyEvent.VK_W, KeyEvent.VK_UP -> movementDirection &= ~DIRECTION_UP;
-    // case KeyEvent.VK_A, KeyEvent.VK_LEFT -> movementDirection &= ~DIRECTION_LEFT;
-    // case KeyEvent.VK_S, KeyEvent.VK_DOWN -> movementDirection &= ~DIRECTION_DOWN;
-    // case KeyEvent.VK_D, KeyEvent.VK_RIGHT -> movementDirection &=
-    // ~DIRECTION_RIGHT;
-
-    // default -> {
-    // }
-    // }
-    // }
-
-    // @Override
-    // public void keyTyped(KeyEvent key) {
-    // // Not used
-    // }
 }

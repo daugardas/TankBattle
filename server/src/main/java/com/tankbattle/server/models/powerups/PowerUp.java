@@ -2,6 +2,7 @@ package com.tankbattle.server.models.powerups;
 
 import com.tankbattle.server.models.AbstractCollidableEntity;
 import com.tankbattle.server.models.Player;
+import com.tankbattle.server.models.tanks.Tank;
 import com.tankbattle.server.utils.Vector2;
 
 public abstract class PowerUp extends AbstractCollidableEntity{
@@ -15,7 +16,7 @@ public abstract class PowerUp extends AbstractCollidableEntity{
         this.size = new Vector2(500, 500);
     }
 
-    public abstract void applyEffect(Player player);
+    public abstract void applyEffect(Tank tank);
 
     @Override
     public Vector2 getLocation() {

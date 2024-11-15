@@ -80,8 +80,7 @@ public class GameManager {
     }
 
     public void setUsername(String username) {
-        this.currentPlayer = new CurrentPlayer(username, new Vector2(0, 0), new Vector2(10, 10), Color.BLACK,
-                Color.RED);
+        this.currentPlayer = new CurrentPlayer(username);
     }
 
     public void startGame() {
@@ -109,15 +108,11 @@ public class GameManager {
 
             // checking if player is current client player
             if (this.currentPlayer.getUsername().equals(player.getUsername())) {
-                this.currentPlayer.setLocation(player.getLocation());
-                this.currentPlayer.setSize(player.getSize());
-                this.currentPlayer.setLookDirection(player.getLookDirection());
+                this.currentPlayer.setTank(player.getTank());
             } else {
                 Player existingPlayer = this.players.get(player.getUsername());
                 if (existingPlayer != null) {
-                    existingPlayer.setLocation(player.getLocation());
-                    existingPlayer.setSize(player.getSize());
-                    existingPlayer.setLookDirection(player.getLookDirection());
+                    existingPlayer.setTank(player.getTank());
                 } else {
                     this.players.put(player.getUsername(), player);
                 }
@@ -191,14 +186,14 @@ public class GameManager {
     }
 
     public void renderAll(Graphics2D g2d) {
-        //System.out.println("Rendering all game entities through RenderFacade.");
+        // System.out.println("Rendering all game entities through RenderFacade.");
         this.renderTiles(g2d);
         this.renderPlayers(g2d);
         this.renderBullets(g2d);
     }
 
     private void renderTiles(Graphics2D g2d) {
-        //System.out.println("Rendering tiles through RenderFacade.");
+        // System.out.println("Rendering tiles through RenderFacade.");
         Tile[][] tileGrid = level.getGrid();
         if (tileGrid != null) {
             for (Tile[] row : tileGrid) {
@@ -208,7 +203,7 @@ public class GameManager {
     }
 
     private void renderPlayers(Graphics2D g2d) {
-        //System.out.println("Rendering players through RenderFacade.");
+        // System.out.println("Rendering players through RenderFacade.");
         for (Player player : players.values()) {
             renderFacade.drawEntity(g2d, player);
         }
@@ -218,7 +213,7 @@ public class GameManager {
     }
 
     private void renderBullets(Graphics2D g2d) {
-        //System.out.println("Rendering bullets through RenderFacade.");
+        // System.out.println("Rendering bullets through RenderFacade.");
         renderFacade.drawEntities(g2d, bullets);
     }
 

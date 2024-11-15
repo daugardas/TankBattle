@@ -31,6 +31,7 @@ import com.tankbattle.server.models.items.PowerDown;
 import com.tankbattle.server.models.powerups.BasicItemFactory;
 import com.tankbattle.server.models.powerups.ItemFactory;
 import com.tankbattle.server.models.powerups.PowerUp;
+import com.tankbattle.server.models.tanks.Tank;
 import com.tankbattle.server.strategies.Level.LevelGenerator;
 import com.tankbattle.server.utils.Vector2;
 
@@ -68,6 +69,7 @@ public class GameController {
     private CollisionManager collisionManager;
 
     private List<Player> players = new ArrayList<>();
+    private List<Tank> tanks = new ArrayList<>();
     private final ArrayList<Bullet> bullets = new ArrayList<>();
 
     private List<PowerUp> powerUps = new ArrayList<>();
@@ -115,21 +117,25 @@ public class GameController {
 
         //-----------------------------------------Prototype------------------------------------------------------
         /*
-
-        Tile tile = new IceTile();
-        Tile copy = (IceTile) tile.copyShallow();
-
-        System.out.println("New element hash code(shallowCopy):" + System.identityHashCode(tile.getHealth()));
-        System.out.println("Old element hash code(shallowCopy):" + System.identityHashCode(copy.getHealth()));
-
-        Tile tileOG = new IceTile();
-        Tile tileCopy = tile.copyDeep();
-
-        System.out.println("New element hash code(deepCopy):" + System.identityHashCode(tileOG));
-        System.out.println("Old element hash code(deepCopy):" + System.identityHashCode(tileCopy));
-
-        */
-        //-----------------------------------------Prototype------------------------------------------------------
+         *
+         * Tile tile = new IceTile();
+         * Tile copy = (IceTile) tile.copyShallow();
+         *
+         * System.out.println("New element hash code(shallowCopy):" +
+         * System.identityHashCode(tile.getHealth()));
+         * System.out.println("Old element hash code(shallowCopy):" +
+         * System.identityHashCode(copy.getHealth()));
+         *
+         * Tile tileOG = new IceTile();
+         * Tile tileCopy = tile.copyDeep();
+         *
+         * System.out.println("New element hash code(deepCopy):" +
+         * System.identityHashCode(tileOG));
+         * System.out.println("Old element hash code(deepCopy):" +
+         * System.identityHashCode(tileCopy));
+         *
+         */
+        // -----------------------------------------Prototype------------------------------------------------------
 
         collisionManager.initializeStaticEntities(level);
     }
@@ -140,10 +146,11 @@ public class GameController {
         // assign player starting location
         int existingPlayers = this.players.size();
         Vector2 newPlayerLocation = level.getSpawnPoints()[existingPlayers];
-        player.setLocationToTile(newPlayerLocation);
+        player.getTank().setLocationToTile(newPlayerLocation);
 
         this.players.add(player);
-        collisionManager.spatialGrid.addEntity(player, false);
+        this.tanks.add(player.getTank());
+        collisionManager.spatialGrid.addEntity(player.getTank(), false);
     }
 
     public void removePlayerBySessionId(String sessionId) {
@@ -159,7 +166,7 @@ public class GameController {
         }
 
         if (playerToRemove != null) {
-            collisionManager.spatialGrid.removeEntity(playerToRemove);
+            collisionManager.spatialGrid.removeEntity(playerToRemove.getTank());
         }
 
         sessionIdToPlayerIndex.remove(sessionId);
@@ -203,7 +210,7 @@ public class GameController {
         updateBulletsLocations();
 
         // Detect and handle collisions
-        collisionManager.detectCollisions(players, bullets, powerUps, powerDowns);
+        collisionManager.detectCollisions(tanks, bullets, powerUps, powerDowns);
 
         // Broadcast updated game state to clients
         broadcastGameState();
@@ -212,8 +219,8 @@ public class GameController {
 
     private void updatePlayersLocations() {
         for (Player player : players) {
-            player.updateLocation();
-            collisionManager.spatialGrid.updateEntity(player);
+            player.getTank().updateLocation();
+            collisionManager.spatialGrid.updateEntity(player.getTank());
         }
     }
 
@@ -234,8 +241,19 @@ public class GameController {
     }
 
     private void broadcastGameState() {
-        messagingTemplate.convertAndSend("/server/players", players);
-        messagingTemplate.convertAndSend("/server/bullets", bullets);
+        ObjectMapper objectMapper = new ObjectMapper();
+
+        try {
+            // if (bullets.size() != 0) {
+            //     String playersJson = objectMapper.writeValueAsString(bullets);
+            //     System.out.println(playersJson);
+            // }
+            messagingTemplate.convertAndSend("/server/players", players);
+            messagingTemplate.convertAndSend("/server/bullets", bullets);
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.out.println("Failed" + e.getMessage());
+        }
     }
 
     @MessageMapping("/command")
@@ -249,7 +267,7 @@ public class GameController {
 
             switch (type) {
                 case "MOVE":
-                    MoveCommand moveCommand = new MoveCommand(players.get(playerIndex),
+                    MoveCommand moveCommand = new MoveCommand(players.get(playerIndex).getTank(),
                             ((Integer) command.get("direction")).byteValue());
 
                     if (!commands.contains(moveCommand)) {
@@ -257,7 +275,7 @@ public class GameController {
                     }
                     break;
                 case "FIRE":
-                    FireCommand fireCommand = new FireCommand(players.get(playerIndex));
+                    FireCommand fireCommand = new FireCommand(players.get(playerIndex).getTank());
                     if (!commands.contains(fireCommand)) {
                         commands.add(fireCommand);
                     }

@@ -13,7 +13,7 @@ public class BulletRenderer implements EntityRenderer<Bullet>, Scalable {
     private static final int FRAME_COUNT = 5;
     private static final int FRAME_DURATION = 100;
     private final ResourceManager resourceManager;
-    private double scaleFactor = 1.0;
+    private double scaleFactor = 1;
     private double worldLocationScaleFactor = 1.0;
     private Vector2 worldOffset = new Vector2(0, 0);
     private BufferedImage[] explosionFrames;
@@ -49,15 +49,17 @@ public class BulletRenderer implements EntityRenderer<Bullet>, Scalable {
             return;
         }
 
+        Vector2 bulletSize = bullet.getSize();
+
         BufferedImage currentSprite = explosionFrames[0];
         Vector2 location = bullet.getLocation();
         double x = location.getX() * worldLocationScaleFactor + worldOffset.getX();
         double y = location.getY() * worldLocationScaleFactor + worldOffset.getY();
 
-        int drawX = (int) (x - FRAME_WIDTH * scaleFactor / 2);
-        int drawY = (int) (y - FRAME_HEIGHT * scaleFactor / 2);
-        int drawWidth = (int) (FRAME_WIDTH * scaleFactor);
-        int drawHeight = (int) (FRAME_HEIGHT * scaleFactor);
+        int drawX = (int) (x - (bulletSize.getX() * scaleFactor) / 2);
+        int drawY = (int) (y - (bulletSize.getX() * scaleFactor) / 2);
+        int drawWidth = (int) ((bulletSize.getX() * scaleFactor));
+        int drawHeight = (int) ((bulletSize.getX() * scaleFactor));
 
         g2d.drawImage(currentSprite, drawX, drawY, drawWidth, drawHeight, null);
     }

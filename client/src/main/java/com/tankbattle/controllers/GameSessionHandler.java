@@ -34,7 +34,6 @@ public class GameSessionHandler extends StompSessionHandlerAdapter {
 
             @Override
             public void handleFrame(StompHeaders stompHeaders, Object o) {
-                List<Player> temp = new ArrayList<>(List.of((Player[]) o));
                 GameManager.getInstance().addPlayers(new ArrayList<>(List.of((Player[]) o)));
                 ServerFPSCounter.getInstance().incrementServerUpdateCount();
             }
@@ -49,6 +48,7 @@ public class GameSessionHandler extends StompSessionHandlerAdapter {
 
             @Override
             public void handleFrame(StompHeaders stompHeaders, Object o) {
+                System.out.println("Level received");
                 GameManager.getInstance().setLevel((Level) o);
             }
 

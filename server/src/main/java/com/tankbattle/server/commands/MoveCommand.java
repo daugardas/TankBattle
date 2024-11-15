@@ -2,21 +2,21 @@ package com.tankbattle.server.commands;
 
 import java.util.Objects;
 
-import com.tankbattle.server.models.Player;
+import com.tankbattle.server.models.tanks.Tank;
 import com.tankbattle.server.utils.Constants;
 
 public class MoveCommand implements ICommand {
-    private Player player;
+    private Tank tank;
     private byte direction;
 
-    public MoveCommand(Player player, byte direction) {
-        this.player = player;
+    public MoveCommand(Tank tank, byte direction) {
+        this.tank = tank;
         this.direction = direction;
     }
 
     @Override
     public void execute() {
-        player.setMovementDirection(direction);
+        tank.setMovementDirection(direction);
     }
 
     @Override
@@ -39,11 +39,7 @@ public class MoveCommand implements ICommand {
             reverseDirection |= Constants.DIRECTION_LEFT;
         }
 
-        player.setMovementDirection(reverseDirection);
-    }
-
-    public String toString() {
-        return String.format("%s %d", player.toString(), direction);
+        tank.setMovementDirection(reverseDirection);
     }
 
     @Override
@@ -55,11 +51,11 @@ public class MoveCommand implements ICommand {
             return false;
         }
         MoveCommand that = (MoveCommand) obj;
-        return direction == that.direction && player.equals(that.player);
+        return direction == that.direction && tank.equals(that.tank);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(player, direction);
+        return Objects.hash(tank, direction);
     }
 }

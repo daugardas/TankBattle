@@ -4,42 +4,18 @@ import java.awt.Color;
 import java.util.Objects;
 
 import com.tankbattle.utils.Vector2;
+import com.tankbattle.models.tanks.Tank;
 
 public class Player extends Entity {
     protected String username;
-    protected Vector2 location; // this is already the center of the player
-    protected Vector2 size;
-    protected Color outlineColor;
-    protected Color fillColor;
-    protected Vector2 lookDirection;
+    protected Tank tank;
 
     public Player() {
     }
 
-    public Player(String username, Vector2 location, Vector2 size, Color outlineColor,
-            Color fillColor) {
+    public Player(String username) {
         this.username = username;
-        this.location = location;
-        this.size = size;
-        this.outlineColor = outlineColor;
-        this.fillColor = fillColor;
-        lookDirection = new Vector2(0, 0);
-    }
-
-    public Vector2 getLocation() {
-        return this.location;
-    }
-
-    public void setLocation(Vector2 location) {
-        this.location = location;
-    }
-
-    public Vector2 getSize() {
-        return this.size;
-    }
-
-    public void setSize(Vector2 size) {
-        this.size = size;
+        this.tank = new Tank();
     }
 
     public String getUsername() {
@@ -50,37 +26,16 @@ public class Player extends Entity {
         this.username = username;
     }
 
+    public Tank getTank() {
+        return tank;
+    }
+
+    public void setTank(Tank tank) {
+        this.tank = tank;
+    }
+
     public String toString() {
-        return String.format("{ username: '%s', location: { x: %d, y: %d }, lookDirection: { x: %d, y: %d } }",
-                this.username,
-                this.location.getX(),
-                this.location.getY(),
-                this.lookDirection.getX(),
-                this.lookDirection.getY());
-    }
-
-    public Color getOutlineColor() {
-        return outlineColor;
-    }
-
-    public void setOutlineColor(Color outlineColor) {
-        this.outlineColor = outlineColor;
-    }
-
-    public Color getFillColor() {
-        return fillColor;
-    }
-
-    public void setFillColor(Color fillColor) {
-        this.fillColor = fillColor;
-    }
-
-    public Vector2 getLookDirection() {
-        return lookDirection;
-    }
-
-    public void setLookDirection(Vector2 lookDirection) {
-        this.lookDirection = lookDirection;
+        return String.format("{ username: '%s' }", this.username) + tank.toString();
     }
 
     @Override

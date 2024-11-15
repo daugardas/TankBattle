@@ -72,9 +72,9 @@ public class TankRenderer implements EntityRenderer<Player>, Scalable {
         updateFrame();
         BufferedImage sprite = getCurrentFrame(spriteSheet);
 
-        double x = player.getLocation().getX() * worldLocationScaleFactor + worldOffset.getX();
-        double y = player.getLocation().getY() * worldLocationScaleFactor + worldOffset.getY();
-        Vector2 lookDirection = player.getLookDirection();
+        double x = player.getTank().getLocation().getX() * worldLocationScaleFactor + worldOffset.getX();
+        double y = player.getTank().getLocation().getY() * worldLocationScaleFactor + worldOffset.getY();
+        Vector2 lookDirection = player.getTank().getLookDirection();
 
         double centerX = sprite.getWidth() / 2.0;
         double centerY = sprite.getHeight() / 2.0;

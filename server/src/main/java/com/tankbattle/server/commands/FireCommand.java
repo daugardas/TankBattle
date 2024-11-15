@@ -2,29 +2,19 @@ package com.tankbattle.server.commands;
 
 import java.util.Objects;
 
-import org.springframework.beans.factory.annotation.Autowired;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.tankbattle.server.components.SpringContext;
-import com.tankbattle.server.controllers.GameController;
-import com.tankbattle.server.models.Bullet;
-import com.tankbattle.server.models.Player;
-import com.tankbattle.server.utils.Vector2;
+import com.tankbattle.server.models.tanks.Tank;
 
 public class FireCommand implements ICommand {
-    private Player player;
+    private Tank tank;
 
-    private GameController gameController;
-
-    public FireCommand(Player player) {
-        this.gameController = SpringContext.getBean(GameController.class);
-        this.player = player;
+    public FireCommand(Tank tank) {
+        this.tank = tank;
     }
 
     @Override
     public void execute() {
-        Bullet bullet = new Bullet(player);
-        gameController.addBullet(bullet);
+        tank.getWeaponSystem().fire(tank.getLocation(), tank.getLookDirection());
     }
 
     @Override
@@ -41,11 +31,11 @@ public class FireCommand implements ICommand {
             return false;
         }
         FireCommand that = (FireCommand) obj;
-        return player.equals(that.player);
+        return tank.equals(that.tank);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(player);
+        return Objects.hash(tank);
     }
 }

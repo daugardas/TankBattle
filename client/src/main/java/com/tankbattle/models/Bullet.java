@@ -3,18 +3,15 @@ package com.tankbattle.models;
 import com.tankbattle.utils.Vector2;
 
 public class Bullet extends Entity {
+    private Vector2 size;
+
     public Bullet() {
 
     }
 
-    public Bullet(Vector2 location, int size){
-        this.location = location;
-        this.size = size;
-    }
-
     public Bullet(Vector2 location, Vector2 size) {
         this.location = location;
-        this.size = (int)size.getX();
+        this.size = size;
     }
 
     public Vector2 getLocation() {
@@ -25,12 +22,12 @@ public class Bullet extends Entity {
         this.location = location;
     }
 
-    public int getSize() {
+    public Vector2 getSize() {
         return size;
     }
 
     public void setSize(Vector2 size) {
-        this.size = (int)size.getX();
+        this.size = size;
     }
 
     @Override

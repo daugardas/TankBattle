@@ -8,30 +8,24 @@ public class Bullet extends AbstractCollidableEntity {
     private Vector2 size;
 
     @JsonIgnore
-    private Player owner;
-    @JsonIgnore
     private Vector2 direction;
     @JsonIgnore
-    private int speed = 75;
+    private int speed;
     @JsonIgnore
-    private int damage = 5;
+    private int damage;
 
     @JsonIgnore
     private boolean markedForRemoval = false;
 
-    public Bullet(Player owner) {
-        this.owner = owner;
-        Vector2 ownerLocation = owner.getLocation();
+    public Bullet(Vector2 location, Vector2 direction, Vector2 size, int speed, int damage) {
+        this.location = new Vector2();
+        this.location.setX(location.getX() + (500 + size.getX() / 2) * direction.getX());
+        this.location.setY(location.getY() + (500 + size.getY() / 2) * direction.getY());
 
-        Vector2 initialBulletLocation = new Vector2(ownerLocation.getX(), ownerLocation.getY());
-        Vector2 lookDirection = owner.getLookDirection();
-
-        direction = new Vector2(lookDirection.getX(), lookDirection.getY());
-        location = initialBulletLocation;
-        location.setX(location.getX() + 500 * direction.getX());
-        location.setY(location.getY() + 500 * direction.getY());
-
-        this.size = new Vector2(100, 100);
+        this.direction = new Vector2(direction.getX(), direction.getY());
+        this.size = size;
+        this.speed = speed;
+        this.damage = damage;
     }
 
     public Vector2 getLocation() {
@@ -51,11 +45,6 @@ public class Bullet extends AbstractCollidableEntity {
     }
 
     @JsonIgnore
-    public int getDamage() {
-        return damage;
-    }
-
-    @JsonIgnore
     public Vector2 getDirection() {
         return direction;
     }
@@ -63,6 +52,11 @@ public class Bullet extends AbstractCollidableEntity {
     @JsonIgnore
     public void setDirection(Vector2 direction) {
         this.direction = direction;
+    }
+
+    @JsonIgnore
+    public int getDamage() {
+        return damage;
     }
 
     @JsonIgnore
