@@ -2,37 +2,32 @@ package com.tankbattle.server.models.tanks;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
-public class SpeedBoostDecorator extends TankDecorator {
+public class ArmorDecorator extends TankDecorator {
     @JsonIgnore
-    private int extraSpeed;
+    private int damageReduction; // Amount to reduce from incoming damage
     @JsonIgnore
     private long startTime;
     @JsonIgnore
     private long duration; // in milliseconds
-    @JsonIgnore
-    private int initialSpeed;
 
-    public SpeedBoostDecorator(ITank decoratedTank, int extraSpeed, long duration) {
+    public ArmorDecorator(ITank decoratedTank, int damageReduction, long duration) {
         super(decoratedTank);
-        this.extraSpeed = extraSpeed;
+        this.damageReduction = damageReduction;
         this.duration = duration;
         this.startTime = System.currentTimeMillis();
-        this.initialSpeed = decoratedTank.getSpeed();
     }
     
     @Override
-    public void updateLocation() {
+    public void takeDamage(int damage) {
         if (!isExpired()) {
-            super.setSpeed(initialSpeed + extraSpeed);
-        } else {
-            super.setSpeed(initialSpeed);
+            // Reduce damage by damageReduction, ensuring it doesn't go below zero
+            damage = Math.max(0, damage - damageReduction);
         }
-        super.updateLocation();
+        super.takeDamage(damage);
     }
-
+    
     @JsonIgnore
     public boolean isExpired() {
         return System.currentTimeMillis() - startTime > duration;
     }
 }
-

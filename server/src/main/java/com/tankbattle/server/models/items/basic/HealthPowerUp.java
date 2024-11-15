@@ -1,7 +1,10 @@
 package com.tankbattle.server.models.items.basic;
 
+import com.tankbattle.server.components.SpringContext;
+import com.tankbattle.server.controllers.GameController;
 import com.tankbattle.server.models.items.PowerUp;
 import com.tankbattle.server.models.items.PowerUpType;
+import com.tankbattle.server.models.tanks.HealthBoostDecorator;
 import com.tankbattle.server.models.tanks.ITank;
 import com.tankbattle.server.utils.Vector2;
 
@@ -12,7 +15,9 @@ public class HealthPowerUp extends PowerUp {
 
     @Override
     public void applyEffect(ITank tank) {
-        //player.increaseHealth(20); // Basic health boost
-        System.out.println("Basic health power up applied");
+        ITank decoratedTank = new HealthBoostDecorator(tank, 50, 5000);
+        GameController gameController = SpringContext.getBean(GameController.class);
+        gameController.updateTankReference(tank, decoratedTank);
+        System.out.println("Health boost power-up applied.");
     }
 }

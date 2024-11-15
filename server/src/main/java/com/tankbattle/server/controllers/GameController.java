@@ -313,7 +313,7 @@ public class GameController {
         for (int i = 0; i < locations.size(); i++) {
             Vector2 location = locations.get(i);
 
-            PowerUp powerUp = itemFactory.createSpeedPowerUp(location);
+            PowerUp powerUp = itemFactory.createHealthPowerUp(location);
             addPowerUp(powerUp);
             // // Alternate between spawning PowerUps and PowerDowns
             // if (i % 2 == 0) {
@@ -392,6 +392,11 @@ public List<Tank> getTanks() {
         tankList.add(tank.getTank());
     }
     return tankList;
+}
+
+public void removePowerUp(PowerUp powerUp) {
+    powerUps.remove(powerUp);
+    collisionManager.spatialGrid.removeEntity(powerUp);
 }
 
 
