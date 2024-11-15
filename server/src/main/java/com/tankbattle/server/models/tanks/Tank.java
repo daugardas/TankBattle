@@ -8,7 +8,7 @@ import com.tankbattle.server.models.tanks.weaponsystems.WeaponSystem;
 import com.tankbattle.server.utils.Constants;
 import com.tankbattle.server.utils.Vector2;
 
-public abstract class Tank extends AbstractCollidableEntity {
+public abstract class Tank extends AbstractCollidableEntity implements ITank {
     @JsonIgnore
     protected WeaponSystem weaponSystem;
 
@@ -42,67 +42,83 @@ public abstract class Tank extends AbstractCollidableEntity {
         previousLocation = new Vector2(0, 0);
     }
 
+    @Override
     public WeaponSystem getWeaponSystem() {
         return weaponSystem;
     }
 
+    @Override
     public void setWeaponSystem(WeaponSystem weaponSystem) {
         this.weaponSystem = weaponSystem;
     }
 
+    @Override
     public Vector2 getSize() {
         return this.size;
     }
 
+    @Override
     public void setSize(Vector2 size) {
         this.size = size;
     }
 
+    @Override
     public int getHealth() {
         return health;
     }
 
+    @Override
     public void setHealth(int health) {
         this.health = health;
     }
 
+    @Override
     public int getSpeed() {
         return speed;
     }
 
+    @Override
     public void setSpeed(int speed) {
         this.speed = speed;
     }
 
+    @Override
     public void takeDamage(int damage) {
         health -= damage;
     }
 
+    @Override
     public Vector2 getLocation() {
         return this.location;
     }
 
+    @Override
     public void setLocation(Vector2 location) {
         this.location = location;
     }
 
+    @Override
     public void setLocationToTile(Vector2 location) {
         Vector2 newLocation = new Vector2(location.getX() * 1000 + 500, location.getY() * 1000 + 500);
         this.setLocation(newLocation);
     }
+    @Override
 
     public Vector2 getLookDirection() {
         return lookDirection;
     }
 
+    @Override
     public void setLookDirection(Vector2 lookDirection) {
         this.lookDirection = lookDirection;
     }
 
+    @Override
     public byte getMovementDirection() {
         return movementDirection;
     }
 
+    @Override
     public void setMovementDirection(byte movementDirection) {
         this.movementDirection = movementDirection;
     }
@@ -138,26 +154,27 @@ public abstract class Tank extends AbstractCollidableEntity {
         }
     }
 
+    @Override
     public void updateLocation() {
         // Calculate intended movement
-        float diagonalSpeed = speed / (float) Math.sqrt(2);
+        float diagonalSpeed = getSpeed() / (float) Math.sqrt(2);
         float deltaY = 0;
         float deltaX = 0;
 
         if ((movementDirection & Constants.DIRECTION_UP) != 0) {
-            deltaY -= (movementDirection & (Constants.DIRECTION_LEFT | Constants.DIRECTION_RIGHT)) != 0 ? diagonalSpeed : speed;
+            deltaY -= (movementDirection & (Constants.DIRECTION_LEFT | Constants.DIRECTION_RIGHT)) != 0 ? diagonalSpeed : getSpeed();
         }
 
         if ((movementDirection & Constants.DIRECTION_DOWN) != 0) {
-            deltaY += (movementDirection & (Constants.DIRECTION_LEFT | Constants.DIRECTION_RIGHT)) != 0 ? diagonalSpeed : speed;
+            deltaY += (movementDirection & (Constants.DIRECTION_LEFT | Constants.DIRECTION_RIGHT)) != 0 ? diagonalSpeed : getSpeed();
         }
 
         if ((movementDirection & Constants.DIRECTION_LEFT) != 0) {
-            deltaX -= (movementDirection & (Constants.DIRECTION_UP | Constants.DIRECTION_DOWN)) != 0 ? diagonalSpeed : speed;
+            deltaX -= (movementDirection & (Constants.DIRECTION_UP | Constants.DIRECTION_DOWN)) != 0 ? diagonalSpeed : getSpeed();
         }
 
         if ((movementDirection & Constants.DIRECTION_RIGHT) != 0) {
-            deltaX += (movementDirection & (Constants.DIRECTION_UP | Constants.DIRECTION_DOWN)) != 0 ? diagonalSpeed : speed;
+            deltaX += (movementDirection & (Constants.DIRECTION_UP | Constants.DIRECTION_DOWN)) != 0 ? diagonalSpeed : getSpeed();
         }
 
         // Calculate intended new position
@@ -191,8 +208,15 @@ public abstract class Tank extends AbstractCollidableEntity {
                 bottomCornerY > gameController.getLevelCoordinateHeight();
     }
 
+    @Override
     public void revertToPreviousPosition() {
         this.location = new Vector2(previousLocation.getX(), previousLocation.getY());
+    }
+
+    @JsonIgnore
+    @Override
+    public Tank getTank() {
+        return this;
     }
 
 }

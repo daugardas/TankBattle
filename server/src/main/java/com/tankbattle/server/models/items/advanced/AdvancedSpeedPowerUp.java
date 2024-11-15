@@ -2,7 +2,7 @@ package com.tankbattle.server.models.items.advanced;
 
 import com.tankbattle.server.models.items.PowerUp;
 import com.tankbattle.server.models.items.PowerUpType;
-import com.tankbattle.server.models.tanks.Tank;
+import com.tankbattle.server.models.tanks.ITank;
 import com.tankbattle.server.utils.Vector2;
 
 public class AdvancedSpeedPowerUp extends PowerUp {
@@ -11,7 +11,7 @@ public class AdvancedSpeedPowerUp extends PowerUp {
     }
 
     @Override
-    public void applyEffect(Tank tank) {
+    public void applyEffect(ITank tank) {
         //player.increaseSpeed(25); // Advanced speed boost
         System.out.println("Advanced speed power up applied");
     }

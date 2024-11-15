@@ -25,12 +25,14 @@ import com.tankbattle.server.commands.MoveCommand;
 import com.tankbattle.server.components.WebSocketSessionManager;
 import com.tankbattle.server.factories.LevelGeneratorFactory;
 import com.tankbattle.server.models.Bullet;
+import com.tankbattle.server.models.ICollidableEntity;
 import com.tankbattle.server.models.Level;
 import com.tankbattle.server.models.Player;
 import com.tankbattle.server.models.items.ItemFactory;
 import com.tankbattle.server.models.items.PowerDown;
 import com.tankbattle.server.models.items.PowerUp;
 import com.tankbattle.server.models.items.advanced.BasicItemFactory;
+import com.tankbattle.server.models.tanks.ITank;
 import com.tankbattle.server.models.tanks.Tank;
 import com.tankbattle.server.strategies.Level.LevelGenerator;
 import com.tankbattle.server.utils.Vector2;
@@ -69,7 +71,7 @@ public class GameController {
     private CollisionManager collisionManager;
 
     private List<Player> players = new ArrayList<>();
-    private List<Tank> tanks = new ArrayList<>();
+    private List<ITank> tanks = new ArrayList<>();
     private final ArrayList<Bullet> bullets = new ArrayList<>();
 
     private List<PowerUp> powerUps = new ArrayList<>();
@@ -311,42 +313,44 @@ public class GameController {
         for (int i = 0; i < locations.size(); i++) {
             Vector2 location = locations.get(i);
 
-            // Alternate between spawning PowerUps and PowerDowns
-            if (i % 2 == 0) {
-                // Spawn PowerUp
-                PowerUp powerUp;
-                switch (i % 3) {
-                    case 0:
-                        powerUp = itemFactory.createHealthPowerUp(location);
-                        break;
-                    case 1:
-                        powerUp = itemFactory.createSpeedPowerUp(location);
-                        break;
-                    case 2:
-                        powerUp = itemFactory.createDamagePowerUp(location);
-                        break;
-                    default:
-                        powerUp = itemFactory.createHealthPowerUp(location);
-                }
-                addPowerUp(powerUp);
-            } else {
-                // Spawn PowerDown
-                PowerDown powerDown;
-                switch (i % 3) {
-                    case 0:
-                        powerDown = itemFactory.createHealthPowerDown(location);
-                        break;
-                    case 1:
-                        powerDown = itemFactory.createSpeedPowerDown(location);
-                        break;
-                    case 2:
-                        powerDown = itemFactory.createDamagePowerDown(location);
-                        break;
-                    default:
-                        powerDown = itemFactory.createHealthPowerDown(location);
-                }
-                addPowerDown(powerDown);
-            }
+            PowerUp powerUp = itemFactory.createSpeedPowerUp(location);
+            addPowerUp(powerUp);
+            // // Alternate between spawning PowerUps and PowerDowns
+            // if (i % 2 == 0) {
+            //     // Spawn PowerUp
+            //     PowerUp powerUp;
+            //     switch (i % 3) {
+            //         case 0:
+            //             powerUp = itemFactory.createHealthPowerUp(location);
+            //             break;
+            //         case 1:
+            //             powerUp = itemFactory.createSpeedPowerUp(location);
+            //             break;
+            //         case 2:
+            //             powerUp = itemFactory.createDamagePowerUp(location);
+            //             break;
+            //         default:
+            //             powerUp = itemFactory.createHealthPowerUp(location);
+            //     }
+            //     addPowerUp(powerUp);
+            // } else {
+            //     // Spawn PowerDown
+            //     PowerDown powerDown;
+            //     switch (i % 3) {
+            //         case 0:
+            //             powerDown = itemFactory.createHealthPowerDown(location);
+            //             break;
+            //         case 1:
+            //             powerDown = itemFactory.createSpeedPowerDown(location);
+            //             break;
+            //         case 2:
+            //             powerDown = itemFactory.createDamagePowerDown(location);
+            //             break;
+            //         default:
+            //             powerDown = itemFactory.createHealthPowerDown(location);
+            //     }
+            //     addPowerDown(powerDown);
+            // }
         }
     }
 
@@ -359,6 +363,38 @@ public class GameController {
         powerDowns.add(powerDown);
         collisionManager.spatialGrid.addEntity(powerDown, false);
     }
+
+    public void updateTankReference(ITank oldTank, ITank newTank) {
+    // Update in players list
+    for (Player player : players) {
+        if (player.getTank() == oldTank) {
+            player.setTank(newTank);
+            break;
+        }
+    }
+
+    // Update in tanks list
+    int index = tanks.indexOf(oldTank);
+    if (index != -1) {
+        tanks.set(index, newTank);
+    }
+
+    // Update in collision manager
+    collisionManager.spatialGrid.removeEntity((ICollidableEntity) oldTank);
+    collisionManager.spatialGrid.addEntity((ICollidableEntity) newTank, false);
+
+    System.out.println("Tank reference updated");
+}
+
+public List<Tank> getTanks() {
+    List<Tank> tankList = new ArrayList<>();
+    for (ITank tank : tanks) {
+        tankList.add(tank.getTank());
+    }
+    return tankList;
+}
+
+
 
 
 }

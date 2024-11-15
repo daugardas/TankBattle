@@ -1,7 +1,6 @@
 package com.tankbattle.server.events;
 
-import com.tankbattle.server.models.Player;
-import com.tankbattle.server.models.tanks.Tank;
+import com.tankbattle.server.models.tanks.ITank;
 
 public class CollisionEvent {
     private final Object firstEntity;
@@ -22,8 +21,8 @@ public class CollisionEvent {
         return type;
     }
 
-    public Tank getTank() {
-        return (Tank) firstEntity;
+    public ITank getTank() {
+        return (ITank) firstEntity;
     }
 
     public enum CollisionType {

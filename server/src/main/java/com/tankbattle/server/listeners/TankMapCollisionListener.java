@@ -5,8 +5,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import com.tankbattle.server.events.CollisionEvent;
-import com.tankbattle.server.models.Player;
-import com.tankbattle.server.models.tanks.Tank;
+import com.tankbattle.server.models.tanks.ITank;
 
 @Component
 public class TankMapCollisionListener implements CollisionListener {
@@ -18,7 +17,7 @@ public class TankMapCollisionListener implements CollisionListener {
             return;
         }
 
-        Tank tank = event.getTank();
+        ITank tank = event.getTank();
         tank.revertToPreviousPosition();
         // logger.debug("Player {} collided with the map. Reverting position.", player.getUsername());
     }

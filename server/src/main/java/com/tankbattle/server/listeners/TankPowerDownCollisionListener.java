@@ -6,6 +6,7 @@ import org.springframework.stereotype.Component;
 
 import com.tankbattle.server.events.CollisionEvent;
 import com.tankbattle.server.models.items.PowerDown;
+import com.tankbattle.server.models.tanks.ITank;
 import com.tankbattle.server.models.tanks.Tank;
 
 @Component
@@ -18,10 +19,10 @@ public class TankPowerDownCollisionListener implements CollisionListener {
             return;
         }
 
-        Tank tank = event.getTank();
+        ITank tank = event.getTank();
         PowerDown powerDown = (PowerDown) event.getOtherEntity();
 
-        powerDown.applyEffect(tank);
+        powerDown.applyEffect((Tank)tank);
 
         logger.info("Player collected a power-down.");
     }

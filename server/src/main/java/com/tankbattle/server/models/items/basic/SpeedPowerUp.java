@@ -1,8 +1,11 @@
 package com.tankbattle.server.models.items.basic;
 
+import com.tankbattle.server.components.SpringContext;
+import com.tankbattle.server.controllers.GameController;
 import com.tankbattle.server.models.items.PowerUp;
 import com.tankbattle.server.models.items.PowerUpType;
-import com.tankbattle.server.models.tanks.Tank;
+import com.tankbattle.server.models.tanks.ITank;
+import com.tankbattle.server.models.tanks.SpeedBoostDecorator;
 import com.tankbattle.server.utils.Vector2;
 
 public class SpeedPowerUp extends PowerUp {
@@ -11,8 +14,11 @@ public class SpeedPowerUp extends PowerUp {
     }
 
     @Override
-    public void applyEffect(Tank tank) {
-        //player.increaseSpeed(10); // Basic speed boost
+    public void applyEffect(ITank tank) {
+        ITank decoratedTank = new SpeedBoostDecorator(tank, 100, 5000); // Increase speed by 10 for 5 seconds
+
+        GameController gameController = SpringContext.getBean(GameController.class);
+        gameController.updateTankReference(tank, decoratedTank);
         System.out.println("Basic speed power up applied");
     }
 }

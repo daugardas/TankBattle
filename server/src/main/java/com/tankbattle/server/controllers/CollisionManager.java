@@ -9,15 +9,15 @@ import org.springframework.stereotype.Component;
 
 import com.tankbattle.server.events.CollisionEvent;
 import com.tankbattle.server.listeners.CollisionListener;
-import com.tankbattle.server.models.AbstractCollidableEntity;
 import com.tankbattle.server.models.Bullet;
 import com.tankbattle.server.models.GameEntity;
+import com.tankbattle.server.models.ICollidableEntity;
 import com.tankbattle.server.models.Level;
 import com.tankbattle.server.models.Player;
 import com.tankbattle.server.models.TileEntity;
 import com.tankbattle.server.models.items.PowerDown;
 import com.tankbattle.server.models.items.PowerUp;
-import com.tankbattle.server.models.tanks.Tank;
+import com.tankbattle.server.models.tanks.ITank;
 import com.tankbattle.server.models.tiles.Tile;
 import com.tankbattle.server.utils.SpatialGrid;
 import com.tankbattle.server.utils.Vector2;
@@ -57,7 +57,7 @@ public class CollisionManager {
     }
 
     //updating may be done after update player, bullet, powerup
-    public void detectCollisions(List<Tank> tanks, List<Bullet> bullets, List<PowerUp> powerUps, List<PowerDown> powerDowns) {
+    public void detectCollisions(List<ITank> tanks, List<Bullet> bullets, List<PowerUp> powerUps, List<PowerDown> powerDowns) {
         for (PowerUp powerUp : powerUps) {
             spatialGrid.updateEntity(powerUp);
         }
@@ -70,13 +70,13 @@ public class CollisionManager {
         detectEntityCollisions(tanks, bullets, powerUps, powerDowns);
     }
 
-    private void detectEntityCollisions(List<Tank> tanks, List<Bullet> bullets, List<PowerUp> powerUps, List<PowerDown> powerDowns) {
+    private void detectEntityCollisions(List<ITank> tanks, List<Bullet> bullets, List<PowerUp> powerUps, List<PowerDown> powerDowns) {
         Set<String> processedPairs = new HashSet<>();
 
         for (Bullet bullet : bullets) {
-            List<AbstractCollidableEntity> nearbyEntities = spatialGrid.getNearbyEntities(bullet);
+            List<ICollidableEntity> nearbyEntities = spatialGrid.getNearbyEntities(bullet);
 
-            for (AbstractCollidableEntity gameEntity : nearbyEntities) {
+            for (ICollidableEntity gameEntity : nearbyEntities) {
                 if (gameEntity instanceof TileEntity tileEntity) {
                     if (!tileEntity.canProjectilePass() && isColliding(bullet, tileEntity)) {
                         notifyListeners(
@@ -91,15 +91,15 @@ public class CollisionManager {
         // If it is marked, we just not send the collision event.
         // After checking every bullet for collisions, we can remove collided bullets
 
-        for (Tank tank : tanks) {
-            List<AbstractCollidableEntity> nearbyEntities = spatialGrid.getNearbyEntities(tank);
+        for (ITank tank : tanks) {
+            List<ICollidableEntity> nearbyEntities = spatialGrid.getNearbyEntities(tank);
 
-            for (AbstractCollidableEntity entity : nearbyEntities) {
+            for (ICollidableEntity entity : nearbyEntities) {
                 if (entity == tank)
                     continue;
 
                 // switch
-                if (entity instanceof Tank otherTank) {
+                if (entity instanceof ITank otherTank) {
                     notifyListeners(new CollisionEvent(CollisionEvent.CollisionType.PLAYER_PLAYER, tank, otherTank));
                 } else if (entity instanceof Bullet bullet) {
                     if (isColliding(tank, bullet)) {
