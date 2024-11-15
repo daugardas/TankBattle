@@ -81,7 +81,9 @@ public class GameController {
     private HashMap<String, Integer> sessionIdToPlayerIndex = new HashMap<>();
 
     private List<ICommand> commands = new ArrayList<>();
-    private List<ICommand> commandLog = new ArrayList<>();
+
+    private boolean run = true;
+    private List<ICommand> commandsLog = new ArrayList<>();
 
     private Level level;
 
@@ -117,7 +119,7 @@ public class GameController {
 
         spawnItemsAtLocations();
 
-        //-----------------------------------------Prototype------------------------------------------------------
+        // -----------------------------------------Prototype------------------------------------------------------
         /*
          *
          * Tile tile = new IceTile();
@@ -202,11 +204,21 @@ public class GameController {
     @Scheduled(fixedRate = 33)
     public void gameLoop() {
 
-        for (int i = 0; i < commands.size(); i++) {
-            commands.get(i).execute();
-        }
+        // if (run) {
+            for (int i = 0; i < commands.size(); i++) {
+                commands.get(i).execute();
+            }
 
-        commands.clear();
+            commands.clear();
+        // } else {
+        //     if (commandsLog.size() > 0) {
+        //         commandsLog.get(commandsLog.size() - 1).undo();
+        //         commandsLog.remove(commandsLog.size() - 1);
+        //     }
+        //     else{
+        //         run = true;
+        //     }
+        // }
 
         updatePlayersLocations();
         updateBulletsLocations();
@@ -247,8 +259,8 @@ public class GameController {
 
         try {
             // if (bullets.size() != 0) {
-            //     String playersJson = objectMapper.writeValueAsString(bullets);
-            //     System.out.println(playersJson);
+            // String playersJson = objectMapper.writeValueAsString(bullets);
+            // System.out.println(playersJson);
             // }
             messagingTemplate.convertAndSend("/server/players", players);
             messagingTemplate.convertAndSend("/server/bullets", bullets);
@@ -272,8 +284,13 @@ public class GameController {
                     MoveCommand moveCommand = new MoveCommand(players.get(playerIndex).getTank(),
                             ((Integer) command.get("direction")).byteValue());
 
-                    if (!commands.contains(moveCommand)) {
+                    if (!commands.contains(moveCommand) /* && run */) {
                         commands.add(moveCommand);
+                        commandsLog.add(moveCommand);
+
+                        // if (commandsLog.size() >= 100) {
+                        //     run = false;
+                        // }
                     }
                     break;
                 case "FIRE":
@@ -307,8 +324,7 @@ public class GameController {
                 new Vector2(2000, 0),
                 new Vector2(2000, 9000),
                 new Vector2(9000, 2000),
-                new Vector2(0, 2000)
-        );
+                new Vector2(0, 2000));
 
             PowerUp powerUp1 = itemFactory.createSpeedPowerUp(locations.get(0));
             addPowerUp(powerUp1);

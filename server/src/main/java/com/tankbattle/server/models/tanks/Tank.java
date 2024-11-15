@@ -28,7 +28,6 @@ public abstract class Tank extends AbstractCollidableEntity implements ITank {
     @JsonIgnore
     private Vector2 previousLocation; // To store previous position for collision response
 
-
     public Tank(WeaponSystem weaponSystem, Vector2 size, int health, int speed) {
         this.weaponSystem = weaponSystem;
         this.size = size;
@@ -189,7 +188,6 @@ public abstract class Tank extends AbstractCollidableEntity implements ITank {
         previousLocation = new Vector2(location.getX(), location.getY());
         location.setX(newX);
         location.setY(newY);
-
 
         updateLookDirection();
     }

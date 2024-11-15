@@ -8,8 +8,8 @@ import com.tankbattle.server.models.Bullet;
 import com.tankbattle.server.utils.Vector2;
 
 public class MachineGun extends WeaponSystem {
-    public final static int COOLDOWN_TIME = 600;
-    public final static int RESET_THRESHOLD = 800;
+    private final static int COOLDOWN_TIME = 600;
+    private final static int RESET_THRESHOLD = 800;
 
     public MachineGun() {
         super(COOLDOWN_TIME, 0);
@@ -32,13 +32,13 @@ public class MachineGun extends WeaponSystem {
         }
     }
 
-    public void updateCooldown() {
+    private void updateCooldown() {
         if (System.currentTimeMillis() - lastFireTime >= RESET_THRESHOLD) {
             resetCooldown();
         }
     }
 
-    protected void resetCooldown() {
+    private void resetCooldown() {
         cooldownTime = COOLDOWN_TIME;
     }
 }
