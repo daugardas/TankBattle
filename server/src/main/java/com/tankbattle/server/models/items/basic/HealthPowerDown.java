@@ -1,8 +1,8 @@
 package com.tankbattle.server.models.items.basic;
 
-import com.tankbattle.server.models.Player;
 import com.tankbattle.server.models.items.PowerDown;
 import com.tankbattle.server.models.items.PowerDownType;
+import com.tankbattle.server.models.tanks.Tank;
 import com.tankbattle.server.utils.Vector2;
 
 public class HealthPowerDown extends PowerDown {
@@ -11,7 +11,7 @@ public class HealthPowerDown extends PowerDown {
     }
 
     @Override
-    public void applyEffect(Player player) {
+    public void applyEffect(Tank tank) {
         // Reduce player's health by a small amount
         // player.decreaseHealth(10);
         System.out.println("Basic health power down applied");
