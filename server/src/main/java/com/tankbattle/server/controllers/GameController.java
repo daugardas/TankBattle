@@ -1,5 +1,21 @@
 package com.tankbattle.server.controllers;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.messaging.handler.annotation.MessageMapping;
+import org.springframework.messaging.handler.annotation.Payload;
+import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.messaging.simp.annotation.SubscribeMapping;
+import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.stereotype.Controller;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.tankbattle.server.builders.BasicLevelBuilder;
@@ -10,23 +26,14 @@ import com.tankbattle.server.components.WebSocketSessionManager;
 import com.tankbattle.server.factories.LevelGeneratorFactory;
 import com.tankbattle.server.models.Bullet;
 import com.tankbattle.server.models.Level;
-import com.tankbattle.server.models.tiles.IceTile;
-import com.tankbattle.server.models.tiles.Tile;
 import com.tankbattle.server.models.Player;
-import com.tankbattle.server.models.PowerUp;
+import com.tankbattle.server.models.powerups.BasicPowerUpFactory;
+import com.tankbattle.server.models.powerups.PowerUp;
+import com.tankbattle.server.models.powerups.PowerUpFactory;
 import com.tankbattle.server.strategies.Level.LevelGenerator;
 import com.tankbattle.server.utils.Vector2;
-import jakarta.annotation.PostConstruct;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.messaging.handler.annotation.MessageMapping;
-import org.springframework.messaging.handler.annotation.Payload;
-import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
-import org.springframework.messaging.simp.annotation.SubscribeMapping;
-import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.stereotype.Controller;
 
-import java.util.*;
+import jakarta.annotation.PostConstruct;
 
 @Controller
 public class GameController {
@@ -98,6 +105,8 @@ public class GameController {
 
         System.out.println("Level initialized. Level:");
         System.out.println(level.toString());
+
+        spawnPowerUpsAtLocations();
 
         //-----------------------------------------Prototype------------------------------------------------------
         /*
@@ -267,4 +276,41 @@ public class GameController {
 
         messagingTemplate.convertAndSend("/server/collisions", collisionLocation);
     }
+
+    public void spawnPowerUpsAtLocations() {
+        PowerUpFactory powerUpFactory = new BasicPowerUpFactory();
+
+        List<Vector2> locations = Arrays.asList(
+            new Vector2(2000, 0),
+            new Vector2(2000, 9000),
+            new Vector2(9000, 2000)
+        );
+
+        for (int i = 0; i < locations.size(); i++) {
+            Vector2 location = locations.get(i);
+            PowerUp powerUp;
+
+            switch (i % 3) {
+                case 0:
+                    powerUp = powerUpFactory.createHealthPowerUp(location);
+                    break;
+                case 1:
+                    powerUp = powerUpFactory.createSpeedPowerUp(location);
+                    break;
+                case 2:
+                    powerUp = powerUpFactory.createDamagePowerUp(location);
+                    break;
+                default:
+                    powerUp = powerUpFactory.createHealthPowerUp(location);
+                }
+            addPowerUp(powerUp);
+        }
+    }
+
+    public void addPowerUp(PowerUp powerUp) {
+        powerUps.add(powerUp);
+        collisionManager.spatialGrid.addEntity(powerUp, false);
+    }
+
+
 }

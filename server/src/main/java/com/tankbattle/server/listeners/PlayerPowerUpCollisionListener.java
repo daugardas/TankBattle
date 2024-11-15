@@ -6,7 +6,7 @@ import org.springframework.stereotype.Component;
 
 import com.tankbattle.server.events.CollisionEvent;
 import com.tankbattle.server.models.Player;
-import com.tankbattle.server.models.PowerUp;
+import com.tankbattle.server.models.powerups.PowerUp;
 
 @Component
 public class PlayerPowerUpCollisionListener implements CollisionListener {
@@ -21,9 +21,9 @@ public class PlayerPowerUpCollisionListener implements CollisionListener {
         Player player = event.getPlayer();
         PowerUp powerUp = (PowerUp) event.getOtherEntity();
 
-        // Implement collision response, e.g., apply power-up effect
-        //player.applyPowerUp(powerUp.getType());
-        powerUp.consume();
+        powerUp.applyEffect(player);
+
+        
         logger.info("Player {} collected a power-up: {}", player.getUsername());//, powerUp.getType());
     }
 }
