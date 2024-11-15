@@ -2,13 +2,12 @@ package com.tankbattle.server.commands;
 
 import java.util.Objects;
 
-
-import com.tankbattle.server.models.tanks.Tank;
+import com.tankbattle.server.models.tanks.ITank;
 
 public class FireCommand implements ICommand {
-    private Tank tank;
+    private ITank tank;
 
-    public FireCommand(Tank tank) {
+    public FireCommand(ITank tank) {
         this.tank = tank;
     }
 

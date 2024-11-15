@@ -8,8 +8,7 @@ import org.springframework.stereotype.Component;
 
 import com.tankbattle.server.controllers.GameController;
 import com.tankbattle.server.events.CollisionEvent;
-import com.tankbattle.server.models.Player;
-import com.tankbattle.server.models.tanks.Tank;
+import com.tankbattle.server.models.tanks.ITank;
 
 @Component
 public class TankTankCollisionListener implements CollisionListener {
@@ -28,8 +27,8 @@ public class TankTankCollisionListener implements CollisionListener {
             return;
         }
 
-        Tank tank1 = event.getTank();
-        Tank tank2 = (Tank) event.getOtherEntity();
+        ITank tank1 = event.getTank();
+        ITank tank2 = (ITank) event.getOtherEntity();
 
         // Implement collision response, e.g., prevent overlapping
         tank1.revertToPreviousPosition();

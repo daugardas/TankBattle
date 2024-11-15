@@ -4,14 +4,14 @@ import java.util.Objects;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.tankbattle.server.models.tanks.HeavyTank;
-import com.tankbattle.server.models.tanks.Tank;
+import com.tankbattle.server.models.tanks.ITank;
 
 public class Player {
     @JsonIgnore
     private String sessionId;
 
     private String username;
-    private Tank tank;
+    private ITank tank;
 
     public Player() {
         tank = new HeavyTank();
@@ -40,11 +40,11 @@ public class Player {
         this.username = username;
     }
 
-    public Tank getTank() {
+    public ITank getTank() {
         return tank;
     }
 
-    public void setTank(Tank tank) {
+    public void setTank(ITank tank) {
         this.tank = tank;
     }
 

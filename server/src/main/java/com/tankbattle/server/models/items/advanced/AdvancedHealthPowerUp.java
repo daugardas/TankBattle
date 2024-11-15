@@ -1,9 +1,8 @@
 package com.tankbattle.server.models.items.advanced;
 
-import com.tankbattle.server.models.Player;
-import com.tankbattle.server.models.powerups.PowerUp;
-import com.tankbattle.server.models.powerups.PowerUpType;
-import com.tankbattle.server.models.tanks.Tank;
+import com.tankbattle.server.models.items.PowerUp;
+import com.tankbattle.server.models.items.PowerUpType;
+import com.tankbattle.server.models.tanks.ITank;
 import com.tankbattle.server.utils.Vector2;
 
 public class AdvancedHealthPowerUp extends PowerUp {
@@ -12,8 +11,7 @@ public class AdvancedHealthPowerUp extends PowerUp {
     }
 
     @Override
-    public void applyEffect(Tank tank) {
-        //player.increaseHealth(50); // Advanced health boost
+    public void applyEffect(ITank tank) {
         System.out.println("Advanced health power up applied");
     }
 }

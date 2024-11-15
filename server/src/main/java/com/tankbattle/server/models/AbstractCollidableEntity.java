@@ -8,7 +8,7 @@ import java.util.Set;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.tankbattle.server.utils.SpatialGrid.GridNode;
 
-public abstract class AbstractCollidableEntity implements GameEntity {
+public abstract class AbstractCollidableEntity implements ICollidableEntity {
     @JsonIgnore
     private int queryId;
     @JsonIgnore

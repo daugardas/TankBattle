@@ -1,9 +1,7 @@
-package com.tankbattle.server.models.powerups;
+package com.tankbattle.server.models.items;
 
-import com.tankbattle.server.models.items.PowerDown;
-import com.tankbattle.server.models.items.PowerDownType;
-import com.tankbattle.server.models.items.basic.DamagePowerDown;
-import com.tankbattle.server.models.items.basic.DamagePowerUp;
+import com.tankbattle.server.models.items.basic.ArmorPowerDown;
+import com.tankbattle.server.models.items.basic.ArmorPowerUp;
 import com.tankbattle.server.models.items.basic.HealthPowerDown;
 import com.tankbattle.server.models.items.basic.HealthPowerUp;
 import com.tankbattle.server.models.items.basic.SpeedPowerDown;
@@ -22,8 +20,8 @@ public class BasicItemFactory implements ItemFactory {
     }
 
     @Override
-    public PowerUp createDamagePowerUp(Vector2 location) {
-        return new DamagePowerUp(location, PowerUpType.DAMAGE);
+    public PowerUp createArmorPowerUp(Vector2 location) {
+        return new ArmorPowerUp(location, PowerUpType.ARMOR);
     }
 
     @Override
@@ -37,7 +35,7 @@ public class BasicItemFactory implements ItemFactory {
     }
 
     @Override
-    public PowerDown createDamagePowerDown(Vector2 location) {
-        return new DamagePowerDown(location, PowerDownType.DAMAGE);
+    public PowerDown createArmorPowerDown(Vector2 location) {
+        return new ArmorPowerDown(location, PowerDownType.ARMOR);
     }
 }

@@ -2,14 +2,14 @@ package com.tankbattle.server.commands;
 
 import java.util.Objects;
 
-import com.tankbattle.server.models.tanks.Tank;
+import com.tankbattle.server.models.tanks.ITank;
 import com.tankbattle.server.utils.Constants;
 
 public class MoveCommand implements ICommand {
-    private Tank tank;
+    private ITank tank;
     private byte direction;
 
-    public MoveCommand(Tank tank, byte direction) {
+    public MoveCommand(ITank tank, byte direction) {
         this.tank = tank;
         this.direction = direction;
     }
