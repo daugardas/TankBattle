@@ -1,0 +1,19 @@
+Gvidas:
+Template method (weapons system)
+Composite
+State
+
+Aivaras:
+Mediator
+Proxy
+Iterator
+
+Mindaugas:
+Chain of responsibility (input handling)
+Memento mori
+Visitor
+
+Daugardas:
++ Template method
+Flyweight
+Interpreter (komandu skaitymas serveryje)
