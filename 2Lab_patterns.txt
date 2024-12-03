@@ -1,29 +1,19 @@
-Template method (geriausiai tinka su strategies) - 
-Iterator (tiktu iteruojant per entities, kai tikrinam collisionus) -
-Composite (hierarchinis UI) -
-Flyweight (Tile'u piesimui) - 
-State - 
-Proxy -
-Chain of responsibility -
-Interpreter - 
-Mediator -
-Memento (Tanko powerup'ai, norint prisiminti buvusi state'a. Arba viso zaidimo busena prisiminti, kai ivyksta kazkoks tai ivykis, pvz zaidejas mirsta) -
+Gvidas:
+Template method (weapons system)
+Composite
+State
 
+Aivaras:
+Mediator
+Proxy
+Iterator
 
-Visitor, galetu naudot vietoj collision listenerio, bet tada netiktu iteratoriui, ir bbz kas butu geriausiai, kazkas tokio:
-public class Tank implements ITank, IVisitable {
-    @Override
-    public void accept(CollisionVisitor visitor, GameEntity other) {
-        if (other instanceof Bullet) {
-            visitor.visitTankBulletCollision(this, (Bullet) other);
-        } else if (other instanceof TileEntity) {
-            visitor.visitTankMapCollision(this, (TileEntity) other);
-        } else if (other instanceof PowerUp) {
-            visitor.visitTankPowerUpCollision(this, (PowerUp) other);
-        } else if (other instanceof PowerDown) {
-            visitor.visitTankPowerDownCollision(this, (PowerDown) other);
-        } else if (other instanceof Tank) {
-            visitor.visitTankTankCollision(this, (Tank) other);
-        }
-    }
-} 
+Mindaugas:
+Chain of responsibility (input handling)
+Memento mori
+Visitor
+
+Daugardas:
++ Template method
+Flyweight
+Interpreter (komandu skaitymas serveryje)
