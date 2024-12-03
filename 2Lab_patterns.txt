@@ -1,0 +1,11 @@
+Template method (geriausiai tinka su strategies) - 
+Iterator (tiktu iteruojant per entities, kai tikrinam collisionus) -
+Composite -
+Flyweight (Tile'u piesimui) - 
+State - 
+Proxy -
+Chain of responsibility -
+Interpreter - 
+Mediator -
+Memento -
+Visitor - 
