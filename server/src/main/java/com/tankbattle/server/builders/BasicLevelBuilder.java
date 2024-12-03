@@ -36,6 +36,7 @@ public class BasicLevelBuilder extends ILevelBuilder {
      */
     @Override
     public Level build() {
+        // uztikrinti kad buvo kviestas generate level
         return this.level;
     }
 }
