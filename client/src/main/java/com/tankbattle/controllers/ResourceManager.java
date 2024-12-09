@@ -32,6 +32,10 @@ public class ResourceManager {
         }
         return images.get(fileName);
     }
+
+    public void clearCache() {
+        this.images.clear();
+    }
     
 }
 

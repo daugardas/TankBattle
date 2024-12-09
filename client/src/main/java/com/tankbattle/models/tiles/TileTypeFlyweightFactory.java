@@ -28,4 +28,8 @@ public class TileTypeFlyweightFactory {
             throw new IllegalArgumentException("Could not load tile type " + tileTypeName);
         }
     }
+
+    public static void clearCache(){
+        tileTypes.clear();
+    }
 }

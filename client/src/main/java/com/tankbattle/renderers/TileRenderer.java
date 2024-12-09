@@ -15,11 +15,13 @@ public class TileRenderer implements EntityRenderer<Tile>, Scalable {
     public TileRenderer() {
         this.scaleFactor = 1;
         this.worldLocationScaleFactor = 1;
+        this.worldOffset = new Vector2(0,0);
     }
 
     public TileRenderer(double scaleFactor) {
         this.scaleFactor = scaleFactor;
         this.worldLocationScaleFactor = 1;
+        this.worldOffset = new Vector2(0,0);
     }
 
     @Override
