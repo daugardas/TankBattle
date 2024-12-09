@@ -3,6 +3,7 @@ package com.tankbattle.models;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.tankbattle.controllers.GameManager;
 import com.tankbattle.factories.TileFactory;
 import com.tankbattle.models.tiles.Tile;
 import com.tankbattle.utils.Vector2;
@@ -17,8 +18,7 @@ public class Level {
     }
 
     @JsonCreator
-    public Level(@JsonProperty("width") int width, @JsonProperty("height") int height,
-            @JsonProperty("tiles") String[] tiles, @JsonProperty("spawnPoints") Vector2[] spawnPoints) {
+    public Level(@JsonProperty("width") int width, @JsonProperty("height") int height, @JsonProperty("tiles") String[] tiles, @JsonProperty("spawnPoints") Vector2[] spawnPoints) {
         this.width = width;
         this.height = height;
         setTiles(tiles);
@@ -55,13 +55,13 @@ public class Level {
     }
 
     @JsonIgnore
-    public Vector2[] getSpawnPoints() {
-        return spawnPoints;
+    public void setGrid(Tile[][] grid) {
+        this.grid = grid;
     }
 
     @JsonIgnore
-    public void setGrid(Tile[][] grid) {
-        this.grid = grid;
+    public Vector2[] getSpawnPoints() {
+        return spawnPoints;
     }
 
     @JsonIgnore
@@ -72,7 +72,7 @@ public class Level {
     public void setTiles(String[] tiles) {
         Tile[][] grid = new Tile[width][height];
 
-        TileFactory tileFactory = new TileFactory();
+        TileFactory tileFactory = GameManager.getInstance().getRenderFacade().getTileFactory();
 
         for (int y = 0; y < height; y++) {
             for (int x = 0; x < width; x++) {
@@ -96,13 +96,13 @@ public class Level {
 
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        sb.append("Level:\n width = " + width + ", height = " + height + "\n");
+        sb.append("Level:\n width = ").append(width).append(", height = ").append(height).append("\n");
 
         // append spawn points
         if (spawnPoints != null) {
             sb.append("Spawn points:\n");
             for (Vector2 spawnPoint : spawnPoints) {
-                sb.append(spawnPoint.toString() + "\n");
+                sb.append(spawnPoint.toString()).append("\n");
             }
         } else {
             sb.append("No spawn points\n");
@@ -113,7 +113,7 @@ public class Level {
             sb.append("Grid:\n");
             for (int i = 0; i < width; i++) {
                 for (int j = 0; j < height; j++) {
-                    sb.append(grid[i][j].toString() + " ");
+                    sb.append(grid[i][j].toString()).append(" ");
                 }
                 sb.append("\n");
             }

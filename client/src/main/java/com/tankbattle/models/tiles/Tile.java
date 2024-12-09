@@ -3,27 +3,30 @@ package com.tankbattle.models.tiles;
 import com.tankbattle.models.Entity;
 import com.tankbattle.utils.Vector2;
 
-public abstract class Tile extends Entity {
-    // protected int panelX;
-    // protected int panelY;
+import java.awt.image.BufferedImage;
 
-    public Tile() {
-        this.location = new Vector2();
+public class Tile extends Entity {
+    private final TileType tileType;
+
+    public Tile(TileType type) {
+        this.tileType = type;
         this.size = 1000;
     }
 
-    public Tile(Vector2 location) {
-        this.location = location;
-        this.size = 1000;
+    public int getWorldX() {
+        return this.location.getX() * 1000;
     }
 
-    public Tile(int x, int y) {
-        this.location = new Vector2(x, y);
-        this.size = 1000;
+    public int getWorldY() {
+        return this.location.getY() * 1000;
     }
 
-    public Vector2 getLocation() {
-        return location;
+    public int getSize() {
+        return this.size;
+    }
+
+    public void setSize(int size) {
+        this.size = size;
     }
 
     public void setLocation(Vector2 location) {
@@ -31,26 +34,18 @@ public abstract class Tile extends Entity {
     }
 
     public void setLocation(int x, int y) {
-        this.location = new Vector2(x, y);
+        this.location = new Vector2((float) x, (float) y);
     }
 
-    public void setSize(int size) {
-        this.size = size;
+    public BufferedImage getSprite() {
+        return this.tileType.getSprite();
     }
 
-    public float getWorldX() {
-        return location.getX() * 1000;
-    }
-
-    public float getWorldY() {
-        return location.getY() * 1000;
+    public String getTileTypeName() {
+        return this.tileType.getName();
     }
 
     public String toString() {
-        return this.getClass().getSimpleName();
-    }
-
-    public String toShortString() {
-        return this.toString().substring(0, 1);
+        return this.tileType.toString();
     }
 }

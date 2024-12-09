@@ -1,27 +1,26 @@
 package com.tankbattle.factories;
 
+import com.tankbattle.controllers.ResourceManager;
 import com.tankbattle.models.tiles.Tile;
-import com.tankbattle.models.tiles.defaultTheme.DestructibleTile;
-import com.tankbattle.models.tiles.defaultTheme.IndestructibleTile;
-import com.tankbattle.models.tiles.defaultTheme.LiquidTile;
-import com.tankbattle.models.tiles.defaultTheme.PassableGroundTile;
+import com.tankbattle.models.tiles.TileType;
+import com.tankbattle.models.tiles.TileTypeFlyweightFactory;
 
 public class TileFactory {
-    public TileFactory() {
+    private final TileTypeFlyweightFactory tileTypeFactory;
+    public TileFactory(ResourceManager resourceManager) {
+        tileTypeFactory = new TileTypeFlyweightFactory(resourceManager);
     }
 
     public Tile createTile(char tileType) throws IllegalArgumentException {
-        switch (tileType) {
-            case 'D':
-                return new DestructibleTile();
-            case 'L':
-                return new LiquidTile();
-            case 'I':
-                return new IndestructibleTile();
-            case 'G':
-                return new PassableGroundTile();
-            default:
-                throw new IllegalArgumentException("Invalid tile type: " + tileType);
-        }
+        String fullTypeName = switch (tileType) {
+            case 'D' -> "DestructibleTile";
+            case 'L' -> "LiquidTile";
+            case 'I' -> "IndestructibleTile";
+            case 'G' -> "PassableGroundTile";
+            default -> throw new IllegalArgumentException("Invalid tile type: " + tileType);
+        };
+
+        TileType tileTypeFlyweight = tileTypeFactory.createTileType(fullTypeName);
+        return new Tile(tileTypeFlyweight);
     }
 }

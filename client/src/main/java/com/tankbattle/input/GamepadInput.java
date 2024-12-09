@@ -51,7 +51,7 @@ public class GamepadInput {
                 Thread.sleep(10);
 
             } catch (Exception e) {
-
+                e.printStackTrace();
             }
         }
     }
