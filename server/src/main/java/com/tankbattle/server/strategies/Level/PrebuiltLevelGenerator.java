@@ -2,12 +2,9 @@ package com.tankbattle.server.strategies.Level;
 
 import com.tankbattle.server.factories.TileFactory;
 import com.tankbattle.server.models.Level;
-import com.tankbattle.server.models.tiles.Tile;
 
-public class PrebuiltLevelGenerator implements LevelGenerator {
+public class PrebuiltLevelGenerator extends LevelGenerator {
     private String levelString;
-    private int width;
-    private int height;
 
     public PrebuiltLevelGenerator() {
         this.levelString = """
@@ -41,77 +38,54 @@ public class PrebuiltLevelGenerator implements LevelGenerator {
         this.width = lines[0].split(" ").length;
     }
 
-    /**
-     * @param width
-     */
     @Override
-    public void setWidth(int width) {
-        this.width = width;
+    protected boolean shouldAddObstacles() {
+        return true;
     }
 
-    /**
-     * @param height
-     */
     @Override
-    public void setHeight(int height) {
-        this.height = height;
-    }
-
-    /**
-     * @param width
-     * @param height
-     * @param groundFactory
-     * @param destructibleFactory
-     * @param indestructibleFactory
-     * @param liquidFactory
-     * @return
-     */
-    @Override
-    public Level generateLevel(int width, int height, TileFactory groundFactory, TileFactory destructibleFactory, TileFactory indestructibleFactory, TileFactory liquidFactory) {
-        String[] lines = levelString.split("\n");
-        Level level = new Level(width, height);
-
-        Tile liquid = liquidFactory.createTile();
-        Tile indestructible = indestructibleFactory.createTile();
-        Tile destructible = destructibleFactory.createTile();
-        Tile ground = groundFactory.createTile();
-
+    protected void addObstacles(Level level, TileFactory destructibleFactory, TileFactory indestructibleFactory) {
         for (int y = 0; y < height; y++) {
-            String[] tiles = lines[height - y - 1].split(" ");
             for (int x = 0; x < width; x++) {
-                String tileSymbol = tiles[x];
-                Tile tile;
-
-                // Create tile based on symbol, and clone to ensure unique instances
-                switch (tileSymbol) {
-                    case "L":
-                        tile = liquid.copyShallow(); // Ensure liquid tile creation and cloning
-                        break;
-                    case "I":
-                        tile = indestructible.copyShallow(); // Ensure indestructible tile creation and cloning
-                        break;
-                    case "D":
-                        tile = destructible.copyShallow(); // Ensure destructible tile creation and cloning
-                        break;
-                    default:
-                        tile = ground.copyShallow(); // Default to ground tile creation and cloning
-                        break;
+                String tileSymbol = levelString.split("\n")[height - y - 1].split(" ")[x];
+                if (tileSymbol.equals("D")) {
+                    level.setTile(x, y, destructibleFactory.createTile());
+                } else if (tileSymbol.equals("I")) {
+                    level.setTile(x, y, indestructibleFactory.createTile());
                 }
-                level.setTile(x, y, tile); // Set tile in level grid
             }
         }
+    }
 
-        return level;
-    }
-    /**
-     * @param groundFactory
-     * @param destructibleFactory
-     * @param indestructibleFactory
-     * @param liquidFactory
-     * @return
-     */
     @Override
-    public Level generateLevel(TileFactory groundFactory, TileFactory destructibleFactory, TileFactory indestructibleFactory, TileFactory liquidFactory) {
-        return this.generateLevel(this.width, this.height, groundFactory, destructibleFactory, indestructibleFactory, liquidFactory);
+    protected boolean shouldAddLiquids() {
+        if (levelString.contains("L")) {
+            return true;
+        }
+        return false;
     }
+
+    @Override
+    protected void addLiquids(Level level, TileFactory liquidFactory) {
+        for (int y = 0; y < height; y++) {
+            for (int x = 0; x < width; x++) {
+                String tileSymbol = levelString.split("\n")[height - y - 1].split(" ")[x];
+                if (tileSymbol.equals("L")) {
+                    level.setTile(x, y, liquidFactory.createTile());
+                }
+            }
+        }
+    }
+
+    @Override
+    protected void addPowerUps(Level level) {
+        // todo: implement
+    }
+
+    @Override
+    protected void addSpawnPoints(Level level) {
+        // todo: implement
+    }
+
+    
 }
