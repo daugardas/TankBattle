@@ -20,6 +20,7 @@ public class TileMemoryTest {
     private static final Runtime runtime = Runtime.getRuntime();
     private static final int WORLD_SIZE = 100;
     private static final int ITERATIONS = 100;
+    private static final int WARMUP_ITERATIONS = 5;
 
     private static final String testLevelString = """
             G G G D D D D G G G
@@ -32,6 +33,18 @@ public class TileMemoryTest {
             G G G G G G G G G G
             G G G D D D D G G G
             G G G D D D D G G G""";
+
+    private static class PerformanceMetrics {
+        long memoryUsed;
+        long creationTime;
+        double renderTime;
+
+        PerformanceMetrics(long memoryUsed, long creationTime, double renderTime) {
+            this.memoryUsed = memoryUsed;
+            this.creationTime = creationTime;
+            this.renderTime = renderTime;
+        }
+    }
 
     private static long getMemoryUsage() {
         forceGC();
@@ -263,19 +276,7 @@ public class TileMemoryTest {
         }
     }
 
-    private static long testWithoutFlyweight(ResourceManager resourceManager) {
-        System.out.println("Testing without Flyweight:");
-        long startMemory = getMemoryUsage();
-
-        TileFactoryWithoutFlyweight tileFactory = new TileFactoryWithoutFlyweight();
-        TileWithoutFlyweight[][] tiles = new TileWithoutFlyweight[WORLD_SIZE][WORLD_SIZE];
-        TileRendererWithoutFlyWeight renderer = new TileRendererWithoutFlyWeight(resourceManager);
-
-        // Create a dummy Graphics2D object to force sprite loading
-        BufferedImage dummyImage = new BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB);
-        Graphics2D g2d = dummyImage.createGraphics();
-
-        // Parse level string and create tiles
+    private static void createTilesFromLevel(TileWithoutFlyweight[][] tiles, TileFactoryWithoutFlyweight tileFactory) {
         String[] rows = testLevelString.split("\n");
         int height = rows.length;
         int width = rows[0].trim().split(" ").length;
@@ -287,7 +288,7 @@ public class TileMemoryTest {
                 tiles[y][x] = tileFactory.createTile(tileType);
                 tiles[y][x].setLocation(x, y);
                 // Force sprite loading through renderer
-                renderer.draw(g2d, (TileWithoutFlyweight) tiles[y][x]);
+                // renderer.draw(g2d, (TileWithoutFlyweight) tiles[y][x]);
             }
         }
 
@@ -296,38 +297,60 @@ public class TileMemoryTest {
             for (int x = 0; x < WORLD_SIZE; x++) {
                 tiles[y][x] = tileFactory.createTile('G');
                 tiles[y][x].setLocation(x, y);
-                renderer.draw(g2d, (TileWithoutFlyweight) tiles[y][x]);
+                // renderer.draw(g2d, (TileWithoutFlyweight) tiles[y][x]);
             }
         }
         for (int y = 0; y < height; y++) {
             for (int x = width; x < WORLD_SIZE; x++) {
                 tiles[y][x] = tileFactory.createTile('G');
                 tiles[y][x].setLocation(x, y);
-                renderer.draw(g2d, (TileWithoutFlyweight) tiles[y][x]);
+                // renderer.draw(g2d, (TileWithoutFlyweight) tiles[y][x]);
+            }
+        }
+    }
+
+    private static void renderTiles(TileWithoutFlyweight[][] tiles, TileRendererWithoutFlyWeight renderer) {
+        BufferedImage dummyImage = new BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB);
+        Graphics2D g2d = dummyImage.createGraphics();
+
+        for (int y = 0; y < tiles.length; y++) {
+            for (int x = 0; x < tiles[y].length; x++) {
+                renderer.draw(g2d, tiles[y][x]);
             }
         }
 
         g2d.dispose();
+    }
+
+    private static PerformanceMetrics testWithoutFlyweight(ResourceManager resourceManager) {
+
+        System.out.println("Testing without Flyweight:");
+        long startMemory = getMemoryUsage();
+        long startCreationTime = System.nanoTime();
+
+        TileFactoryWithoutFlyweight tileFactory = new TileFactoryWithoutFlyweight();
+        TileWithoutFlyweight[][] tiles = new TileWithoutFlyweight[WORLD_SIZE][WORLD_SIZE];
+        TileRendererWithoutFlyWeight renderer = new TileRendererWithoutFlyWeight(resourceManager);
+
+        // test level instantiontion time
+        createTilesFromLevel(tiles, tileFactory);
+        long creationTime = System.nanoTime() - startCreationTime;
+
+        // testing rendering performance of a frame
+        long startRenderTime = System.nanoTime();
+        renderTiles(tiles, renderer);
+        double renderTime = (System.nanoTime() - startRenderTime) / 1_000_000.0;
 
         long endMemory = getMemoryUsage();
         long memoryUsed = (endMemory - startMemory) / 1024;
-        System.out.println("Memory used: " + memoryUsed + " KB");
-        return memoryUsed;
+
+        System.out.printf("Memory: %d KB, Creation: %.2f ms, Render: %.2f ms%n",
+                memoryUsed, creationTime / 1_000_000.0, renderTime);
+
+        return new PerformanceMetrics(memoryUsed, creationTime, renderTime);
     }
 
-    private static long testWithFlyweight(ResourceManager resourceManager) {
-        System.out.println("Testing with Flyweight:");
-        long startMemory = getMemoryUsage();
-
-        TileFactory tileFactory = new TileFactory(resourceManager);
-        Tile[][] tiles = new Tile[WORLD_SIZE][WORLD_SIZE];
-        TileRenderer renderer = new TileRenderer();
-
-        // Create a dummy Graphics2D object to force sprite loading
-        BufferedImage dummyImage = new BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB);
-        Graphics2D g2d = dummyImage.createGraphics();
-
-        // Parse level string and create tiles
+    private static void createTilesFromLevel(Tile[][] tiles, TileFactory tileFactory) {
         String[] rows = testLevelString.split("\n");
         int height = rows.length;
         int width = rows[0].trim().split(" ").length;
@@ -338,32 +361,59 @@ public class TileMemoryTest {
                 char tileType = tileCodes[x].charAt(0);
                 tiles[y][x] = tileFactory.createTile(tileType);
                 tiles[y][x].setLocation(x, y);
-                renderer.draw(g2d, tiles[y][x]);
             }
         }
-    
-        // Fill remaining space with ground tiles
+
         for (int y = height; y < WORLD_SIZE; y++) {
             for (int x = 0; x < WORLD_SIZE; x++) {
                 tiles[y][x] = tileFactory.createTile('G');
                 tiles[y][x].setLocation(x, y);
-                renderer.draw(g2d, tiles[y][x]);
             }
         }
         for (int y = 0; y < height; y++) {
             for (int x = width; x < WORLD_SIZE; x++) {
                 tiles[y][x] = tileFactory.createTile('G');
                 tiles[y][x].setLocation(x, y);
+            }
+        }
+    }
+
+    private static void renderTiles(Tile[][] tiles, TileRenderer renderer) {
+        BufferedImage dummyImage = new BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB);
+        Graphics2D g2d = dummyImage.createGraphics();
+
+        for (int y = 0; y < tiles.length; y++) {
+            for (int x = 0; x < tiles[y].length; x++) {
                 renderer.draw(g2d, tiles[y][x]);
             }
         }
-    
+
         g2d.dispose();
+    }
+
+    private static PerformanceMetrics testWithFlyweight(ResourceManager resourceManager) {
+        System.out.println("Testing with Flyweight:");
+        long startMemory = getMemoryUsage();
+        long startCreationTime = System.nanoTime();
+
+        TileFactory tileFactory = new TileFactory(resourceManager);
+        Tile[][] tiles = new Tile[WORLD_SIZE][WORLD_SIZE];
+        TileRenderer renderer = new TileRenderer();
+
+        createTilesFromLevel(tiles, tileFactory);
+        long creationTime = System.nanoTime() - startCreationTime;
+
+        long startRenderTime = System.nanoTime();
+        renderTiles(tiles, renderer);
+        double renderTime = (System.nanoTime() - startRenderTime) / 1_000_000.0;
 
         long endMemory = getMemoryUsage();
         long memoryUsed = (endMemory - startMemory) / 1024;
-        System.out.println("Memory used: " + memoryUsed + " KB");
-        return memoryUsed;
+
+        System.out.printf("Memory: %d KB, Creation: %.2f ms, Render: %.2f ms%n",
+                memoryUsed, creationTime / 1_000_000.0, renderTime);
+
+        return new PerformanceMetrics(memoryUsed, creationTime, renderTime);
     }
 
     private static void forceGC() {
@@ -377,33 +427,72 @@ public class TileMemoryTest {
 
     public static void test() {
         long[] withoutFlyweightMemory = new long[ITERATIONS];
+        long[] withoutFlyweightCreation = new long[ITERATIONS];
+        double[] withoutFlyweightRender = new double[ITERATIONS];
         long[] withFlyweightMemory = new long[ITERATIONS];
-        
+        long[] withFlyweightCreation = new long[ITERATIONS];
+        double[] withFlyweightRender = new double[ITERATIONS];
+
+        System.out.println("Warming up JVM...");
+        for (int i = 0; i < WARMUP_ITERATIONS; i++) {
+            ResourceManager rm = new ResourceManager();
+            testWithoutFlyweight(rm);
+            testWithFlyweight(rm);
+            rm.clearCache();
+            forceGC();
+        }
+
+        System.out.println("\nStarting performance and memory tests...");
         for (int i = 0; i < ITERATIONS; i++) {
             System.out.println("\nIteration: " + (i + 1));
-            
+
             TileTypeFlyweightFactory.clearCache();
             forceGC();
-            
+
             ResourceManager resourceManagerWithoutFlyweight = new ResourceManager();
-            withoutFlyweightMemory[i] = testWithoutFlyweight(resourceManagerWithoutFlyweight);
+            PerformanceMetrics metricsWithoutFw = testWithoutFlyweight(resourceManagerWithoutFlyweight);
+            withoutFlyweightMemory[i] = metricsWithoutFw.memoryUsed;
+            withoutFlyweightCreation[i] = metricsWithoutFw.creationTime;
+            withoutFlyweightRender[i] = metricsWithoutFw.renderTime;
             resourceManagerWithoutFlyweight.clearCache();
-            
             forceGC();
-            
+
             ResourceManager resourceManager = new ResourceManager();
-            withFlyweightMemory[i] = testWithFlyweight(resourceManager);
+            PerformanceMetrics metricsWithFw = testWithFlyweight(resourceManager);
+            withFlyweightMemory[i] = metricsWithFw.memoryUsed;
+            withFlyweightCreation[i] = metricsWithFw.creationTime;
+            withFlyweightRender[i] = metricsWithFw.renderTime;
             resourceManager.clearCache();
         }
-        
-        // Calculate and print averages
-        double avgWithout = Arrays.stream(withoutFlyweightMemory).average().orElse(0);
-        double avgWith = Arrays.stream(withFlyweightMemory).average().orElse(0);
-        
+
+        // Calculate averages
+        double avgMemoryWithout = Arrays.stream(withoutFlyweightMemory).average().orElse(0);
+        double avgMemoryWith = Arrays.stream(withFlyweightMemory).average().orElse(0);
+        double avgCreationWithout = Arrays.stream(withoutFlyweightCreation).average().orElse(0) / 1_000_000.0;
+        double avgCreationWith = Arrays.stream(withFlyweightCreation).average().orElse(0) / 1_000_000.0;
+        double avgRenderWithout = Arrays.stream(withoutFlyweightRender).average().orElse(0);
+        double avgRenderWith = Arrays.stream(withFlyweightRender).average().orElse(0);
+
         System.out.println("\nAverage Statistics:");
-        System.out.println("Without Flyweight: " + String.format("%.2f", avgWithout) + " KB");
-        System.out.println("With Flyweight: " + String.format("%.2f", avgWith) + " KB");
-        System.out.println("Memory Saved: " + String.format("%.2f", avgWithout - avgWith) + " KB");
-        System.out.println("Memory Reduction: " + String.format("%.1f", (avgWithout - avgWith) / avgWithout * 100) + "%");
+        System.out.println("Memory Usage:");
+        System.out.println("  Without Flyweight: " + String.format("%.2f", avgMemoryWithout) + " KB");
+        System.out.println("  With Flyweight: " + String.format("%.2f", avgMemoryWith) + " KB");
+        System.out.println("  Memory Saved: " + String.format("%.2f", avgMemoryWithout - avgMemoryWith) + " KB");
+        System.out.println("  Memory Reduction: "
+                + String.format("%.1f", (avgMemoryWithout - avgMemoryWith) / avgMemoryWithout * 100) + "%");
+
+        System.out.println("\nCreation Time:");
+        System.out.println("  Without Flyweight: " + String.format("%.2f", avgCreationWithout) + " ms");
+        System.out.println("  With Flyweight: " + String.format("%.2f", avgCreationWith) + " ms");
+        System.out.println("  Time Saved: " + String.format("%.2f", avgCreationWithout - avgCreationWith) + " ms");
+        System.out.println("  Creation Speed Improvement: "
+                + String.format("%.1f", (avgCreationWithout - avgCreationWith) / avgCreationWithout * 100) + "%");
+
+        System.out.println("\nRender Time:");
+        System.out.println("  Without Flyweight: " + String.format("%.2f", avgRenderWithout) + " ms");
+        System.out.println("  With Flyweight: " + String.format("%.2f", avgRenderWith) + " ms");
+        System.out.println("  Time Saved: " + String.format("%.2f", avgRenderWithout - avgRenderWith) + " ms");
+        System.out.println("  Render Speed Improvement: "
+                + String.format("%.1f", (avgRenderWithout - avgRenderWith) / avgRenderWithout * 100) + "%");
     }
 }
