@@ -54,11 +54,6 @@ public class GamePanel extends JPanel {
 
         ClientFPSCounter.getInstance().incrementFrameCount();
 
-        // TODO: Rendering is done in one thread, fix it to use multiple threads
-        // we can optimize this by rendering images to buffers in seperate
-        // threads and then drawing them all at once, this way we can avoid the 
-        // overhead of drawing each image individually
-
         BufferedImage clearedPanelImage = new BufferedImage(getWidth(), getHeight(), BufferedImage.TYPE_INT_ARGB);
         BufferedImage entitiesBufferedImage = new BufferedImage(getWidth(), getHeight(), BufferedImage.TYPE_INT_ARGB);
         BufferedImage worldBordersBufferedImage = new BufferedImage(getWidth(), getHeight(), BufferedImage.TYPE_INT_ARGB);
