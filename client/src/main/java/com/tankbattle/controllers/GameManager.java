@@ -219,4 +219,8 @@ public class GameManager {
         movementCommandExecutorService.shutdown();
         webSocketManager.close();
     }
+
+    public RenderFacade getRenderFacade() {
+        return renderFacade;
+    }
 }

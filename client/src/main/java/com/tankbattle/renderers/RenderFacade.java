@@ -1,6 +1,7 @@
 package com.tankbattle.renderers;
 
 import com.tankbattle.controllers.ResourceManager;
+import com.tankbattle.factories.TileFactory;
 import com.tankbattle.models.Bullet;
 import com.tankbattle.models.Collision;
 import com.tankbattle.models.Entity;
@@ -15,14 +16,15 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class RenderFacade {
     private final Map<Class<? extends Entity>, EntityRenderer<? extends Entity>> renderers = new ConcurrentHashMap<>();
-    private double scaleFactor;
-    private double worldLocationScaleFactor;
-    private Vector2 worldOffset;
+
+    private final TileFactory tileFactory;
 
     public RenderFacade(ResourceManager resourceManager) {
+        this.tileFactory = new TileFactory(resourceManager);
+
         // Register all renderers
         registerRenderer(Player.class, new TankRenderer(resourceManager));
-        registerRenderer(Tile.class, new TileRenderer(resourceManager));
+        registerRenderer(Tile.class, new TileRenderer());
         registerRenderer(Collision.class, new ExplosionRenderer(resourceManager));
         registerRenderer(Bullet.class, new BulletRenderer(resourceManager));
     }
@@ -54,27 +56,28 @@ public class RenderFacade {
     }
 
     public void setRenderingScaleFactor(double scaleFactor) {
-        this.scaleFactor = scaleFactor;
         for (EntityRenderer<? extends Entity> renderer : renderers.values()) {
-            if (renderer instanceof Scalable) {
+            if (renderer != null) {
                 ((Scalable) renderer).setRenderingScaleFactor(scaleFactor);
             }
         }
     }
 
     public void setWorldLocationScaleFactor(double worldLocationScaleFactor) {
-        this.worldLocationScaleFactor = worldLocationScaleFactor;
         for (EntityRenderer<? extends Entity> renderer : renderers.values()) {
-            if (renderer instanceof Scalable) {
+            if (renderer != null) {
                 ((Scalable) renderer).setWorldLocationScaleFactor(worldLocationScaleFactor);
             }
         }
     }
 
     public void setWorldOffset(Vector2 worldOffset) {
-        this.worldOffset = worldOffset;
         for (EntityRenderer<? extends Entity> renderer : renderers.values()) {
             renderer.setWorldOffset(worldOffset);
         }
+    }
+
+    public TileFactory getTileFactory() {
+        return tileFactory;
     }
 }
