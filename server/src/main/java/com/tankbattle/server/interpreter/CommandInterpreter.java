@@ -2,11 +2,13 @@ package com.tankbattle.server.interpreter;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.NoSuchElementException;
 
 import com.tankbattle.server.controllers.GameController;
 import com.tankbattle.server.interpreter.expressions.HelpExpression;
+import com.tankbattle.server.interpreter.expressions.KickPlayerExpression;
+import com.tankbattle.server.interpreter.expressions.ListPlayersExpression;
 import com.tankbattle.server.interpreter.expressions.MovePlayerExpression;
+import com.tankbattle.server.interpreter.expressions.SpawnRandomPowerUpExpression;
 
 public class CommandInterpreter {
     private List<CommandExpression> expressions;
@@ -15,6 +17,9 @@ public class CommandInterpreter {
         expressions = new ArrayList<>();
         expressions.add(new MovePlayerExpression());
         expressions.add(new HelpExpression());
+        expressions.add(new KickPlayerExpression());
+        // expressions.add(new ListPlayersExpression());
+        // expressions.add(new SpawnRandomPowerUpExpression());
     }
 
     public void interpret(String input, GameController gameController) {

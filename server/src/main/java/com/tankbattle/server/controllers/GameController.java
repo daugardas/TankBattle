@@ -122,14 +122,34 @@ public class GameController {
         }
     }
 
-    public void movePlayer(String username, float x, float y){
+    public void movePlayer(String username, float x, float y) {
         for (Player player : players) {
-            if(player.getUsername().equals(username)){
+            if (player.getUsername().equals(username)) {
                 player.getTank().getLocation().addToX(x);
                 player.getTank().getLocation().addToY(y);
                 break;
             }
         }
+    }
+
+    public void kickPlayer(String username) {
+        System.out.println("Removing '" + username + "' from server");
+        String sessionId = players.stream().filter(player -> player.getUsername().equals(username))
+                .map(Player::getSessionId).findFirst().orElse(null);
+        if (sessionId == null) {
+            System.out.println("Couldn't find online player with username '" + username + "'");
+            printToConsole("Couldn't find online player with username '" + username + "'");
+            return;
+        }
+
+        if (!sessionManager.isSessionActive(sessionId)) {
+            System.out.println("Session '" + sessionId + "' is not active.");
+            return;
+        }
+
+        System.out.println("Removing session '" + sessionId + "'");
+        sessionManager.removeSession(sessionId);
+        printToConsole("Kicked '" + username + "' from the server.");
     }
 
     @PostConstruct

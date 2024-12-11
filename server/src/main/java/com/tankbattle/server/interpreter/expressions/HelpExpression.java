@@ -1,7 +1,5 @@
 package com.tankbattle.server.interpreter.expressions;
 
-import java.util.NoSuchElementException;
-
 import com.tankbattle.server.interpreter.CommandContext;
 import com.tankbattle.server.interpreter.CommandExpression;
 
