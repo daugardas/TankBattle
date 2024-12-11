@@ -39,13 +39,13 @@ public class CommandConsoleWindow extends JFrame {
         this.commandLog = new ArrayList<>();
 
         // window set up
-        setSize(600, 400);
+        setSize(1200, 600);
         setLayout(new BorderLayout());
         setResizable(true);
 
         outputArea = new JTextArea();
         outputArea.setEditable(false);
-        outputArea.setFont(new Font("Monospaced", Font.PLAIN, 12));
+        outputArea.setFont(new Font("Monospaced", Font.PLAIN, 24));
         JScrollPane scrollPane = new JScrollPane(outputArea);
         add(scrollPane, BorderLayout.CENTER);
 
@@ -94,8 +94,10 @@ public class CommandConsoleWindow extends JFrame {
                 inputField.setText(commandLog.get(commandLog.size() - currentCommandLogIndex));
             }
         });
-        
 
+        setFont(new Font("Monospaced", Font.PLAIN, 24));
+        
+        inputField.setFont(new Font("Monospaced", Font.PLAIN, 24));
         inputPanel.add(promptLabel, BorderLayout.WEST);
         inputPanel.add(inputField, BorderLayout.CENTER);
         add(inputPanel, BorderLayout.SOUTH);
