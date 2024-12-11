@@ -3,6 +3,7 @@ package com.tankbattle.server.components;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.event.EventListener;
 import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
+import org.springframework.messaging.simp.stomp.StompSession;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.messaging.SessionConnectEvent;
 import org.springframework.web.socket.messaging.SessionDisconnectEvent;
@@ -25,7 +26,7 @@ public class WebSocketEventListener {
         String sessionId = headerAccessor.getSessionId();
         String username = headerAccessor.getFirstNativeHeader("login");
 
-        sessionManager.addSession(sessionId);
+        sessionManager.addSessionId(sessionId);
 
         Player newPlayer = new Player(sessionId, username);
         gameController.addPlayer(newPlayer);
