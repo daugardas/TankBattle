@@ -22,11 +22,14 @@ public class KickPlayerExpression implements CommandExpression {
                 return false;
             }
 
-            if (ctx.hasMoreTokens()) {
-                String username = ctx.nextToken();
-                SwingUtilities.invokeLater(() -> ctx.getGameController().kickPlayer(username));
+            if (!ctx.hasMoreTokens()) {
+                ctx.getGameController().printToConsole("Correct usage\n" + getCommandDescription());
                 return true;
             }
+
+            String username = ctx.nextToken();
+                SwingUtilities.invokeLater(() -> ctx.getGameController().kickPlayer(username));
+                return true;
 
         } catch (Exception e) {
             e.printStackTrace();
