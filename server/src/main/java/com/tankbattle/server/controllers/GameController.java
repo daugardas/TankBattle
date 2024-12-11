@@ -208,6 +208,10 @@ public class GameController {
         collisionManager.initializeStaticEntities(level);
     }
 
+    public List<Player> getPlayers() {
+        return new ArrayList<>(players);
+    }
+
     public void addPlayer(Player player) {
         sessionIdToPlayerIndex.put(player.getSessionId(), this.players.size());
 
