@@ -75,20 +75,20 @@ public class GameController {
 
     private CommandConsoleWindow commandConsoleWindow;
 
-    private List<Player> players = new ArrayList<>();
-    private List<ITank> tanks = new ArrayList<>();
+    private ArrayList<Player> players = new ArrayList<>();
+    private ArrayList<ITank> tanks = new ArrayList<>();
     private final ArrayList<Bullet> bullets = new ArrayList<>();
 
-    private List<PowerUp> powerUps = new ArrayList<>();
-    private List<PowerDown> powerDowns = new ArrayList<>();
+    private ArrayList<PowerUp> powerUps = new ArrayList<>();
+    private ArrayList<PowerDown> powerDowns = new ArrayList<>();
     private ItemFactory itemFactory = new BasicItemFactory();
 
     private HashMap<String, Integer> sessionIdToPlayerIndex = new HashMap<>();
 
-    private List<ICommand> commands = new ArrayList<>();
+    private ArrayList<ICommand> commands = new ArrayList<>();
 
     private boolean run = true;
-    private List<ICommand> commandsLog = new ArrayList<>();
+    private ArrayList<ICommand> commandsLog = new ArrayList<>();
 
     private Level level;
 
@@ -149,6 +149,7 @@ public class GameController {
 
         System.out.println("Removing session '" + sessionId + "'");
         sessionManager.removeSession(sessionId);
+        removePlayerBySessionId(sessionId);
         printToConsole("Kicked '" + username + "' from the server.");
     }
 

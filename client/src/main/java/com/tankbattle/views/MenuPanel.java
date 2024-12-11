@@ -18,6 +18,7 @@ import java.util.UUID;
 
 public class MenuPanel extends JPanel {
     private BufferedImage backgroundImage;
+    private JButton connectButton = new JButton("Connect");
 
     public MenuPanel() {
         setLayout(new GridBagLayout());
@@ -62,21 +63,24 @@ public class MenuPanel extends JPanel {
             private static final String VALID_CHARACTERS_REGEX = "^[a-zA-Z0-9]*$";
 
             @Override
-            public void insertString(FilterBypass fb, int offset, String string, AttributeSet attr) throws BadLocationException {
+            public void insertString(FilterBypass fb, int offset, String string, AttributeSet attr)
+                    throws BadLocationException {
                 if (isValidInput(fb, string)) {
                     super.insertString(fb, offset, string, attr);
                 }
             }
 
             @Override
-            public void replace(FilterBypass fb, int offset, int length, String text, AttributeSet attrs) throws BadLocationException {
+            public void replace(FilterBypass fb, int offset, int length, String text, AttributeSet attrs)
+                    throws BadLocationException {
                 if (isValidInput(fb, text)) {
                     super.replace(fb, offset, length, text, attrs);
                 }
             }
 
             private boolean isValidInput(FilterBypass fb, String text) {
-                return (fb.getDocument().getLength() + text.length() <= MAX_CHARACTERS) && text.matches(VALID_CHARACTERS_REGEX);
+                return (fb.getDocument().getLength() + text.length() <= MAX_CHARACTERS)
+                        && text.matches(VALID_CHARACTERS_REGEX);
             }
         });
 
@@ -85,13 +89,14 @@ public class MenuPanel extends JPanel {
 
         JPanel connectPanel = new JPanel();
         connectPanel.setOpaque(false);
-        JButton connectButton = new JButton("Connect");
 
         connectButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent arg0) {
                 String url = hostnameTextField.getText();
-                String username = usernameTextField.getText().isEmpty() ? "Guest#" + UUID.randomUUID().toString().substring(0, 4) : usernameTextField.getText();
+                String username = usernameTextField.getText().isEmpty()
+                        ? "Guest#" + UUID.randomUUID().toString().substring(0, 4)
+                        : usernameTextField.getText();
 
                 connectButton.setText("Connecting...");
                 connectButton.setEnabled(false);
@@ -151,5 +156,10 @@ public class MenuPanel extends JPanel {
             int y = (panelHeight - drawHeight) / 2;
             g2g.drawImage(backgroundImage, x, y, drawWidth, drawHeight, this);
         }
+    }
+
+    public void resetPanel() {
+        connectButton.setText("Connect");
+        connectButton.setEnabled(true);
     }
 }
