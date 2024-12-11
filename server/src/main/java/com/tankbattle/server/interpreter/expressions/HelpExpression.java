@@ -8,8 +8,7 @@ public class HelpExpression implements CommandExpression {
     public String getCommandDescription() {
         return """
                 help - Prints available commands
-                    help <command> - Prints specific command examples
-                """;
+                    help <command> - Prints specific command examples""";
     }
 
     @Override
@@ -32,6 +31,12 @@ public class HelpExpression implements CommandExpression {
                     break;
                     case "move":
                         commandExample = new MovePlayerExpression().getCommandExample();
+                        break;
+                    case "kick":
+                        commandExample = new KickPlayerExpression().getCommandExample();
+                        break;
+                    case "list":
+                        commandExample = new ListPlayersExpression().getCommandExample();
                         break;
                 }
 

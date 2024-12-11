@@ -9,9 +9,7 @@ public class KickPlayerExpression implements CommandExpression {
 
     @Override
     public String getCommandDescription() {
-        return """
-                kick <username> - Kick specified user from session
-                """;
+        return "kick <username> - Kick specified user from session";
     }
 
     @Override
@@ -28,8 +26,8 @@ public class KickPlayerExpression implements CommandExpression {
             }
 
             String username = ctx.nextToken();
-                SwingUtilities.invokeLater(() -> ctx.getGameController().kickPlayer(username));
-                return true;
+            SwingUtilities.invokeLater(() -> ctx.getGameController().kickPlayer(username));
+            return true;
 
         } catch (Exception e) {
             e.printStackTrace();

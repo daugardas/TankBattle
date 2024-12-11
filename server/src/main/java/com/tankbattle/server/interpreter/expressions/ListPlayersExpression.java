@@ -10,20 +10,23 @@ public class ListPlayersExpression implements CommandExpression {
 
     @Override
     public String getCommandDescription() {
-        return """
-                list - Lists online players in Console window
-                """;
+        return "list - Lists online players in Console window";
     }
 
     @Override
     public boolean interpret(CommandContext ctx) {
         try {
-            if(!"list".equals(ctx.nextToken())){
+            if (!"list".equals(ctx.nextToken())) {
                 ctx.reset();
                 return false;
             }
 
             List<Player> players = ctx.getGameController().getPlayers();
+            if(players.isEmpty()){
+                ctx.getGameController().printToConsole("No active players in server");
+                return true;
+            }
+
             StringBuilder builder = new StringBuilder();
 
             builder.append("|---------------------|\n");
@@ -52,5 +55,5 @@ public class ListPlayersExpression implements CommandExpression {
                 'list' - Lists online players with their name and health info
                 """;
     }
-    
+
 }
