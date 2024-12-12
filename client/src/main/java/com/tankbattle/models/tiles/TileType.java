@@ -2,9 +2,6 @@ package com.tankbattle.models.tiles;
 
 import java.awt.image.BufferedImage;
 
-/**
- * Saves the Tile's intrinsic (shared) state
- */
 public class TileType {
     private final BufferedImage sprite;
     private final String name;
