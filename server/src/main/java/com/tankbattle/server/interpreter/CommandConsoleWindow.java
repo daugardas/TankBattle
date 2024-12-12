@@ -4,9 +4,6 @@ import java.awt.BorderLayout;
 import java.awt.Font;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
-import java.awt.event.ComponentAdapter;
-import java.awt.event.ComponentEvent;
-import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
@@ -96,7 +93,7 @@ public class CommandConsoleWindow extends JFrame {
         });
 
         setFont(new Font("Monospaced", Font.PLAIN, 24));
-        
+
         inputField.setFont(new Font("Monospaced", Font.PLAIN, 24));
         inputPanel.add(promptLabel, BorderLayout.WEST);
         inputPanel.add(inputField, BorderLayout.CENTER);
