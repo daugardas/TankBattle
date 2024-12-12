@@ -13,36 +13,18 @@ public class HelpExpression implements CommandExpression {
 
     @Override
     public boolean interpret(CommandContext ctx) {
-        
 
         try {
-            if(!"help".equals(ctx.nextToken())){
+            if (!"help".equals(ctx.nextToken())) {
                 ctx.reset();
                 return false;
             }
 
-            if(ctx.hasMoreTokens()) {
-                // user wants to print specific command examples
-                String commandToGetExampleFor = ctx.nextToken();
-                String commandExample = null;
-                switch (commandToGetExampleFor) {
-                    case "help":
-                        commandExample = this.getCommandExample();
-                    break;
-                    case "move":
-                        commandExample = new MovePlayerExpression().getCommandExample();
-                        break;
-                    case "kick":
-                        commandExample = new KickPlayerExpression().getCommandExample();
-                        break;
-                    case "list":
-                        commandExample = new ListPlayersExpression().getCommandExample();
-                        break;
-                }
+            if (ctx.hasMoreTokens()) {
+                String commandExample = new CommandExampleExpression().interpret(ctx);
 
-                if(commandExample != null)
+                if (commandExample != null)
                     ctx.getGameController().printToConsole(commandExample);
-
             } else {
                 // user wants to print all available commands
                 ctx.getGameController().printHelpToConsole();
@@ -60,7 +42,7 @@ public class HelpExpression implements CommandExpression {
     }
 
     @Override
-    public String getCommandExample(){
+    public String getCommandExample() {
         return """
                 'help' examples:
                     `help` <= Prints available commands;

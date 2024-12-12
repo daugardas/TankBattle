@@ -25,7 +25,13 @@ public class KickPlayerExpression implements CommandExpression {
                 return true;
             }
 
-            String username = ctx.nextToken();
+            String username = new PlayerNameExpression().interpret(ctx);
+
+            if (username == null) {
+                ctx.getGameController().printToConsole("Couldn't find online player with username '" + username + "'");
+                return true;
+            }
+
             SwingUtilities.invokeLater(() -> ctx.getGameController().kickPlayer(username));
             return true;
 
