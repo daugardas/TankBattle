@@ -3,6 +3,9 @@ package com.tankbattle.utils;
 import java.awt.Graphics2D;
 import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -494,5 +497,32 @@ public class TileMemoryTest {
         System.out.println("  Time Saved: " + String.format("%.2f", avgRenderWithout - avgRenderWith) + " ms");
         System.out.println("  Render Speed Improvement: "
                 + String.format("%.1f", (avgRenderWithout - avgRenderWith) / avgRenderWithout * 100) + "%");
+
+        try (PrintWriter writer = new PrintWriter(new FileWriter("testResults.txt"))) {
+
+            writer.println("\nAverage Statistics:");
+            writer.println("Memory Usage:");
+            writer.println("  Without Flyweight: " + String.format("%.2f", avgMemoryWithout) + " KB");
+            writer.println("  With Flyweight: " + String.format("%.2f", avgMemoryWith) + " KB");
+            writer.println("  Memory Saved: " + String.format("%.2f", avgMemoryWithout - avgMemoryWith) + " KB");
+            writer.println("  Memory Reduction: "
+                    + String.format("%.1f", (avgMemoryWithout - avgMemoryWith) / avgMemoryWithout * 100) + "%");
+
+            writer.println("\nCreation Time:");
+            writer.println("  Without Flyweight: " + String.format("%.2f", avgCreationWithout) + " ms");
+            writer.println("  With Flyweight: " + String.format("%.2f", avgCreationWith) + " ms");
+            writer.println("  Time Saved: " + String.format("%.2f", avgCreationWithout - avgCreationWith) + " ms");
+            writer.println("  Creation Speed Improvement: "
+                    + String.format("%.1f", (avgCreationWithout - avgCreationWith) / avgCreationWithout * 100) + "%");
+
+            writer.println("\nRender Time:");
+            writer.println("  Without Flyweight: " + String.format("%.2f", avgRenderWithout) + " ms");
+            writer.println("  With Flyweight: " + String.format("%.2f", avgRenderWith) + " ms");
+            writer.println("  Time Saved: " + String.format("%.2f", avgRenderWithout - avgRenderWith) + " ms");
+            writer.println("  Render Speed Improvement: "
+                    + String.format("%.1f", (avgRenderWithout - avgRenderWith) / avgRenderWithout * 100) + "%");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }

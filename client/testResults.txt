@@ -1,0 +1,19 @@
+
+Average Statistics:
+Memory Usage:
+  Without Flyweight: 1182.26 KB
+  With Flyweight: 766.88 KB
+  Memory Saved: 415.38 KB
+  Memory Reduction: 35.1%
+
+Creation Time:
+  Without Flyweight: 0.27 ms
+  With Flyweight: 4.86 ms
+  Time Saved: -4.59 ms
+  Creation Speed Improvement: -1681.5%
+
+Render Time:
+  Without Flyweight: 16.75 ms
+  With Flyweight: 1.19 ms
+  Time Saved: 15.55 ms
+  Render Speed Improvement: 92.9%
