@@ -5,6 +5,8 @@ import com.tankbattle.models.Level;
 import com.tankbattle.models.Player;
 import com.tankbattle.utils.ServerFPSCounter;
 import com.tankbattle.utils.Vector2;
+import com.tankbattle.views.GameWindow;
+
 import org.springframework.messaging.simp.stomp.*;
 
 import java.lang.reflect.Type;
@@ -16,7 +18,10 @@ public class GameSessionHandler extends StompSessionHandlerAdapter {
 
     @Override
     public void handleTransportError(StompSession session, Throwable exception) {
-        // System.out.println("transport error: " + exception);
+        System.out.println("Session: " + session);
+        System.out.println("transport error: " + exception);
+        GameWindow.getInstance().resetToMenu();
+        GameManager.getInstance().stopGame();
     }
 
     @Override
@@ -89,6 +94,7 @@ public class GameSessionHandler extends StompSessionHandlerAdapter {
 
     @Override
     public void handleException(StompSession session, StompCommand command, StompHeaders headers, byte[] payload, Throwable exception) {
-        // System.out.println(exception);
+        System.out.println("Session: " + session);
+        System.out.println(exception);
     }
 }
