@@ -5,6 +5,7 @@ import java.util.Objects;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.tankbattle.server.models.tanks.HeavyTank;
 import com.tankbattle.server.models.tanks.ITank;
+import com.tankbattle.server.models.tanks.TankProxy;
 
 public class Player {
     @JsonIgnore
@@ -14,14 +15,14 @@ public class Player {
     private ITank tank;
 
     public Player() {
-        tank = new HeavyTank();
+        tank = new TankProxy(new HeavyTank());
     }
 
     public Player(String sessionId, String username) {
         this.sessionId = sessionId;
         this.username = username;
 
-        tank = new HeavyTank();
+        tank = new TankProxy(new HeavyTank());
     }
 
     public String getSessionId() {
