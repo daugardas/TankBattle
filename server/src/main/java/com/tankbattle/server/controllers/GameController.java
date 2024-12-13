@@ -7,6 +7,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import javax.swing.SwingUtilities;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
@@ -24,6 +26,7 @@ import com.tankbattle.server.commands.ICommand;
 import com.tankbattle.server.commands.MoveCommand;
 import com.tankbattle.server.components.WebSocketSessionManager;
 import com.tankbattle.server.factories.LevelGeneratorFactory;
+import com.tankbattle.server.interpreter.CommandConsoleWindow;
 import com.tankbattle.server.models.Bullet;
 import com.tankbattle.server.models.ICollidableEntity;
 import com.tankbattle.server.models.Level;
@@ -70,20 +73,22 @@ public class GameController {
     @Autowired
     private CollisionManager collisionManager;
 
-    private List<Player> players = new ArrayList<>();
-    private List<ITank> tanks = new ArrayList<>();
+    private CommandConsoleWindow commandConsoleWindow;
+
+    private ArrayList<Player> players = new ArrayList<>();
+    private ArrayList<ITank> tanks = new ArrayList<>();
     private final ArrayList<Bullet> bullets = new ArrayList<>();
 
-    private List<PowerUp> powerUps = new ArrayList<>();
-    private List<PowerDown> powerDowns = new ArrayList<>();
+    private ArrayList<PowerUp> powerUps = new ArrayList<>();
+    private ArrayList<PowerDown> powerDowns = new ArrayList<>();
     private ItemFactory itemFactory = new BasicItemFactory();
 
     private HashMap<String, Integer> sessionIdToPlayerIndex = new HashMap<>();
 
-    private List<ICommand> commands = new ArrayList<>();
+    private ArrayList<ICommand> commands = new ArrayList<>();
 
     private boolean run = true;
-    private List<ICommand> commandsLog = new ArrayList<>();
+    private ArrayList<ICommand> commandsLog = new ArrayList<>();
 
     private Level level;
 
@@ -99,8 +104,68 @@ public class GameController {
         return level.getHeight() * TILE_HEIGHT;
     }
 
+    // allows printing to the console window for other classes
+    // in the server who have access to GameController
+    public void printToConsole(String message) {
+        if (commandConsoleWindow != null) {
+            SwingUtilities.invokeLater(() -> {
+                commandConsoleWindow.printToConsole(message);
+            });
+        }
+    }
+
+    public void printHelpToConsole() {
+        if (commandConsoleWindow != null) {
+            SwingUtilities.invokeLater(() -> {
+                commandConsoleWindow.showHelp();
+            });
+        }
+    }
+
+    public void movePlayer(String username, float x, float y) {
+        for (Player player : players) {
+            if (player.getUsername().equals(username)) {
+                player.getTank().getLocation().addToX(x);
+                player.getTank().getLocation().addToY(y);
+                break;
+            }
+        }
+    }
+
+    public void kickPlayer(String username) {
+        System.out.println("Removing '" + username + "' from server");
+        String sessionId = players.stream().filter(player -> player.getUsername().equals(username))
+                .map(Player::getSessionId).findFirst().orElse(null);
+        if (sessionId == null) {
+            System.out.println("Couldn't find online player with username '" + username + "'");
+            printToConsole("Couldn't find online player with username '" + username + "'");
+            return;
+        }
+
+        if (!sessionManager.isSessionActive(sessionId)) {
+            System.out.println("Session '" + sessionId + "' is not active.");
+            return;
+        }
+
+        System.out.println("Removing session '" + sessionId + "'");
+        sessionManager.removeSession(sessionId);
+        removePlayerBySessionId(sessionId);
+        printToConsole("Kicked '" + username + "' from the server.");
+    }
+
     @PostConstruct
     public void init() {
+        SwingUtilities.invokeLater(() -> {
+            try {
+                commandConsoleWindow = new CommandConsoleWindow(this);
+                commandConsoleWindow.setVisible(true);
+            } catch (Exception e) {
+                e.printStackTrace();
+                System.err.println("Failed to create command console: " + e.getMessage());
+            }
+
+        });
+
         LevelGenerator generator;
         boolean useProceduralGeneration = false;
 
@@ -114,8 +179,8 @@ public class GameController {
         levelBuilder.generateLevel().addSpawnPoints(4).addPowerUps(10);
         level = levelBuilder.build();
 
-        System.out.println("Level initialized. Level:");
-        System.out.println(level.toString());
+        printToConsole("Level initialized. Level:");
+        printToConsole(level.toString());
 
         spawnItemsAtLocations();
 
@@ -142,6 +207,10 @@ public class GameController {
         // -----------------------------------------Prototype------------------------------------------------------
 
         collisionManager.initializeStaticEntities(level);
+    }
+
+    public List<Player> getPlayers() {
+        return new ArrayList<>(players);
     }
 
     public void addPlayer(Player player) {
@@ -185,7 +254,7 @@ public class GameController {
     @SubscribeMapping("/level")
     // send the initial level when client starts listening to /server/level
     public Level sendLevel() {
-        System.out.println("Subscribed to level");
+        // System.out.println("Subscribed to level");
         // messagingTemplate.convertAndSend("/server/level", level);
 
         // workaround for sending the hard-coded map, as the generation sometimes
@@ -205,19 +274,19 @@ public class GameController {
     public void gameLoop() {
 
         // if (run) {
-            for (int i = 0; i < commands.size(); i++) {
-                commands.get(i).execute();
-            }
+        for (int i = 0; i < commands.size(); i++) {
+            commands.get(i).execute();
+        }
 
-            commands.clear();
+        commands.clear();
         // } else {
-        //     if (commandsLog.size() > 0) {
-        //         commandsLog.get(commandsLog.size() - 1).undo();
-        //         commandsLog.remove(commandsLog.size() - 1);
-        //     }
-        //     else{
-        //         run = true;
-        //     }
+        // if (commandsLog.size() > 0) {
+        // commandsLog.get(commandsLog.size() - 1).undo();
+        // commandsLog.remove(commandsLog.size() - 1);
+        // }
+        // else{
+        // run = true;
+        // }
         // }
 
         updatePlayersLocations();
@@ -289,7 +358,7 @@ public class GameController {
                         commandsLog.add(moveCommand);
 
                         // if (commandsLog.size() >= 100) {
-                        //     run = false;
+                        // run = false;
                         // }
                     }
                     break;
@@ -326,19 +395,19 @@ public class GameController {
                 new Vector2(9000, 2000),
                 new Vector2(0, 2000));
 
-            PowerUp powerUp1 = itemFactory.createSpeedPowerUp(locations.get(0));
-            addPowerUp(powerUp1);
-            PowerUp powerUp2 = itemFactory.createSpeedPowerUp(locations.get(1));
-            addPowerUp(powerUp2);
-            PowerUp powerUp3 = itemFactory.createArmorPowerUp(locations.get(2));
-            addPowerUp(powerUp3);
+        PowerUp powerUp1 = itemFactory.createSpeedPowerUp(locations.get(0));
+        addPowerUp(powerUp1);
+        PowerUp powerUp2 = itemFactory.createSpeedPowerUp(locations.get(1));
+        addPowerUp(powerUp2);
+        PowerUp powerUp3 = itemFactory.createArmorPowerUp(locations.get(2));
+        addPowerUp(powerUp3);
 
-            // PowerDown powerDown1 = itemFactory.createSpeedPowerDown(locations.get(0));
-            // addPowerDown(powerDown1);
-            // PowerDown powerDown2 = itemFactory.createHealthPowerDown(locations.get(1));
-            // addPowerDown(powerDown2);
-            // PowerDown powerDown3 = itemFactory.createArmorPowerDown(locations.get(2));
-            // addPowerDown(powerDown3);
+        // PowerDown powerDown1 = itemFactory.createSpeedPowerDown(locations.get(0));
+        // addPowerDown(powerDown1);
+        // PowerDown powerDown2 = itemFactory.createHealthPowerDown(locations.get(1));
+        // addPowerDown(powerDown2);
+        // PowerDown powerDown3 = itemFactory.createArmorPowerDown(locations.get(2));
+        // addPowerDown(powerDown3);
     }
 
     public void addPowerUp(PowerUp powerUp) {
@@ -352,43 +421,40 @@ public class GameController {
     }
 
     public void updateTankReference(ITank oldTank, ITank newTank) {
-    for (Player player : players) {
-        if (player.getTank() == oldTank) {
-            player.setTank(newTank);
-            break;
+        for (Player player : players) {
+            if (player.getTank() == oldTank) {
+                player.setTank(newTank);
+                break;
+            }
         }
+
+        int index = tanks.indexOf(oldTank);
+        if (index != -1) {
+            tanks.set(index, newTank);
+        }
+
+        collisionManager.spatialGrid.removeEntity((ICollidableEntity) oldTank);
+        collisionManager.spatialGrid.addEntity((ICollidableEntity) newTank, false);
+
+        System.out.println("Tank reference updated");
     }
 
-    int index = tanks.indexOf(oldTank);
-    if (index != -1) {
-        tanks.set(index, newTank);
+    public List<Tank> getTanks() {
+        List<Tank> tankList = new ArrayList<>();
+        for (ITank tank : tanks) {
+            tankList.add(tank.getTank());
+        }
+        return tankList;
     }
-    
-    collisionManager.spatialGrid.removeEntity((ICollidableEntity) oldTank);
-    collisionManager.spatialGrid.addEntity((ICollidableEntity) newTank, false);
 
-    System.out.println("Tank reference updated");
-}
-
-public List<Tank> getTanks() {
-    List<Tank> tankList = new ArrayList<>();
-    for (ITank tank : tanks) {
-        tankList.add(tank.getTank());
+    public void removePowerUp(PowerUp powerUp) {
+        powerUps.remove(powerUp);
+        collisionManager.spatialGrid.removeEntity(powerUp);
     }
-    return tankList;
-}
 
-public void removePowerUp(PowerUp powerUp) {
-    powerUps.remove(powerUp);
-    collisionManager.spatialGrid.removeEntity(powerUp);
-}
-
-public void removePowerDown(PowerDown powerDown) {
-    powerDowns.remove(powerDown);
-    collisionManager.spatialGrid.removeEntity(powerDown);
-}
-
-
-
+    public void removePowerDown(PowerDown powerDown) {
+        powerDowns.remove(powerDown);
+        collisionManager.spatialGrid.removeEntity(powerDown);
+    }
 
 }

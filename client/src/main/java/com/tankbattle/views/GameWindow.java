@@ -8,7 +8,7 @@ import java.awt.event.WindowEvent;
 
 public class GameWindow extends JFrame {
     private static final GameWindow INSTANCE = new GameWindow();
-    private final JPanel mainMenuPanel;
+    private final MenuPanel mainMenuPanel;
     private final GamePanel gamePanel;
 
     private GameWindow() {
@@ -43,11 +43,21 @@ public class GameWindow extends JFrame {
     }
 
     public void initializeGameScreen() {
+        System.out.println("Initializing game screen");
         remove(mainMenuPanel);
         add(gamePanel);
 
         gamePanel.requestFocusInWindow();
 
+        revalidate();
+        repaint();
+    }
+
+    public void resetToMenu() {
+        remove(this.gamePanel);
+        add(this.mainMenuPanel);
+        this.mainMenuPanel.resetPanel();
+        this.mainMenuPanel.requestFocusInWindow();
         revalidate();
         repaint();
     }

@@ -21,17 +21,17 @@ import java.util.concurrent.*;
 
 public class GameManager {
     private static final GameManager INSTANCE = new GameManager();
-    private final ScheduledExecutorService movementCommandExecutorService = Executors
-            .newSingleThreadScheduledExecutor();
-    private final WebSocketManager webSocketManager;
-    private final RenderFacade renderFacade;
-    private final ResourceManager resourceManager;
-    private final Thread drawRequestThread;
+    private ScheduledExecutorService movementCommandExecutorService;
+    private WebSocketManager webSocketManager;
+    private RenderFacade renderFacade;
+    private ResourceManager resourceManager;
+    private Thread drawRequestThread;
     private final ConcurrentHashMap<String, Player> players;
     private final CopyOnWriteArrayList<Bullet> bullets;
     public int playerCount = 0;
     private Level level;
     private CurrentPlayer currentPlayer;
+    private boolean gameRunning = false;
 
     private final List<ICommand> commands = new ArrayList<>();
 
@@ -43,13 +43,17 @@ public class GameManager {
         players = new ConcurrentHashMap<>();
         bullets = new CopyOnWriteArrayList<>();
         level = new Level();
+    }
 
+    private void resetDrawingThread() {
+        System.out.println("reseting drawing request thread");
         // use another thread to request redraws continuously,
         // and swing will redraw the screen as soon as it can.
         // This should increase the fps,
         // as there would be no need for a fixed timer.
         this.drawRequestThread = new Thread(() -> {
-            while (true) {
+            System.out.println("Draw request thread started");
+            while (gameRunning) {
                 // asks game panel to repaint only when swing is ready
                 SwingUtilities.invokeLater(() -> {
                     GameWindow.getInstance().getGamePanel().repaint();
@@ -82,11 +86,28 @@ public class GameManager {
     }
 
     public void startGame() {
+        System.out.println("Starting game");
         GameWindow.getInstance().initializeGameScreen();
+        this.gameRunning = true;
+        resetDrawingThread();
+        this.drawRequestThread.start();
 
-        drawRequestThread.start();
+        movementCommandExecutorService = Executors
+        .newSingleThreadScheduledExecutor();
 
         movementCommandExecutorService.scheduleAtFixedRate(this::updateInput, 0, 16, TimeUnit.MILLISECONDS);
+    }
+
+    public void stopGame() {
+        players.clear();
+        bullets.clear();
+        level = new Level();
+        this.webSocketManager = new WebSocketManager();
+        drawRequestThread = null;
+        this.gameRunning = false;
+        movementCommandExecutorService.shutdownNow();
+        movementCommandExecutorService = Executors
+        .newSingleThreadScheduledExecutor();
     }
 
     public void setLevel(Level level) {
