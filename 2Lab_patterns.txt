@@ -16,4 +16,4 @@ Visitor
 Daugardas:
 + Template method
 + Flyweight
-Interpreter (komandu skaitymas serveryje)
++ Interpreter (komandu skaitymas serveryje)
