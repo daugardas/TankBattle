@@ -74,13 +74,20 @@ public class ScoreBoard extends JPanel {
         int rank = 1;
         for (Player player : players) {
             String rankStr = String.format("%d.", rank++);
+            String nameStr = truncateString(player.getUsername(), 12);
             String scoreStr = String.format("%06d", player.getScore());
             
-            drawPixelText(g2d, rankStr, 20, y);
-            drawPixelText(g2d, player.getUsername(), 45, y);
-            drawPixelText(g2d, scoreStr, getWidth() - 90, y);
+            // Draw rank and username on first line
+            drawPixelText(g2d, rankStr, 15, y);
+            drawPixelText(g2d, nameStr, 40, y);
             
-            y += 25;
+            // Draw score centered on second line
+            int scoreWidth = g2d.getFontMetrics().stringWidth(scoreStr);
+            int scoreX = (getWidth() - scoreWidth) / 2;
+            drawPixelText(g2d, scoreStr, scoreX, y + 20);
+            
+            // Increase y more to account for two lines
+            y += 45;
         }
     }
     
@@ -97,5 +104,10 @@ public class ScoreBoard extends JPanel {
         for (int x = x1; x < x2; x += 2) {
             g2d.drawLine(x, y, x, y2);
         }
+    }
+    
+    private String truncateString(String str, int maxLength) {
+        if (str.length() <= maxLength) return str;
+        return str.substring(0, maxLength - 2) + "..";
     }
 } 
