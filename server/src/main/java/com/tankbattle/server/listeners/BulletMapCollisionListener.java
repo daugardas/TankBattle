@@ -1,5 +1,6 @@
 package com.tankbattle.server.listeners;
 
+import com.tankbattle.server.components.SpringContext;
 import com.tankbattle.server.controllers.GameController;
 import com.tankbattle.server.events.CollisionEvent;
 import com.tankbattle.server.models.Bullet;
@@ -31,8 +32,10 @@ public class BulletMapCollisionListener implements CollisionListener {
         TileEntity tile = (TileEntity) event.getOtherEntity();
 
         tile.takeDamage(bullet.getDamage());
-
-        logger.info("Bullet hit a tile");
+        if (tile.getHealth() <= 0) {
+            GameController gameController = SpringContext.getBean(GameController.class);
+            gameController.updateLevelTileToGround(tile);
+        }
 
         // Calculate collision location (e.g., midpoint between the two players)
         int collisionX = (bullet.getLocation().getX() + tile.getLocation().getX()) / 2;

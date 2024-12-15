@@ -31,12 +31,14 @@ import com.tankbattle.server.models.Bullet;
 import com.tankbattle.server.models.ICollidableEntity;
 import com.tankbattle.server.models.Level;
 import com.tankbattle.server.models.Player;
+import com.tankbattle.server.models.TileEntity;
 import com.tankbattle.server.models.items.BasicItemFactory;
 import com.tankbattle.server.models.items.ItemFactory;
 import com.tankbattle.server.models.items.PowerDown;
 import com.tankbattle.server.models.items.PowerUp;
 import com.tankbattle.server.models.tanks.ITank;
 import com.tankbattle.server.models.tanks.Tank;
+import com.tankbattle.server.models.tiles.Tile;
 import com.tankbattle.server.strategies.Level.LevelGenerator;
 import com.tankbattle.server.utils.Vector2;
 
@@ -273,6 +275,8 @@ public class GameController {
         }
     }
 
+   
+
     @Scheduled(fixedRate = 33)
     public void gameLoop() {
 
@@ -440,6 +444,48 @@ public class GameController {
         collisionManager.spatialGrid.addEntity((ICollidableEntity) newTank, false);
 
         System.out.println("Tank reference updated");
+    }
+
+    public void updateLevelTileToGround(TileEntity currentTile) {
+        Tile[][] lTiles = this.getLevel().getTiles();
+        boolean found = false;
+        int x = -1;
+        int y = -1;
+
+        for(int i = 0; i < lTiles.length; i++) {
+            
+            for(int j = 0; j < lTiles[i].length; j++) {
+                Tile ijTile = this.getLevel().getTile(i, j);
+                if (ijTile.equals(currentTile.getTile())) {
+                    System.out.println("Same tile as " + i + ":" + j);
+                    this.getLevel().updateDestructibleToGroundTile(i, j);
+                    found = true;
+                    x = i;
+                    y = j;
+                    break;
+                }   
+            }
+
+            if (found) {
+                break;
+            }
+        }
+
+        if(found){
+            if(x < 0 || y < 0){
+                System.out.println("should not print this");
+                return;
+            }
+            
+            collisionManager.spatialGrid.removeEntity(currentTile);
+            this.sendUpdatedLevel();
+        }
+    }
+
+    public void sendUpdatedLevel(){
+
+        System.out.println("Sending updated level");
+        messagingTemplate.convertAndSend("/server/level", this.getLevel());
     }
 
     public List<Tank> getTanks() {

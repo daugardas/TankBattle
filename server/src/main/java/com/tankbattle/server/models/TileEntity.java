@@ -43,5 +43,9 @@ public class TileEntity extends AbstractCollidableEntity implements GameEntity {
     public void takeDamage(int damage) {
         tile.takeDamage(damage);
     }
+
+    public int getHealth(){
+        return tile.getHealth();
+    }
     
 }

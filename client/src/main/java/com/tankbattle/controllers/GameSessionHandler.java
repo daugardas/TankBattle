@@ -67,6 +67,21 @@ public class GameSessionHandler extends StompSessionHandlerAdapter {
 
         });
 
+        session.subscribe("/server/level", new StompFrameHandler() {
+
+            @Override
+            public Type getPayloadType(StompHeaders headers) {
+                return Level.class;
+            }
+
+            @Override
+            public void handleFrame(StompHeaders stompHeaders, Object o) {
+                System.out.println("Level received");
+                GameManager.getInstance().setLevel((Level) o);
+            }
+
+        });
+
         session.subscribe("/server/bullets", new StompFrameHandler() {
             @Override
             public Type getPayloadType(StompHeaders headers) {

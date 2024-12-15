@@ -2,6 +2,9 @@ package com.tankbattle.server.models;
 
 import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.tankbattle.server.models.tiles.DestructibleTile;
+import com.tankbattle.server.models.tiles.IndestructibleTile;
+import com.tankbattle.server.models.tiles.PassableGroundTile;
 import com.tankbattle.server.models.tiles.Tile;
 import com.tankbattle.server.utils.Vector2;
 
@@ -14,6 +17,13 @@ public class Level {
     private Tile[][] grid;
     private int spawnPointsCount;
     private Vector2[] spawnPoints;
+
+    @JsonIgnore
+    private Tile groundTile;
+    @JsonIgnore
+    private Tile destructibleTile;
+    @JsonIgnore
+    private Tile indestructibleTile;
 
     public Level() {
         width = 50;
@@ -106,9 +116,30 @@ public class Level {
     }
 
     @JsonIgnore
+    public void updateDestructibleToGroundTile(int x, int y) {
+        grid[x][y] = new PassableGroundTile();
+        System.out.println("Changed " + x + ":" + y + " to ground");
+    }
+    
+
+    @JsonIgnore
     public void setTile(int x, int y, Tile tile) {
         if (isTileWithinLevelBounds(x, y)) {
             grid[x][y] = tile;
+
+            if(groundTile == null) {
+                if (tile instanceof PassableGroundTile){
+                    this.groundTile = tile;
+                }
+            } else if (destructibleTile == null) {
+                if (tile instanceof DestructibleTile) {
+                    this.destructibleTile = tile;
+                }
+            } else if (indestructibleTile == null) {
+                if (tile instanceof IndestructibleTile) {
+                    this.indestructibleTile = tile;
+                }
+            }
         }
     }
 
