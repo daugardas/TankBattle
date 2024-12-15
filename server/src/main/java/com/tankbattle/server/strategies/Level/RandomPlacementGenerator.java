@@ -13,8 +13,8 @@ public class RandomPlacementGenerator extends LevelGenerator {
 
     public RandomPlacementGenerator() {
         super(10, 10);
-        this.wallDensity = 100;
-        this.indestructibleWallChance = 30;
+        this.wallDensity = 40;
+        this.indestructibleWallChance = 10;
     }
 
     public RandomPlacementGenerator(int wallDensity, int indestructibleWallChance) {
@@ -52,12 +52,28 @@ public class RandomPlacementGenerator extends LevelGenerator {
 
     @Override
     protected boolean shouldAddLiquids() {
-        return false;
+        return true;
     }
 
     @Override
     // no liquids in this generator
     protected void addLiquids(Level level, TileFactory liquidFactory) {
+        for (int x = 0; x < width; x++) {
+            for (int y = 0; y < height; y++) {
+                // skip corner tiles for spawnpoints
+                if ((x == 0 && y == 0) || (x == width - 1 && y == 0) || (x == 0 && y == height - 1)
+                        || (x == width - 1 && y == height - 1)) {
+                    continue;
+                }
+
+                Tile tile = level.getTile(x, y);
+                if (random.nextInt(100) < 20) {
+                    tile = liquidFactory.createTile();
+                }
+
+                level.setTile(x, y, tile);
+            }
+        }
         return;
     }
 

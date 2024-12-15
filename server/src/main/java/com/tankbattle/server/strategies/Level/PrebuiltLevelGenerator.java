@@ -8,16 +8,30 @@ public class PrebuiltLevelGenerator extends LevelGenerator {
 
     public PrebuiltLevelGenerator() {
         this.levelString = """
-                G D D D I I D D D G
+                G G G G I I G G G G
                 D D D D I I D D D D
                 D D D D I I D D D D
-                I D D D D D D D D I
-                L L L L D D L L L L
-                L L L L D D L L L L
-                I D D D D D D D D I
+                I G G G G G G G G I
+                L L L L G G L L L L
+                L L L L G G L L L L
+                I G G G G G G G G I
+                D D D D D D D D D D
                 D D D D I I D D D D
-                D D D D I I D D D D
-                G D D D I I D D D G""";
+                G G G G I I G G G G""";
+
+        this.levelString = """
+                G G G I I I D D G G
+                G G G D G D G G G G
+                G G G D G D G G G G
+                D G G G D G L I G G
+                G G G G L L L I G G
+                I G I G L L G G G G
+                G I G G G D G I I G
+                G D G G G G G G D D
+                G G G G D G D G G I
+                G G G D I G G G G G""";
+
+        // "GGGGDGDGDG","DDGLLDGLIG","GGGLIGDLGG","LDGDGDGGLG","GGGDGGLDGG","LDGIGGLGLL","GLGGGLGLGD","GLLDLDDGGG","LGDLGGGDLL","GLLGDDGDGG"
 
         String[] lines = levelString.split("\n");
         this.height = lines.length;
@@ -87,5 +101,4 @@ public class PrebuiltLevelGenerator extends LevelGenerator {
         // todo: implement
     }
 
-    
 }
