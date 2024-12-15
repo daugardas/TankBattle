@@ -1,17 +1,22 @@
 package com.tankbattle.controllers;
 
-import com.tankbattle.models.Bullet;
-import com.tankbattle.models.Level;
-import com.tankbattle.models.Player;
-import com.tankbattle.utils.ServerFPSCounter;
-import com.tankbattle.utils.Vector2;
-import com.tankbattle.views.GameWindow;
-
-import org.springframework.messaging.simp.stomp.*;
-
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
+
+import org.springframework.messaging.simp.stomp.StompCommand;
+import org.springframework.messaging.simp.stomp.StompFrameHandler;
+import org.springframework.messaging.simp.stomp.StompHeaders;
+import org.springframework.messaging.simp.stomp.StompSession;
+import org.springframework.messaging.simp.stomp.StompSessionHandlerAdapter;
+
+import com.tankbattle.models.Bullet;
+import com.tankbattle.models.Level;
+import com.tankbattle.models.Player;
+import com.tankbattle.models.PowerUp;
+import com.tankbattle.utils.ServerFPSCounter;
+import com.tankbattle.utils.Vector2;
+import com.tankbattle.views.GameWindow;
 
 public class GameSessionHandler extends StompSessionHandlerAdapter {
     public StompSession stompSession;
@@ -87,6 +92,19 @@ public class GameSessionHandler extends StompSessionHandlerAdapter {
             @Override
             public void handleFrame(StompHeaders stompHeaders, Object payload) {
                 CollisionManager.getInstance().addCollision((Vector2) payload);
+            }
+        });
+
+        session.subscribe("/server/powerups", new StompFrameHandler() {
+            @Override
+            public Type getPayloadType(StompHeaders headers) {
+                return PowerUp[].class;
+            }
+
+            @Override
+            public void handleFrame(StompHeaders stompHeaders, Object o) {
+                ArrayList<PowerUp> powerUps = new ArrayList<>(List.of((PowerUp[]) o));
+                GameManager.getInstance().updatePowerUps(powerUps);
             }
         });
     }

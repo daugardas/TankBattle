@@ -1,18 +1,19 @@
 package com.tankbattle.renderers;
 
+import java.awt.Graphics2D;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
 import com.tankbattle.controllers.ResourceManager;
 import com.tankbattle.factories.TileFactory;
 import com.tankbattle.models.Bullet;
 import com.tankbattle.models.Collision;
 import com.tankbattle.models.Entity;
 import com.tankbattle.models.Player;
+import com.tankbattle.models.PowerUp;
 import com.tankbattle.models.tiles.Tile;
 import com.tankbattle.utils.Vector2;
-
-import java.awt.*;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 public class RenderFacade {
     private final Map<Class<? extends Entity>, EntityRenderer<? extends Entity>> renderers = new ConcurrentHashMap<>();
@@ -27,6 +28,7 @@ public class RenderFacade {
         registerRenderer(Tile.class, new TileRenderer());
         registerRenderer(Collision.class, new ExplosionRenderer(resourceManager));
         registerRenderer(Bullet.class, new BulletRenderer(resourceManager));
+        registerRenderer(PowerUp.class, new PowerUpRenderer(resourceManager));
     }
 
     public <T extends Entity> void registerRenderer(Class<T> entityClass, EntityRenderer<T> renderer) {

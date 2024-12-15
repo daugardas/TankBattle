@@ -8,6 +8,7 @@ import com.tankbattle.models.Bullet;
 import com.tankbattle.models.CurrentPlayer;
 import com.tankbattle.models.Level;
 import com.tankbattle.models.Player;
+import com.tankbattle.models.PowerUp;
 import com.tankbattle.models.tiles.Tile;
 import com.tankbattle.renderers.RenderFacade;
 import com.tankbattle.utils.Vector2;
@@ -28,6 +29,7 @@ public class GameManager {
     private Thread drawRequestThread;
     private final ConcurrentHashMap<String, Player> players;
     private final CopyOnWriteArrayList<Bullet> bullets;
+    private final CopyOnWriteArrayList<PowerUp> powerUps;
     public int playerCount = 0;
     private Level level;
     private CurrentPlayer currentPlayer;
@@ -42,6 +44,7 @@ public class GameManager {
 
         players = new ConcurrentHashMap<>();
         bullets = new CopyOnWriteArrayList<>();
+        powerUps = new CopyOnWriteArrayList<>();
         level = new Level();
     }
 
@@ -209,6 +212,7 @@ public class GameManager {
         this.renderTiles(g2d);
         this.renderPlayers(g2d);
         this.renderBullets(g2d);
+        this.renderPowerUps(g2d);
     }
 
     private void renderTiles(Graphics2D g2d) {
@@ -236,6 +240,10 @@ public class GameManager {
         renderFacade.drawEntities(g2d, bullets);
     }
 
+    private void renderPowerUps(Graphics2D g2d) {
+        renderFacade.drawEntities(g2d, powerUps);
+    }
+
     public void shutdown() {
         movementCommandExecutorService.shutdown();
         webSocketManager.close();
@@ -243,5 +251,10 @@ public class GameManager {
 
     public RenderFacade getRenderFacade() {
         return renderFacade;
+    }
+
+    public void updatePowerUps(ArrayList<PowerUp> incomingPowerUps) {
+        this.powerUps.clear();
+        this.powerUps.addAll(incomingPowerUps);
     }
 }

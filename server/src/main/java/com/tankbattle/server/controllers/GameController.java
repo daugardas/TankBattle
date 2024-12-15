@@ -327,12 +327,9 @@ public class GameController {
         ObjectMapper objectMapper = new ObjectMapper();
 
         try {
-            // if (bullets.size() != 0) {
-            // String playersJson = objectMapper.writeValueAsString(bullets);
-            // System.out.println(playersJson);
-            // }
             messagingTemplate.convertAndSend("/server/players", players);
             messagingTemplate.convertAndSend("/server/bullets", bullets);
+            messagingTemplate.convertAndSend("/server/powerups", powerUps);
         } catch (Exception e) {
             e.printStackTrace();
             System.out.println("Failed" + e.getMessage());
@@ -390,10 +387,10 @@ public class GameController {
 
     public void spawnItemsAtLocations() {
         List<Vector2> locations = Arrays.asList(
-                new Vector2(2000, 0),
-                new Vector2(2000, 9000),
-                new Vector2(9000, 2000),
-                new Vector2(0, 2000));
+                new Vector2(500, 2500),
+                new Vector2(2500, 9500),
+                new Vector2(9500, 2500),
+                new Vector2(7500, 9500));
 
         PowerUp powerUp1 = itemFactory.createSpeedPowerUp(locations.get(0));
         addPowerUp(powerUp1);
@@ -401,6 +398,8 @@ public class GameController {
         addPowerUp(powerUp2);
         PowerUp powerUp3 = itemFactory.createArmorPowerUp(locations.get(2));
         addPowerUp(powerUp3);
+        PowerUp powerUp4 = itemFactory.createArmorPowerUp(locations.get(3));
+        addPowerUp(powerUp4);
 
         // PowerDown powerDown1 = itemFactory.createSpeedPowerDown(locations.get(0));
         // addPowerDown(powerDown1);
