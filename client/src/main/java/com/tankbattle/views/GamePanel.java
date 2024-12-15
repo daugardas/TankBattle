@@ -31,6 +31,8 @@ public class GamePanel extends JPanel {
 
     private ScoreBoard scoreBoard;
 
+    private static boolean showFPS = true;  // Add this flag
+
     public GamePanel() {
         setLayout(new BorderLayout());
         setFocusable(true);
@@ -180,6 +182,8 @@ public class GamePanel extends JPanel {
     }
 
     private void drawClientFPS(Graphics2D g2d) {
+        if (!showFPS) return;
+        
         g2d.setFont(new Font("Arial", Font.BOLD, 36));
         g2d.setColor(Color.RED);
         String fpsText = String.format("FPS: %.2f", ClientFPSCounter.getInstance().getFps());
@@ -190,6 +194,8 @@ public class GamePanel extends JPanel {
     }
 
     private void drawServerFPS(Graphics2D g2d) {
+        if (!showFPS) return;
+        
         float serverFps = ServerFPSCounter.getInstance().getServerFps();
         String serverFpsText = String.format("Server: %.2f", serverFps);
         int serverFpsStringWidth = g2d.getFontMetrics().stringWidth(serverFpsText);
@@ -282,5 +288,15 @@ public class GamePanel extends JPanel {
 
     public void updateScoreboard(List<Player> players) {
         scoreBoard.updatePlayers(players);
+    }
+
+    // Add static method to toggle FPS display
+    public static void toggleFPSDisplay() {
+        showFPS = !showFPS;
+    }
+
+    // Add static method to set FPS display
+    public static void setFPSDisplay(boolean show) {
+        showFPS = show;
     }
 }

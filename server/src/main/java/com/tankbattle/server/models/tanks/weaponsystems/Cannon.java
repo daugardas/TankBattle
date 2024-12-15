@@ -16,7 +16,7 @@ public class Cannon extends WeaponSystem {
     @Override
     public void fire(Vector2 location, Vector2 direction, Player shooter) {
         if (canFire()) {
-            Bullet bullet = new Bullet(location, direction, new Vector2(48, 48), 40, 100, shooter);
+            Bullet bullet = new Bullet(location, direction, new Vector2(48, 48), 50, 50, shooter);
             GameController gameController = SpringContext.getBean(GameController.class);
             gameController.addBullet(bullet);
             lastFireTime = System.currentTimeMillis();

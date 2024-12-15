@@ -19,6 +19,7 @@ public class GameWindow extends JFrame {
 
         mainMenuPanel = new MenuPanel();
         gamePanel = new GamePanel();
+        gamePanel.toggleFPSDisplay(); // toggle FPS display
 
         add(mainMenuPanel);
 

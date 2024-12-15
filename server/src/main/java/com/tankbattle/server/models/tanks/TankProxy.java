@@ -8,7 +8,7 @@ import com.tankbattle.server.utils.Vector2;
 
 public class TankProxy extends AbstractCollidableEntity implements ITank {
     private ITank realTank;
-    private static final int MAX_HEALTH = 100;
+    private static final int MAX_HEALTH = 150;
     private int armor = 0;
     private boolean isDestroyed = false;
     private Vector2 spawnLocation;
