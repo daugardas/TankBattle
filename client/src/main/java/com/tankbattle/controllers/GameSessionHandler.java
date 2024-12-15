@@ -10,6 +10,7 @@ import org.springframework.messaging.simp.stomp.StompHeaders;
 import org.springframework.messaging.simp.stomp.StompSession;
 import org.springframework.messaging.simp.stomp.StompSessionHandlerAdapter;
 
+import com.tankbattle.mediator.ScoreMediatorImpl;
 import com.tankbattle.models.Bullet;
 import com.tankbattle.models.Level;
 import com.tankbattle.models.Player;
@@ -44,7 +45,9 @@ public class GameSessionHandler extends StompSessionHandlerAdapter {
 
             @Override
             public void handleFrame(StompHeaders stompHeaders, Object o) {
-                GameManager.getInstance().addPlayers(new ArrayList<>(List.of((Player[]) o)));
+                List<Player> players = new ArrayList<>(List.of((Player[]) o));
+                GameManager.getInstance().addPlayers(players);
+                ScoreMediatorImpl.getInstance().updateScores(players);
                 ServerFPSCounter.getInstance().incrementServerUpdateCount();
             }
         });

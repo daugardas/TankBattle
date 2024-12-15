@@ -367,7 +367,8 @@ public class GameController {
                     }
                     break;
                 case "FIRE":
-                    FireCommand fireCommand = new FireCommand(players.get(playerIndex).getTank());
+                    Player currentPlayer = players.get(playerIndex);
+                    FireCommand fireCommand = new FireCommand(currentPlayer.getTank(), currentPlayer);
                     if (!commands.contains(fireCommand)) {
                         commands.add(fireCommand);
                     }

@@ -1,6 +1,7 @@
 package com.tankbattle.views;
 
 import com.tankbattle.controllers.GameManager;
+import com.tankbattle.models.Player;
 import com.tankbattle.utils.ClientFPSCounter;
 import com.tankbattle.utils.ServerFPSCounter;
 import com.tankbattle.utils.Vector2;
@@ -10,6 +11,7 @@ import java.awt.*;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.awt.image.BufferedImage;
+import java.util.List;
 import java.util.concurrent.CountDownLatch;
 
 public class GamePanel extends JPanel {
@@ -27,11 +29,19 @@ public class GamePanel extends JPanel {
     // Do not use this to scale sprites or other graphics
     private float worldToPanelScaleFactor = 1;
 
-    public GamePanel() {
+    private ScoreBoard scoreBoard;
 
-        setLayout(null);
+    private static boolean showFPS = true;  // Add this flag
+
+    public GamePanel() {
+        setLayout(new BorderLayout());
         setFocusable(true);
         requestFocusInWindow();
+
+        // Create and add scoreboard to the right side
+        scoreBoard = new ScoreBoard();
+        add(scoreBoard, BorderLayout.EAST);
+
         updateScaleFactor();
         updateOffsets();
 
@@ -172,6 +182,8 @@ public class GamePanel extends JPanel {
     }
 
     private void drawClientFPS(Graphics2D g2d) {
+        if (!showFPS) return;
+        
         g2d.setFont(new Font("Arial", Font.BOLD, 36));
         g2d.setColor(Color.RED);
         String fpsText = String.format("FPS: %.2f", ClientFPSCounter.getInstance().getFps());
@@ -182,6 +194,8 @@ public class GamePanel extends JPanel {
     }
 
     private void drawServerFPS(Graphics2D g2d) {
+        if (!showFPS) return;
+        
         float serverFps = ServerFPSCounter.getInstance().getServerFps();
         String serverFpsText = String.format("Server: %.2f", serverFps);
         int serverFpsStringWidth = g2d.getFontMetrics().stringWidth(serverFpsText);
@@ -270,5 +284,19 @@ public class GamePanel extends JPanel {
         this.WORLD_HEIGHT = height;
         updateScaleFactor();
         updateOffsets();
+    }
+
+    public void updateScoreboard(List<Player> players) {
+        scoreBoard.updatePlayers(players);
+    }
+
+    // Add static method to toggle FPS display
+    public static void toggleFPSDisplay() {
+        showFPS = !showFPS;
+    }
+
+    // Add static method to set FPS display
+    public static void setFPSDisplay(boolean show) {
+        showFPS = show;
     }
 }
