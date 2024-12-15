@@ -5,6 +5,7 @@ import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
 import com.tankbattle.models.Player;
+import com.tankbattle.mediator.ScoreMediatorImpl;
 
 public class ScoreBoard extends JPanel {
     private List<Player> players = new ArrayList<>();
@@ -14,11 +15,11 @@ public class ScoreBoard extends JPanel {
     public ScoreBoard() {
         setPreferredSize(new Dimension(PANEL_WIDTH, 0));
         setOpaque(false);
+        ScoreMediatorImpl.getInstance().registerScoreBoard(this);
     }
 
     public void updatePlayers(List<Player> players) {
         this.players = new ArrayList<>(players);
-        // Sort players by score (highest first)
         this.players.sort((p1, p2) -> Integer.compare(p2.getScore(), p1.getScore()));
         repaint();
     }
