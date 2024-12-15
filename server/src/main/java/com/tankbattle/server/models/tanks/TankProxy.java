@@ -11,9 +11,11 @@ public class TankProxy extends AbstractCollidableEntity implements ITank {
     private static final int MAX_HEALTH = 100;
     private int armor = 0;
     private boolean isDestroyed = false;
+    private Vector2 spawnLocation;
 
-    public TankProxy(ITank tank) {
+    public TankProxy(ITank tank, Vector2 spawnLocation) {
         this.realTank = tank;
+        this.spawnLocation = spawnLocation;
     }
 
     @Override
@@ -48,10 +50,17 @@ public class TankProxy extends AbstractCollidableEntity implements ITank {
     }
 
     private void onTankDestroyed() {
-        setSpeed(0);
-        // Notify about tank destruction
+        // Notify about tank destruction at current location
         GameController gameController = SpringContext.getBean(GameController.class);
         gameController.notifyTankDestroyed(getLocation());
+
+        // Reset tank state
+        isDestroyed = false;
+        armor = 0;
+        realTank.setHealth(MAX_HEALTH);
+        
+        // Respawn at original location
+        setLocationToTile(spawnLocation);
     }
 
     public void setArmor(int armor) {

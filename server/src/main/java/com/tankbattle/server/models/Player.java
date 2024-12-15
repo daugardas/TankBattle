@@ -6,6 +6,8 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.tankbattle.server.models.tanks.HeavyTank;
 import com.tankbattle.server.models.tanks.ITank;
 import com.tankbattle.server.models.tanks.TankProxy;
+import com.tankbattle.server.utils.Vector2;
+
 
 public class Player {
     @JsonIgnore
@@ -13,16 +15,19 @@ public class Player {
 
     private String username;
     private ITank tank;
+    private Vector2 spawnLocation;
 
     public Player() {
-        tank = new TankProxy(new HeavyTank());
+        // Default constructor needed for JSON deserialization
     }
 
-    public Player(String sessionId, String username) {
+    public Player(String sessionId, String username, Vector2 spawnLocation) {
         this.sessionId = sessionId;
         this.username = username;
+        this.spawnLocation = spawnLocation;
 
-        tank = new TankProxy(new HeavyTank());
+        // Create tank with spawn location
+        tank = new TankProxy(new HeavyTank(), spawnLocation);
     }
 
     public String getSessionId() {

@@ -218,8 +218,11 @@ public class GameController {
 
         // assign player starting location
         int existingPlayers = this.players.size();
-        Vector2 newPlayerLocation = level.getSpawnPoints()[existingPlayers];
-        player.getTank().setLocationToTile(newPlayerLocation);
+        Vector2 spawnLocation = level.getSpawnPoints()[existingPlayers];
+        
+        // Create new player with spawn location
+        player = new Player(player.getSessionId(), player.getUsername(), spawnLocation);
+        player.getTank().setLocationToTile(spawnLocation);
 
         this.players.add(player);
         this.tanks.add(player.getTank());
