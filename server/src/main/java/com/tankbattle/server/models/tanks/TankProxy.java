@@ -50,10 +50,19 @@ public class TankProxy extends AbstractCollidableEntity implements ITank {
     }
 
     private void onTankDestroyed() {
-        // Notify about tank destruction at current location
         GameController gameController = SpringContext.getBean(GameController.class);
+        
+        // Find player who owns this tank and deduct points
+        gameController.getPlayers().stream()
+            .filter(p -> p.getTank() == this)
+            .findFirst()
+            .ifPresent(player -> {
+                player.addScore(-15); // -15 points for dying
+                System.out.println("Player '" + player.getUsername() + "' was destroyed (-15 points)");
+            });
+        
         gameController.notifyTankDestroyed(getLocation());
-
+        
         // Reset tank state
         isDestroyed = false;
         armor = 0;

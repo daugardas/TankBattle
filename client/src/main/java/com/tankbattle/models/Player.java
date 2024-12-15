@@ -1,14 +1,13 @@
 package com.tankbattle.models;
 
-import java.awt.Color;
 import java.util.Objects;
 
-import com.tankbattle.utils.Vector2;
 import com.tankbattle.models.tanks.Tank;
 
 public class Player extends Entity {
     protected String username;
     protected Tank tank;
+    protected int score;
 
     public Player() {
     }
@@ -16,6 +15,7 @@ public class Player extends Entity {
     public Player(String username) {
         this.username = username;
         this.tank = new Tank();
+        this.score = 0;
     }
 
     public String getUsername() {
@@ -32,6 +32,14 @@ public class Player extends Entity {
 
     public void setTank(Tank tank) {
         this.tank = tank;
+    }
+
+    public int getScore() {
+        return score;
+    }
+
+    public void setScore(int score) {
+        this.score = score;
     }
 
     public String toString() {

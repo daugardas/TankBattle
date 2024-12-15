@@ -1,5 +1,6 @@
 package com.tankbattle.server.models.tanks.weaponsystems;
 
+import com.tankbattle.server.models.Player;
 import com.tankbattle.server.utils.Vector2;
 
 public abstract class WeaponSystem {
@@ -11,7 +12,7 @@ public abstract class WeaponSystem {
         this.lastFireTime = lastFireTime;
     }
 
-    public abstract void fire(Vector2 location, Vector2 direction);
+    public abstract void fire(Vector2 location, Vector2 direction, Player shooter);
 
     public boolean canFire() {
         return System.currentTimeMillis() - lastFireTime >= cooldownTime;

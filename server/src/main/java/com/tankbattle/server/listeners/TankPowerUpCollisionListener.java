@@ -8,6 +8,7 @@ import org.springframework.stereotype.Component;
 
 import com.tankbattle.server.controllers.GameController;
 import com.tankbattle.server.events.CollisionEvent;
+import com.tankbattle.server.models.Player;
 import com.tankbattle.server.models.items.PowerUp;
 import com.tankbattle.server.models.tanks.ITank;
 
@@ -30,6 +31,17 @@ public class TankPowerUpCollisionListener implements CollisionListener {
 
         ITank tank = event.getTank();
         PowerUp powerUp = (PowerUp) event.getOtherEntity();
+        
+        // Find player who collected the power-up
+        Player collector = gameController.getPlayers().stream()
+            .filter(p -> p.getTank() == tank)
+            .findFirst()
+            .orElse(null);
+
+        if (collector != null) {
+            collector.addScore(5); // 5 points for collecting power-up
+            logger.info("Player '{}' collected power-up (+5 points)", collector.getUsername());
+        }
 
         gameController.removePowerUp(powerUp);
         powerUp.applyEffect(tank);

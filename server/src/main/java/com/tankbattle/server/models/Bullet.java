@@ -13,11 +13,13 @@ public class Bullet extends AbstractCollidableEntity {
     private int speed;
     @JsonIgnore
     private int damage;
+    @JsonIgnore
+    private Player shooter;
 
     @JsonIgnore
     private boolean markedForRemoval = false;
 
-    public Bullet(Vector2 location, Vector2 direction, Vector2 size, int speed, int damage) {
+    public Bullet(Vector2 location, Vector2 direction, Vector2 size, int speed, int damage, Player shooter) {
         this.location = new Vector2();
         this.location.setX(location.getX() + (500 + size.getX() / 2) * direction.getX());
         this.location.setY(location.getY() + (500 + size.getY() / 2) * direction.getY());
@@ -26,6 +28,7 @@ public class Bullet extends AbstractCollidableEntity {
         this.size = size;
         this.speed = speed;
         this.damage = damage;
+        this.shooter = shooter;
     }
 
     public Vector2 getLocation() {
@@ -78,5 +81,10 @@ public class Bullet extends AbstractCollidableEntity {
     @JsonIgnore
     public String toString() {
         return String.format("%s %s", location, direction);
+    }
+
+    @JsonIgnore
+    public Player getShooter() {
+        return shooter;
     }
 }

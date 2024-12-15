@@ -2,6 +2,9 @@ package com.tankbattle.server.models;
 
 import java.util.Objects;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.tankbattle.server.models.tanks.HeavyTank;
 import com.tankbattle.server.models.tanks.ITank;
@@ -10,12 +13,15 @@ import com.tankbattle.server.utils.Vector2;
 
 
 public class Player {
+    private static final Logger logger = LoggerFactory.getLogger(Player.class);
+
     @JsonIgnore
     private String sessionId;
 
     private String username;
     private ITank tank;
     private Vector2 spawnLocation;
+    private int score = 0;
 
     public Player() {
         // Default constructor needed for JSON deserialization
@@ -72,5 +78,16 @@ public class Player {
     @Override
     public int hashCode() {
         return Objects.hash(username);
+    }
+
+    public void addScore(int points) {
+        int oldScore = this.score;
+        this.score += points;
+        logger.info("Player '{}' score changed: {} ({:+d}) -> {}", 
+            username, oldScore, points, this.score);
+    }
+
+    public int getScore() {
+        return score;
     }
 }
