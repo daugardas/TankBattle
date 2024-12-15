@@ -3,8 +3,8 @@ package com.tankbattle.server.models;
 import java.util.Objects;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.tankbattle.server.models.tanks.HeavyTank;
 import com.tankbattle.server.models.tanks.ITank;
+import com.tankbattle.server.models.tanks.LightTank;
 import com.tankbattle.server.models.tanks.TankProxy;
 import com.tankbattle.server.utils.Vector2;
 
@@ -27,7 +27,7 @@ public class Player {
         this.spawnLocation = spawnLocation;
 
         // Create tank with spawn location
-        tank = new TankProxy(new HeavyTank(), spawnLocation);
+        tank = new TankProxy(new LightTank(), spawnLocation);
     }
 
     public String getSessionId() {

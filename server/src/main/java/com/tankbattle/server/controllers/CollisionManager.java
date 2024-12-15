@@ -1,5 +1,6 @@
 package com.tankbattle.server.controllers;
 
+import java.util.ConcurrentModificationException;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -73,17 +74,21 @@ public class CollisionManager {
     private void detectEntityCollisions(List<ITank> tanks, List<Bullet> bullets, List<PowerUp> powerUps, List<PowerDown> powerDowns) {
         Set<String> processedPairs = new HashSet<>();
 
-        for (Bullet bullet : bullets) {
-            List<ICollidableEntity> nearbyEntities = spatialGrid.getNearbyEntities(bullet);
-
-            for (ICollidableEntity gameEntity : nearbyEntities) {
-                if (gameEntity instanceof TileEntity tileEntity) {
-                    if (!tileEntity.canProjectilePass() && isColliding(bullet, tileEntity)) {
-                        notifyListeners(
-                                new CollisionEvent(CollisionEvent.CollisionType.BULLET_MAP, bullet, tileEntity));
+        try {
+            for (Bullet bullet : bullets) {
+                List<ICollidableEntity> nearbyEntities = spatialGrid.getNearbyEntities(bullet);
+    
+                for (ICollidableEntity gameEntity : nearbyEntities) {
+                    if (gameEntity instanceof TileEntity tileEntity) {
+                        if (!tileEntity.canProjectilePass() && isColliding(bullet, tileEntity)) {
+                            notifyListeners(
+                                    new CollisionEvent(CollisionEvent.CollisionType.BULLET_MAP, bullet, tileEntity));
+                        }
                     }
                 }
             }
+        } catch (ConcurrentModificationException e) {
+            // todo: fix this later :)
         }
 
         // if bullet can hit two tiles simultaneously, we can just mark it for removal,

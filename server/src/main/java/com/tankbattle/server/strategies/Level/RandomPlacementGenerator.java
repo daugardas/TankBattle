@@ -13,8 +13,8 @@ public class RandomPlacementGenerator extends LevelGenerator {
 
     public RandomPlacementGenerator() {
         super(10, 10);
-        this.wallDensity = 30;
-        this.indestructibleWallChance = 5;
+        this.wallDensity = 100;
+        this.indestructibleWallChance = 30;
     }
 
     public RandomPlacementGenerator(int wallDensity, int indestructibleWallChance) {
@@ -42,7 +42,7 @@ public class RandomPlacementGenerator extends LevelGenerator {
                 if (random.nextInt(100) < wallDensity) {
                     tile = random.nextInt(100) < indestructibleWallChance ? indestructibleFactory.createTile()
                             : destructibleFactory.createTile();
-                    tile = destructibleFactory.createTile();
+                    // tile = destructibleFactory.createTile();
                 }
 
                 level.setTile(x, y, tile);
