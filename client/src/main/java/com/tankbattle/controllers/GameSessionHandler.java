@@ -107,6 +107,19 @@ public class GameSessionHandler extends StompSessionHandlerAdapter {
                 GameManager.getInstance().updatePowerUps(powerUps);
             }
         });
+
+        session.subscribe("/server/tank-destroyed", new StompFrameHandler() {
+            @Override
+            public Type getPayloadType(StompHeaders headers) {
+                return Vector2.class;
+            }
+
+            @Override
+            public void handleFrame(StompHeaders stompHeaders, Object o) {
+                Vector2 location = (Vector2) o;
+                CollisionManager.getInstance().addExplosion(location);
+            }
+        });
     }
 
 

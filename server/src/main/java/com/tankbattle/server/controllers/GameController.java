@@ -456,4 +456,8 @@ public class GameController {
         collisionManager.spatialGrid.removeEntity(powerDown);
     }
 
+    public void notifyTankDestroyed(Vector2 location) {
+        messagingTemplate.convertAndSend("/server/tank-destroyed", location);
+    }
+
 }

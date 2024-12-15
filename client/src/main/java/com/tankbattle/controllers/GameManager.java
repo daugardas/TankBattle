@@ -1,10 +1,25 @@
 package com.tankbattle.controllers;
 
+import java.awt.Graphics2D;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+
+import javax.swing.SwingUtilities;
+
 import com.tankbattle.commands.FireCommand;
 import com.tankbattle.commands.ICommand;
 import com.tankbattle.commands.MoveCommand;
 import com.tankbattle.input.InputData;
 import com.tankbattle.models.Bullet;
+import com.tankbattle.models.Collision;
 import com.tankbattle.models.CurrentPlayer;
 import com.tankbattle.models.Level;
 import com.tankbattle.models.Player;
@@ -13,12 +28,6 @@ import com.tankbattle.models.tiles.Tile;
 import com.tankbattle.renderers.RenderFacade;
 import com.tankbattle.utils.Vector2;
 import com.tankbattle.views.GameWindow;
-
-import javax.swing.*;
-import java.awt.*;
-import java.util.List;
-import java.util.*;
-import java.util.concurrent.*;
 
 public class GameManager {
     private static final GameManager INSTANCE = new GameManager();
@@ -208,15 +217,14 @@ public class GameManager {
     }
 
     public void renderAll(Graphics2D g2d) {
-        // System.out.println("Rendering all game entities through RenderFacade.");
         this.renderTiles(g2d);
         this.renderPlayers(g2d);
         this.renderBullets(g2d);
         this.renderPowerUps(g2d);
+        this.renderExplosions(g2d);
     }
 
     private void renderTiles(Graphics2D g2d) {
-        // System.out.println("Rendering tiles through RenderFacade.");
         Tile[][] tileGrid = level.getGrid();
         if (tileGrid != null) {
             for (Tile[] row : tileGrid) {
@@ -226,7 +234,6 @@ public class GameManager {
     }
 
     private void renderPlayers(Graphics2D g2d) {
-        // System.out.println("Rendering players through RenderFacade.");
         for (Player player : players.values()) {
             renderFacade.drawEntity(g2d, player);
         }
@@ -236,12 +243,16 @@ public class GameManager {
     }
 
     private void renderBullets(Graphics2D g2d) {
-        // System.out.println("Rendering bullets through RenderFacade.");
         renderFacade.drawEntities(g2d, bullets);
     }
 
     private void renderPowerUps(Graphics2D g2d) {
         renderFacade.drawEntities(g2d, powerUps);
+    }
+
+    private void renderExplosions(Graphics2D g2d) {
+        List<Collision> explosions = CollisionManager.getInstance().getExplosions();
+        renderFacade.drawEntities(g2d, explosions);
     }
 
     public void shutdown() {

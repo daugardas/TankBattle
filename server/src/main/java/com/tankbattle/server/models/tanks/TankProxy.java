@@ -1,5 +1,7 @@
 package com.tankbattle.server.models.tanks;
 
+import com.tankbattle.server.components.SpringContext;
+import com.tankbattle.server.controllers.GameController;
 import com.tankbattle.server.models.AbstractCollidableEntity;
 import com.tankbattle.server.models.tanks.weaponsystems.WeaponSystem;
 import com.tankbattle.server.utils.Vector2;
@@ -46,9 +48,10 @@ public class TankProxy extends AbstractCollidableEntity implements ITank {
     }
 
     private void onTankDestroyed() {
-        // Handle tank destruction, for now just set speed to 0
         setSpeed(0);
-        // Additional destruction logic should go here like removing 1 life from player and respawning
+        // Notify about tank destruction
+        GameController gameController = SpringContext.getBean(GameController.class);
+        gameController.notifyTankDestroyed(getLocation());
     }
 
     public void setArmor(int armor) {

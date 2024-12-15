@@ -4,19 +4,23 @@ package com.tankbattle.models;
 import com.tankbattle.utils.Vector2;
 
 public class Collision extends Entity {
-    private final Vector2 location;
-    private final long timestamp;
+    private Vector2 location;
+    private final long startTime;
 
     public Collision(Vector2 location) {
         this.location = location;
-        this.timestamp = System.currentTimeMillis();
+        this.startTime = System.currentTimeMillis();
     }
 
     public Vector2 getLocation() {
         return location;
     }
 
-    public long getTimestamp() {
-        return timestamp;
+    public void setLocation(Vector2 location) {
+        this.location = location;
+    }
+
+    public long getStartTime() {
+        return startTime;
     }
 }

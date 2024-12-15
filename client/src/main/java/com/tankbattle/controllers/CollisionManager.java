@@ -4,6 +4,9 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.Timer;
+import java.util.TimerTask;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -17,6 +20,8 @@ public class CollisionManager {
 
     private final Set<Vector2> activeCollisionLocations = new HashSet<>();
     private final List<Collision> collisions = new ArrayList<>();
+    private final List<Collision> explosions = new CopyOnWriteArrayList<>();
+    private static final int EXPLOSION_DURATION = 1000; // 1 second
 
     private CollisionManager() {
     }
@@ -49,5 +54,23 @@ public class CollisionManager {
 
     public void shutdown() {
         colllisionExecutorService.shutdown();
+    }
+
+    public void addExplosion(Vector2 location) {
+        Collision explosion = new Collision(location);
+        explosions.add(explosion);
+        
+        // Remove explosion after duration
+        Timer timer = new Timer();
+        timer.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                explosions.remove(explosion);
+            }
+        }, EXPLOSION_DURATION);
+    }
+
+    public List<Collision> getExplosions() {
+        return explosions;
     }
 }
