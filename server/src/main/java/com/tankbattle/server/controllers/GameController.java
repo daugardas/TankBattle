@@ -41,6 +41,9 @@ import com.tankbattle.server.models.tanks.Tank;
 import com.tankbattle.server.models.tiles.Tile;
 import com.tankbattle.server.strategies.Level.LevelGenerator;
 import com.tankbattle.server.utils.Vector2;
+import com.tankbattle.server.commands.CommandHandler;
+import com.tankbattle.server.commands.FireCommandHandler;
+import com.tankbattle.server.commands.MoveCommandHandler;
 
 import jakarta.annotation.PostConstruct;
 
@@ -93,6 +96,9 @@ public class GameController {
     private ArrayList<ICommand> commandsLog = new ArrayList<>();
 
     private Level level;
+
+    private CommandHandler commandHandlerChain;
+
 
     public Level getLevel() {
         return level;
@@ -153,6 +159,18 @@ public class GameController {
         sessionManager.removeSession(sessionId);
         removePlayerBySessionId(sessionId);
         printToConsole("Kicked '" + username + "' from the server.");
+    }
+    @PostConstruct
+    public void initCommandHandlers() {
+        // Create handlers
+        CommandHandler moveHandler = new MoveCommandHandler();
+        CommandHandler fireHandler = new FireCommandHandler();
+
+        // Set up the chain
+        moveHandler.setNextHandler(fireHandler);
+
+        // Assign the chain
+        commandHandlerChain = moveHandler;
     }
 
     @PostConstruct
@@ -349,39 +367,13 @@ public class GameController {
         Integer playerIndex = sessionIdToPlayerIndex.get(sessionId);
 
         if (playerIndex != null && playerIndex < players.size()) {
-
-            String type = command.get("type").toString();
-
-            switch (type) {
-                case "MOVE":
-                    MoveCommand moveCommand = new MoveCommand(players.get(playerIndex).getTank(),
-                            ((Integer) command.get("direction")).byteValue());
-
-                    if (!commands.contains(moveCommand) /* && run */) {
-                        commands.add(moveCommand);
-                        commandsLog.add(moveCommand);
-
-                        // if (commandsLog.size() >= 100) {
-                        // run = false;
-                        // }
-                    }
-                    break;
-                case "FIRE":
-                    Player currentPlayer = players.get(playerIndex);
-                    FireCommand fireCommand = new FireCommand(currentPlayer.getTank(), currentPlayer);
-                    if (!commands.contains(fireCommand)) {
-                        commands.add(fireCommand);
-                    }
-                    break;
-
-                default:
-                    break;
-            }
-
+            Player player = players.get(playerIndex);
+            commandHandlerChain.handleCommand(command, player, commands, commandsLog);
         } else {
             System.err.println("Invalid session ID or player index: " + sessionId);
         }
     }
+
 
     public CollisionManager getCollisionManager() {
         return collisionManager;
