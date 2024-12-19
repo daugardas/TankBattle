@@ -45,6 +45,12 @@ import com.tankbattle.server.commands.CommandHandler;
 import com.tankbattle.server.commands.FireCommandHandler;
 import com.tankbattle.server.commands.MoveCommandHandler;
 
+import com.tankbattle.server.memento.LevelCaretaker;
+import com.tankbattle.server.memento.LevelMemento;
+
+import java.util.Timer;
+import java.util.TimerTask;
+
 import jakarta.annotation.PostConstruct;
 
 @Controller
@@ -98,6 +104,8 @@ public class GameController {
     private Level level;
 
     private CommandHandler commandHandlerChain;
+
+    private LevelCaretaker caretaker = new LevelCaretaker();
 
 
     public Level getLevel() {
@@ -199,33 +207,27 @@ public class GameController {
         levelBuilder.generateLevel().addSpawnPoints(4).addPowerUps(10);
         level = levelBuilder.build();
 
-        printToConsole("Level initialized. Level:");
-        printToConsole(level.toString());
+        // Create the Caretaker
+        LevelCaretaker caretaker = new LevelCaretaker();
+
+        // Save the initial state
+        LevelMemento savedState = level.createMemento();
+        caretaker.mementoList.add(savedState);
+        System.out.println("Saved current level grid.");
+
+        // Schedule restoration of the initial state after 30 seconds
+        Timer timer = new Timer();
+        timer.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                System.out.println("Restoring level grid after 30 seconds...");
+                level.setMemento(caretaker.mementoList.get(0));
+                System.out.println("Restored level grid to initial state.");
+                sendUpdatedLevel();
+            }
+        }, 30000); // Delay in milliseconds (30 seconds)
 
         spawnItemsAtLocations();
-
-        // -----------------------------------------Prototype------------------------------------------------------
-        /*
-         *
-         * Tile tile = new IceTile();
-         * Tile copy = (IceTile) tile.copyShallow();
-         *
-         * System.out.println("New element hash code(shallowCopy):" +
-         * System.identityHashCode(tile.getHealth()));
-         * System.out.println("Old element hash code(shallowCopy):" +
-         * System.identityHashCode(copy.getHealth()));
-         *
-         * Tile tileOG = new IceTile();
-         * Tile tileCopy = tile.copyDeep();
-         *
-         * System.out.println("New element hash code(deepCopy):" +
-         * System.identityHashCode(tileOG));
-         * System.out.println("Old element hash code(deepCopy):" +
-         * System.identityHashCode(tileCopy));
-         *
-         */
-        // -----------------------------------------Prototype------------------------------------------------------
-
         collisionManager.initializeStaticEntities(level);
     }
 
@@ -500,6 +502,15 @@ public class GameController {
 
     public void notifyTankDestroyed(Vector2 location) {
         messagingTemplate.convertAndSend("/server/tank-destroyed", location);
+    }
+    public void restoreLevelToInitialState() {
+        if (caretaker.getMementoCount() > 0) {
+            level.restoreGridFromMemento(caretaker.getMemento(0));
+            printToConsole("Level grid restored to initial state.");
+            sendUpdatedLevel();
+        } else {
+            printToConsole("No initial state saved!");
+        }
     }
 
 }

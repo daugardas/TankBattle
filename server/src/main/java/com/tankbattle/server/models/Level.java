@@ -8,6 +8,8 @@ import com.tankbattle.server.models.tiles.PassableGroundTile;
 import com.tankbattle.server.models.tiles.Tile;
 import com.tankbattle.server.utils.Vector2;
 
+import com.tankbattle.server.memento.LevelMemento;
+
 import java.util.HashSet;
 import java.util.Set;
 
@@ -351,5 +353,26 @@ public class Level {
 
     public Tile[][] getTiles() {
         return grid;
+    }
+
+
+
+
+    public void restoreGridFromMemento(LevelMemento memento) {
+        System.out.println("Restoring grid state from memento...");
+        Tile[][] restoredGrid = memento.getGrid();
+        this.grid = new Tile[restoredGrid.length][];
+        for (int i = 0; i < restoredGrid.length; i++) {
+            this.grid[i] = restoredGrid[i].clone();
+        }
+    }
+
+
+    public LevelMemento createMemento() {
+        return new LevelMemento(grid);
+    }
+
+    public void setMemento(LevelMemento memento) {
+        this.grid = memento.getGrid();
     }
 }
