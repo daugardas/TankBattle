@@ -2,6 +2,7 @@
 package com.tankbattle.models;
 
 import com.tankbattle.utils.Vector2;
+import com.tankbattle.visitors.Visitor;
 
 public class Collision extends Entity {
     private Vector2 location;
@@ -22,5 +23,8 @@ public class Collision extends Entity {
 
     public long getStartTime() {
         return startTime;
+    }
+    public void accept(Visitor visitor) {
+        visitor.visit(this);
     }
 }

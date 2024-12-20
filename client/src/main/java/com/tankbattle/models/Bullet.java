@@ -1,6 +1,7 @@
 package com.tankbattle.models;
 
 import com.tankbattle.utils.Vector2;
+import com.tankbattle.visitors.Visitor;
 
 public class Bullet extends Entity {
     private Vector2 size;
@@ -33,5 +34,8 @@ public class Bullet extends Entity {
     @Override
     public String toString() {
         return "Bullet{" + "location=" + location + ", size=" + size + '}';
+    }
+    public void accept(Visitor visitor) {
+        visitor.visit(this);
     }
 }

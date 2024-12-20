@@ -1,6 +1,7 @@
 package com.tankbattle.models;
 
 import com.tankbattle.utils.Vector2;
+import com.tankbattle.visitors.Visitor;
 
 public class PowerUp extends Entity {
     private Vector2 location;
@@ -32,6 +33,9 @@ public class PowerUp extends Entity {
 
     public void setType(String type) {
         this.type = type;
+    }
+    public void accept(Visitor visitor) {
+        visitor.visit(this);
     }
 
 } 

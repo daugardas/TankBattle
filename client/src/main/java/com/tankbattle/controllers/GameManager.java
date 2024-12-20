@@ -28,6 +28,7 @@ import com.tankbattle.models.tiles.Tile;
 import com.tankbattle.renderers.RenderFacade;
 import com.tankbattle.utils.Vector2;
 import com.tankbattle.views.GameWindow;
+import com.tankbattle.visitors.RenderVisitor;
 
 public class GameManager {
     private static final GameManager INSTANCE = new GameManager();
@@ -35,6 +36,7 @@ public class GameManager {
     private WebSocketManager webSocketManager;
     private RenderFacade renderFacade;
     private ResourceManager resourceManager;
+    private RenderVisitor renderVisitor;
     private Thread drawRequestThread;
     private final ConcurrentHashMap<String, Player> players;
     private final CopyOnWriteArrayList<Bullet> bullets;
@@ -50,6 +52,7 @@ public class GameManager {
         webSocketManager = new WebSocketManager();
         resourceManager = new ResourceManager();
         renderFacade = new RenderFacade(resourceManager);
+        renderVisitor = new RenderVisitor(renderFacade, null);
 
         players = new ConcurrentHashMap<>();
         bullets = new CopyOnWriteArrayList<>();
@@ -217,42 +220,49 @@ public class GameManager {
     }
 
     public void renderAll(Graphics2D g2d) {
-        this.renderTiles(g2d);
-        this.renderPlayers(g2d);
-        this.renderBullets(g2d);
-        this.renderPowerUps(g2d);
-        this.renderExplosions(g2d);
+        renderVisitor = new RenderVisitor(renderFacade, g2d);
+        this.renderTiles();
+        this.renderPlayers();
+        this.renderBullets();
+        this.renderPowerUps();
+        this.renderExplosions();
     }
 
-    private void renderTiles(Graphics2D g2d) {
+    private void renderTiles() {
         Tile[][] tileGrid = level.getGrid();
         if (tileGrid != null) {
             for (Tile[] row : tileGrid) {
-                renderFacade.drawEntities(g2d, Arrays.asList(row));
+                for (Tile tile : row) {
+                    tile.accept(renderVisitor);
+                }
             }
         }
     }
 
-    private void renderPlayers(Graphics2D g2d) {
+    private void renderPlayers() {
         for (Player player : players.values()) {
-            renderFacade.drawEntity(g2d, player);
+            player.accept(renderVisitor);
         }
-
-        renderFacade.drawEntity(g2d, currentPlayer);
-
+        currentPlayer.accept(renderVisitor);
     }
 
-    private void renderBullets(Graphics2D g2d) {
-        renderFacade.drawEntities(g2d, bullets);
+    private void renderBullets() {
+        for (Bullet bullet : bullets) {
+            bullet.accept(renderVisitor);
+        }
     }
 
-    private void renderPowerUps(Graphics2D g2d) {
-        renderFacade.drawEntities(g2d, powerUps);
+    private void renderPowerUps() {
+        for (PowerUp powerUp : powerUps) {
+            powerUp.accept(renderVisitor);
+        }
     }
 
-    private void renderExplosions(Graphics2D g2d) {
+    private void renderExplosions() {
         List<Collision> explosions = CollisionManager.getInstance().getExplosions();
-        renderFacade.drawEntities(g2d, explosions);
+        for (Collision collision : explosions) {
+            collision.accept(renderVisitor);
+        }
     }
 
     public void shutdown() {

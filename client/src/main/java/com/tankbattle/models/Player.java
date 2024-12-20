@@ -3,6 +3,7 @@ package com.tankbattle.models;
 import java.util.Objects;
 
 import com.tankbattle.models.tanks.Tank;
+import com.tankbattle.visitors.Visitor;
 
 public class Player extends Entity {
     protected String username;
@@ -65,5 +66,8 @@ public class Player extends Entity {
     @Override
     public int hashCode() {
         return Objects.hash(username);
+    }
+    public void accept(Visitor visitor) {
+        visitor.visit(this);
     }
 }

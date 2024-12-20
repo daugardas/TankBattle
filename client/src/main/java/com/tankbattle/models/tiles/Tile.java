@@ -2,7 +2,7 @@ package com.tankbattle.models.tiles;
 
 import com.tankbattle.models.Entity;
 import com.tankbattle.utils.Vector2;
-
+import com.tankbattle.visitors.Visitor;
 import java.awt.image.BufferedImage;
 
 public class Tile extends Entity {
@@ -47,5 +47,8 @@ public class Tile extends Entity {
 
     public String toString() {
         return this.tileType.toString();
+    }
+    public void accept(Visitor visitor) {
+        visitor.visit(this);
     }
 }
