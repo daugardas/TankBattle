@@ -168,14 +168,7 @@ public class GameController {
 
         });
 
-        LevelGenerator generator;
-        boolean useProceduralGeneration = false;
-
-        if (useProceduralGeneration) {
-            generator = LevelGeneratorFactory.createGenerator("random");
-        } else {
-            generator = LevelGeneratorFactory.createGenerator("prebuilt");
-        }
+        LevelGenerator generator = LevelGeneratorFactory.createGenerator("random");
 
         var levelBuilder = new BasicLevelBuilder(generator);
         levelBuilder.generateLevel().addSpawnPoints(4).addPowerUps(10);
