@@ -168,7 +168,7 @@ public class GameController {
 
         });
 
-        LevelGenerator generator = LevelGeneratorFactory.createGenerator("random");
+        LevelGenerator generator = LevelGeneratorFactory.createGenerator("prebuilt");
 
         var levelBuilder = new BasicLevelBuilder(generator);
         levelBuilder.generateLevel().addSpawnPoints(4).addPowerUps(10);

@@ -6,45 +6,24 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 
-import com.tankbattle.server.controllers.GameController;
 import com.tankbattle.server.events.CollisionEvent;
-import com.tankbattle.server.models.Player;
-import com.tankbattle.server.models.items.PowerUp;
-import com.tankbattle.server.models.tanks.ITank;
+import com.tankbattle.server.mediator.GameMediator;
 
 @Component
 public class TankPowerUpCollisionListener implements CollisionListener {
     private static final Logger logger = LoggerFactory.getLogger(TankPowerUpCollisionListener.class);
 
-    private GameController gameController;
+    private final GameMediator gameMediator;
 
     @Autowired
-    public TankPowerUpCollisionListener(@Lazy GameController gameController) {
-        this.gameController = gameController;
+    public TankPowerUpCollisionListener(@Lazy GameMediator gameMediator) {
+        this.gameMediator = gameMediator;
     }
 
     @Override
     public void onCollision(CollisionEvent event) {
-        if (event.getType() != CollisionEvent.CollisionType.PLAYER_POWERUP) {
-            return;
+        if (event.getType() == CollisionEvent.CollisionType.PLAYER_POWERUP) {
+            gameMediator.handleCollision(event);
         }
-
-        ITank tank = event.getTank();
-        PowerUp powerUp = (PowerUp) event.getOtherEntity();
-        
-        // Find player who collected the power-up
-        Player collector = gameController.getPlayers().stream()
-            .filter(p -> p.getTank() == tank)
-            .findFirst()
-            .orElse(null);
-
-        if (collector != null) {
-            collector.addScore(5); // 5 points for collecting power-up
-            logger.info("Player '{}' collected power-up (+5 points)", collector.getUsername());
-        }
-
-        gameController.removePowerUp(powerUp);
-        powerUp.applyEffect(tank);
-        logger.info("Player collected a power-up");
     }
 }

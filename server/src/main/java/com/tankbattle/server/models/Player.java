@@ -8,7 +8,6 @@ import org.slf4j.LoggerFactory;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.tankbattle.server.models.tanks.HeavyTank;
 import com.tankbattle.server.models.tanks.ITank;
-import com.tankbattle.server.models.tanks.LightTank;
 import com.tankbattle.server.models.tanks.TankProxy;
 import com.tankbattle.server.utils.Vector2;
 
@@ -82,10 +81,7 @@ public class Player {
     }
 
     public void addScore(int points) {
-        int oldScore = this.score;
         this.score += points;
-        logger.info("Player '{}' score changed: {} ({:+d}) -> {}", 
-            username, oldScore, points, this.score);
     }
 
     public int getScore() {
