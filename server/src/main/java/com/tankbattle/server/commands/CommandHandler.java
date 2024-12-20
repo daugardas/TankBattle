@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.Map;
 
 public abstract class CommandHandler {
-    protected CommandHandler nextHandler;
+    private static CommandHandler nextHandler;
 
     public void setNextHandler(CommandHandler nextHandler) {
         this.nextHandler = nextHandler;
@@ -17,6 +17,9 @@ public abstract class CommandHandler {
         if (nextHandler != null) {
             nextHandler.handleCommand(command, player, commands, commandsLog);
         }
+    }
+    public static CommandHandler getHandler() {
+        return nextHandler;
     }
 
     protected abstract boolean canHandle(Map<String, Object> command);

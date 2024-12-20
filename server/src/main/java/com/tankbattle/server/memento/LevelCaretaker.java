@@ -9,7 +9,6 @@ public class LevelCaretaker {
         mementoList.add(memento);
     }
 
-    // Retrieves a memento at the specified index
     public LevelMemento getMemento(int index) {
         if (index < 0 || index >= mementoList.size()) {
             throw new IndexOutOfBoundsException("Invalid memento index.");
@@ -17,7 +16,6 @@ public class LevelCaretaker {
         return mementoList.get(index);
     }
 
-    // Returns the number of mementos stored
     public int getMementoCount() {
         return mementoList.size();
     }

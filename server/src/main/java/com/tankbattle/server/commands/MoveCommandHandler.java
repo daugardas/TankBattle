@@ -26,6 +26,7 @@ public class MoveCommandHandler extends CommandHandler {
 
     @Override
     public void handleCommand(Map<String, Object> command, Player player, List<ICommand> commands, List<ICommand> commandsLog) {
+        CommandHandler nextHandler = getHandler();
         if (canHandle(command)) {
             processCommand(command, player, commands, commandsLog);
         } else if (nextHandler != null) {
